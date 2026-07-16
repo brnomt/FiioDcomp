@@ -1,0 +1,316 @@
+固件升级提醒：
+1.解压文件，将HIFIECXX.img文件拷入ECHO MINI本机内存根目录，安全退出设备；
+2.如机器有插TF卡，请先将TF卡取出，重启自动升级；
+Firmware Upgrade Reminder:  
+1. Unzip the file and copy the HIFIEC25.img file to the root directory of the ECHO MINI's internal memory. Safely eject the device and restart it to begin the automatic upgrade.  
+2. If you encounter any issues, please feel free to contact us. 
+
+-----V3.7.0-------
+1.新增按键模式C模式
+2.修复部分flac格式歌曲ID3信息不显示的问题
+3.优化上一曲切曲逻辑
+4.优化更新媒体库加载速度
+5.其它系统优化
+注：
+C模式：单击/双击上下曲键调节音量，长按上下曲键切曲
+上一曲切曲逻辑：在当前曲目播放到3S以内时，点击上一曲会跳转到当前曲目的上一曲并开始播放；而当曲目播放超出3S后，点击上一曲则会跳转到当前曲目的0S开始重新播放。
+1. Added new Button C Mode.
+2. Fixed an issue where ID3 tags for some FLAC format songs were not displayed.
+3. Optimized the previous track switching logic.
+4. Optimized the media library loading speed.
+4. Other system optimizations.
+Note:
+Button C Mode: Single press/Double press the Previous/Next track button to adjust volume; long press the Previous/Next track button to switch songs.
+Previous track switching logic: When the current track has played for less than 3 seconds, switching to previous track will skip to the actual previous track and start playback; 
+when the current track has played for more than 3 seconds, switching to previous track will restart the current track from the beginning (0:00).
+
+-----V3.6.0-------
+1.修复M4A格式专辑排序错乱的问题
+2.修复个别情况下进入我喜欢会出现卡死的问题
+3.修复部分TF卡更新媒体库不成功的问题
+4.其它系统优化
+1. Fixed the issue of incorrect album sorting for m4a format.
+2. Fixed an issue where the device would occasionally freeze when accessing Favorites.
+3. Fixed an issue where Media Library could not be updated on some micro-SD cards.
+4. Other system optimizations.
+
+-----V3.5.0-------
+1.修复在”我喜欢“里播放时不能记忆续播的问题
+2.优化专辑排序逻辑
+3.其它系统优化
+注：
+专辑排序：新增CD号排序，排序逻辑顺序为CD号--音轨号--文件名。
+1. Fixed an issue where playback position was not remembered when playing from Favorites.
+2.Optimized album sorting logic.
+3.Other system optimizations.
+Notes: 
+Album sorting: Added CD number sorting. The sorting priority is: CD number—Track number—File name.
+
+-----V3.4.0-------
+1.新增短控切曲按键模式
+2.优化电量显示准度
+3.其它系统优化
+注：
+按键模式A：短按调节音量，长按快进快退，双击切曲；
+按键模式B：短按切曲，长按快进快退，双击调节音量；
+1. Added new button mode for track control.
+2. Improved battery level display accuracy.
+3. Other system optimizations.
+Note: 
+Button Mode A: Short press to adjust volume, long press to fast forward/rewind, double press to switch tracks. 
+Button Mode B: Short press to switch tracks, long press to fast forward/rewind, double press to adjust volume.
+
+-----V3.3.0-------
+1.新增DSD格式的ID3信息显示
+注：DFF格式不支持ID3信息显示
+2.修复更新媒体库有概率出现“我喜欢”被清空的问题
+3.其它系统优化
+1. Added support for displaying ID3 tags for DSD format.
+Note: DFF format does not support ID3 tag display.
+2. Fixed an issue where updating the Media Library would accidentally clear Favorites.
+3. Other system optimizations.
+
+----V3.2.0-------
+1.修复点击播放歌曲的时候有概率会出现跳曲的问题
+2.优化优化第4、5级音量顺滑度
+3.其他系统优化
+1. Fixed the issue where clicking to play a song might occasionally cause song skipping.
+2. Optimized the smoothness of level-4 and level-5 volume.
+3. Other system optimizations.
+
+-----V3.1.0-------
+1.新增流派分类支持播放所有歌曲。
+2.修改设置定时关机后操作按键不再重新计时。
+3.其他系统优化。
+
+------V3.0.0------
+1.新增长按菜单键快速添加/取消【我的最爱】功能。
+2.新增在熄屏状态也支持快进快退操作。
+3.修改主页原【播放列表】名称为【媒体库】。
+4.其他系统优化。
+
+1. Added the function of long pressing the menu button to quickly add/remove songs from the Favorites list.
+2. Added support for fast-forward/rewind operations when the screen is off.
+3. Renamed the original Playlist section on the home screen to Media Library.
+4. Other system optimizations.
+
+------V2.8.0------
+1.新增歌词开关。
+2.新增声道平衡调节。
+3.修复更换盘符后会清空收藏夹歌曲的问题。
+4.修复更新媒体库有概率出现死机的问题。
+5.优化歌曲导航速度。
+6.其他系统优化。
+
+-----2.8.0------
+1. Added lyrics display switch.
+2. Added channel balance adjustment.
+3. Fixed an issue where changing the drive letter would clear the favorites list.
+4. Fixed a rare crash issue when updating the media library.
+5. Optimized song navigation speed.
+6. Miscellaneous system optimizations.
+
+
+------V2.7.0------
+1.新增音量按键调换功能。
+2.修复切曲有概率出现封面不显示的情况。
+3.其他系统优化。
+
+------V2.7.0------
+1. Added a function of swapping volume buttons.
+2. Fixed the issue where the album cover might not be displayed when switching tracks.
+3. Miscellaneous system improvements.
+
+
+------V2.6.0------
+1.修复M4A格式专辑排序乱序的问题。
+2.优化兼容支持RIFF格式ID3信息显示。
+3.其他系统优化。
+
+------V2.6.0------
+1. Fixed the issue of incorrect album sorting for M4A format files.
+2. Optimized compatibility to support displaying ID3 information in RIFF format.
+3. Other system optimizations.
+
+
+------V2.5.0------
+1.修复有概率出现杂音的问题。
+2.优化随机播放逻辑。
+3.优化内存容量显示逻辑。
+4.其他系统优化。
+
+------V2.5.0------
+1.Fixed the noise problem that occurs occasionally;
+2.Optimized the shuffle playback logic;
+3.Optimized the flash memory capacity display logic;
+4.Miscellaneous system improvements.
+
+
+------V2.4.0------
+1.新增USB DAC功能。
+2.新增文件夹跳曲功能。
+3.优化DAC DRE参数。
+4.其他系统优化。
+
+提示：
+1.由于更新内容较大，固件升级会先格式化本机内存，建议升级固件前备份好歌曲；
+2.USB DAC功能，是指可以将ECHO MINI连接手机或电脑，作为USB解码耳放使用；
+3.使用电脑或手机OTG连接ECHO MINI即会自动弹出USB DAC和数据连接选择项，选择后会记忆默认；
+4..USB DAC功能无需安装驱动，免驱使用，支持48kHz采样率，暂不支持独占使用；
+5.使用USB DAC功能时，手机或电脑会对ECHO MINI充电，建议连接手机时，充满电再使用。
+
+------V2.4.0------
+1. Added USB DAC function.
+2. Added folder skip function.
+3. Optimized DAC DRE parameters.
+4. Other system optimizations.
+
+Notes:
+1. Since the update is extensive, the firmware upgrade will first format the internal memory. It is recommended to back up your songs before upgrading.
+2. The USB DAC function allows the ECHO MINI to be connected to a smartphone or computer and used as a USB DAC and headphone amplifier.
+3. When connected to a computer or smartphone via OTG, the ECHO MINI will automatically display a prompt to select between USB DAC mode or data transfer mode, and the selection will be remembered as default.
+4. The USB DAC function is driver-free, which supports a 48kHz sampling rate, and currently does not support Exclusive USB Audio Access Mode.
+5. When using the USB DAC function, the connected smartphone or computer will charge the ECHO MINI. So it is recommended to fully charge it before connecting to a smartphone.
+
+
+--------V1.8.0固件-------
+1.新增3款主题UI。
+2.修复低亮度时屏幕闪烁的问题。
+3.修复部分ID3信息在播放界面显示为未知的问题。
+4.修复有概率出现升级闪退的问题。
+5.修复部分歌曲出现掉字的问题。
+6.优化部分语言翻译。
+7.其他系统优化。
+
+--- Firmware V1.8.0 ---
+1. Added 3 new UI themes.
+2. Fixed screen flickering at low brightness.
+3. Fixed the issue where some ID3 tags displayed as unknown in the playback page.
+4. Fixed random crashes during firmware updates.
+5. Fixed character dropouts in certain tracks.
+6. Optimized some language translations.
+7. Other system optimizations.
+
+---V1.7.0固件---
+1.新增自定义EQ。
+2.修改开机取消自动更新媒体库。
+3.修复部分OGG格式不支持的问题。
+4.优化部分特殊字符的显示。
+5.优化封面歌词的显示。
+6.其他一些系统优化。
+
+--- Firmware V1.7.0 ---
+1. Added custom EQ functionality.
+2. Modified startup to cancel automatic media library updates.
+3. Fixed support issues with some OGG formats.
+4. Optimized display of certain special characters.
+5. Optimized cover lyrics display.
+6. Other system optimizations.
+
+---V1.6.0固件---
+1.修改艺术家显示优先单曲艺术家；
+2.修复歌曲播放起始缺失掉字的问题；
+3.优化随机播放规则；
+4.优化专辑图片显示；
+5.其他一些系统优化。
+--- Firmware V1.6.0 ---
+1. Modified artist display to prioritize track artists.
+2. Fixed audio clipping issue at the beginning of track playback.
+3. Improved shuffle play logic.
+4. Optimized album art display.
+5. Miscellaneous system optimizations.
+
+
+---V1.5.0固件---
+1.新增复古EQ；
+2.修改关机LOGO显示字体;
+3.修改艺术家分类优先专辑艺术家；
+4.修复低亮度时切曲有屏幕闪烁问题；
+5.优化随机播放规则，可记忆上一曲；
+6.优化歌曲的ID3信息显示；
+7.其他一些系统优化。
+--- Firmware V1.5.0 ---
+1. Added Retro EQ style;
+2. Modified font display for shutdown logo;
+3. Modified artist categorization to prioritize "Album Artist";
+4. Fixed the screen flickering issue when switching tracks at low brightness;
+5. Optimized shuffle algorithm to now remember previous track;
+6. Optimized ID3 tag display for songs;
+7. Miscellaneous system improvements.
+
+ 
+---V1.4.6---
+1.修改播放页齿轮为逆时针转动；
+2.增加屏保时钟的设置功能；
+3.修复亮屏时背光芯片有轻微啸叫声问题；
+4.优化部分歌词库的读取显示；
+5.优化播放列表页歌曲以文件名排序；
+6.修改专辑列表歌曲以音轨号排序；
+7.其他一些系统优化。
+---V1.4.6---
+1. Changed the playback page gear to rotate counterclockwise.
+2. Added a setting function for the screensaver clock.
+3. Fixed the issue where a slight whistling noise existed in the backlight chip when the screen was on.
+4. Optimized the reading and display of certain lyrics libraries.
+5. Optimized the sorting of songs in the playlist page by filename.
+6. Changed the sorting of songs in the album list by track number.
+7. Miscellaneous system improvements.
+
+---V1.4.0---
+1.增加封面显示和全屏歌词功能；
+2.增加快进快退功能；
+3.优化系统总音量级为120级；
+4.文件浏览项增加"我喜欢"收藏保存功能；
+5.修复关机时有概率出现"pop"声;
+6.其他一些系统优化。
+---V1.4.0---
+1. Added cover display and full-screen lyrics function;
+2. Added fast forward and backward function;
+3. Optimized the total volume level of the system to 120;
+4. Added “My Favorites”  song collection functionality in file browser option;
+5. Fixed the the issue where there is a probability of having a “pop” sound when turning off the player;
+6. Miscellaneous system improvements.
+
+---V1.3.0---
+1.歌曲名显示由文件名调整为ID3信息；
+2.时钟显示由12小时制调整为24小时制；
+3.改善播放歌曲开头“掉字”问题；
+4.修复关机充电后有概率重新更新歌曲库；
+5.改善“我喜欢”收藏保存功能；
+6.其它一些系统优化。
+---V1.3.0---
+1.Adjusted song title display from filename to ID3 tags;
+2.Changed clock display from 12-hour to 24-hour format;
+3.Improved audio playback to prevent missing characters at the beginning of the song;
+4.Fixed the issue where the music library may update if the device is charging while powered off;
+5.Improved the functionality of song collection in "My Favorites";
+6.Miscellaneous system improvements.
+
+---V1.2.7---
+1.优化歌曲文件排序；
+2.修复时钟设置重启后有时会复位的问题；
+3.修复关机充电时，“充电中”字符闪烁问题；
+4.优化关机后再开机蓝牙回连功能。
+---V1.2.7---
+1. Optimized song file sorting.  
+2. Fixed the issue where the clock setting sometimes reset after a reboot.  
+3. Fixed the issue where the "Charging" characters would flash when charging the device during the power-off state. 
+4. Optimized Bluetooth auto-reconnect function after shutdown and power-on.
+
+---V1.2.5-----
+1.增加增益设置（播放界面下按菜单键在播放设置菜单中设置）；
+2.默认打开省电模式开关，默认为 “5分钟”；
+3.修复滤波器设置关机后不保存的问题；
+4.修复不能在文件夹内随机循环播放的问题；
+5.改善概率性出现播放自动快进及杂音问题；
+6.修复蓝牙播放有概率性爆音；
+7.取消提示弹窗的“警告”符号。
+
+--- V1.2.5---  
+1. Added Gain settings (press the menu button in the playback interface to access and adjust it in the playback settings menu).  
+2. The power-saving mode is enabled by default to 5 minutes. 
+3. Fixed the issue where filter settings were not saved after shutdown.  
+4. Fixed the issue where shuffle loop play within folders was not working. 
+5. Fixed the issue where automatic fast-forwarding and noise may occur during playback.  
+6. Fixed the issue of where popping sound may occur during Bluetooth playback.
+7. Removed the "Warning" symbol from the pop-up prompt.

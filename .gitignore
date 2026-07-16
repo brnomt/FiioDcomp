@@ -1,0 +1,26 @@
+# Hidden directories
+.codegraph/
+.commandcode/
+.git/
+
+# Stock firmware binaries (not distributed)
+stock/ECHO MINI V3.7.0/HIFIEC37.IMG
+stock/ECHO MINI V3.7.0/HIFIEC37.IMG.id0
+stock/ECHO MINI V3.7.0/HIFIEC37.IMG.id1
+stock/ECHO MINI V3.7.0/HIFIEC37.IMG.nam
+stock/ECHO MINI V3.7.0/HIFIEC37.IMG.til
+stock/ECHO MINI 512M/MINIV370.IMG
+
+# Extracted firmware sections (large binaries)
+stock/ECHO MINI V3.7.0/extracted/section_1_0x000001F8.bin
+stock/ECHO MINI V3.7.0/extracted/section_2_0x00057820.bin
+stock/ECHO MINI V3.7.0/extracted/section_3_0x00081A14.bin
+stock/ECHO MINI V3.7.0/extracted/section_4_0x01FC41F8.bin
+stock/ECHO MINI V3.7.0/extracted/firmware_stripped.bin
+
+# Build artifacts
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
