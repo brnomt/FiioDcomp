@@ -1,7 +1,14 @@
 """Scan firmware for ARM vector table, code regions, and architecture identification."""
 import os, struct
 
-path = r'C:\Users\brnomt\Downloads\ECHO MINI V3.7.0\ECHO MINI V3.7.0\HIFIEC37.IMG'
+import argparse
+
+parser = argparse.ArgumentParser(description='Scan Echo Mini firmware for ARM vector tables and code regions')
+parser.add_argument('input', nargs='?', default='stock/ECHO MINI V3.7.0/HIFIEC37.IMG',
+                    help='Path to HIFIEC37.IMG (default: stock/ECHO MINI V3.7.0/HIFIEC37.IMG)')
+args = parser.parse_args()
+
+path = args.input
 with open(path, 'rb') as f:
     data = f.read()
 

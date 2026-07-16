@@ -4,8 +4,17 @@ Each section represents a firmware component (bootloader, main app, resources, e
 """
 import os, struct
 
-path = r'C:\Users\brnomt\Downloads\ECHO MINI V3.7.0\ECHO MINI V3.7.0\HIFIEC37.IMG'
-out_dir = os.path.join(os.path.dirname(path), 'extracted')
+import argparse
+
+parser = argparse.ArgumentParser(description='Extract all RKnanoFW sections from Echo Mini firmware')
+parser.add_argument('input', nargs='?', default='stock/ECHO MINI V3.7.0/HIFIEC37.IMG',
+                    help='Path to HIFIEC37.IMG (default: stock/ECHO MINI V3.7.0/HIFIEC37.IMG)')
+parser.add_argument('--output', '-o', default=None,
+                    help='Output directory (default: <input_dir>/extracted)')
+args = parser.parse_args()
+
+path = args.input
+out_dir = args.output or os.path.join(os.path.dirname(path), 'extracted')
 os.makedirs(out_dir, exist_ok=True)
 
 with open(path, 'rb') as f:
