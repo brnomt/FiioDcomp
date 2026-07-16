@@ -43,11 +43,11 @@ bool fs_mount(StorageMedia media);
 bool fs_scan_media(void);          /* update media library */
 
 /* File operations */
-int  fs_open(const char *path);
-bool fs_seek(int fd, uint32_t offset);
-int  fs_read(int fd, void *buf, uint32_t len);
-int  fs_write(int fd, const void *buf, uint32_t len);
-bool fs_close(int fd);
+bool fs_open(const char *path);           /* Open — string present, fn TBD */
+uint8_t  HifiFileSeek(uint32_t offset, uint32_t whence, uint8_t fd); /* @ 0x0306b8e6 */
+uint32_t HifiFileRead(uint32_t buf, uint32_t len, uint8_t fd);       /* @ 0x0306b94c */
+bool fs_write(int fd, const void *buf, uint32_t len); /* Write — string present, fn TBD */
+bool fs_close(int fd);                    /* Close — string present, fn TBD */
 uint32_t fs_size(int fd);
 uint32_t fs_tell(int fd);
 

@@ -82,7 +82,7 @@ The firmware image is a multi-section container with CRC verification:
 | `0x057820` | 173 KB | Section 2 — Bootloader: verifies firmware signatures ("fw1 Sign error!", "fw1 compare error!") |
 | `0x081A14` | 31.25 MB | **Section 3 — Main firmware** (executable ARM Thumb-2 code) |
 | `0x1FC41F8` | 245 KB | Section 4 — Padding (all zeros) |
-| `0x200000` | 4 B | CRC: `0x1EA1C309` |
+| EOF `-4` | 4 B | Trailer / CRC field: `0x1EA1C309` (file size `0x2000004`) |
 
 ## Section 3 — Main Firmware
 

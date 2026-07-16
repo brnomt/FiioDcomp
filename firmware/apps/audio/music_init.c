@@ -38,7 +38,7 @@ void MusicInit(void) {
     rom_sample_rate_set(1, 2, 1, 48000);  /* func_0x02ffa410: ch=1, mode=2, en=1, rate=48000 */
     rom_dac_mute(1, 4);                    /* func_0x02ff44ce: mute channel 1, sub 4 */
     
-    os_delay_ms(100);  /* Wait for DAC to stabilize */
+    hifi_busy_delay(100);  /* after DAC mute; BL target 0x030098e4 in binary */
     
     rom_dac_unmute(1, 4);   /* func_0x02ff4580 */
     rom_dma_config(4, 1);    /* func_0x02ff6814: DMA ch=4, mode=1 */
@@ -174,7 +174,7 @@ void MusicInit(void) {
                     break;
                 }
                 ctx->sample_count = g_buffer_size % ctx->codec_cfg.sample_rate;
-                os_delay_ms(15);
+                hifi_busy_delay(15);
                 retry++;
             } while (retry < 200);
         }
@@ -190,7 +190,7 @@ void MusicInit(void) {
     /* --- Finalize --- */
     event_set(0x23);  /* Audio init complete */
     
-    os_delay_ms(15);
+                hifi_busy_delay(15);
     
     /* Start DSP processing */
     rom_dsp_start();  /* func_0x02ff55c0 */

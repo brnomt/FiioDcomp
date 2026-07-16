@@ -17,6 +17,7 @@
  *
  * Menu handler:
  *   BroMemSelKeyMenu_Handler @ 0x03013280  (Browse Memory/Select Key Menu)
+ *   MainUI_KeyHandler  @ 0x0301020c  (main screen keypad/EQ — see main_ui_handler.c)
  */
 
 #ifndef UI_THEME_H

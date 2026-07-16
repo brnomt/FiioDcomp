@@ -2,10 +2,14 @@
  * firmware/codecs/codec_api.h
  * Unified audio codec interface
  *
- * All codecs use HifiFile for I/O and follow this dispatch pattern:
- *   1. DICTDECODER_OpenFile()  - identify format from file header
- *   2. DICTDECODER_InitStream() - allocate codec-specific buffers
- *   3. DICTDECODER_DispatchFile() - route to correct decoder
+ * All codecs use HifiFile for I/O behind the "DICTDECODER" container layer:
+ *   - DICTDECODER_InitStream() @ 0x0304fb44 - parse 'VaT '/'VAT ' container
+ *     header, validate format, build the seek/frame index (see dict_decoder.c)
+ *
+ * NOTE: the functions once labeled DICTDECODER_OpenFile / DICTDECODER_DispatchFile
+ * @ 0x0301020c / 0x0301022c were misnamed. They are the main-UI keypad handler
+ * (MainUI_KeyHandler) and the GOODEF DSP reload path (DSP_GOODEF_Reload),
+ * not codec dispatch. See docs/decompilation-plan.md audit notes.
  *
  * Codec library versions (from embedded strings):
  *   mp2_dec_lib   - 2012.3.31

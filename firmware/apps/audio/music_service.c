@@ -150,7 +150,7 @@ void MusicService_Init(void *param1, MusicServiceCtx *ctx) {
     int ready = rom_buffer_ready(5);  /* func_0x02ffa224 */
     
     while (ready == 1) {
-        os_delay_ms(10);  /* Wait 10ms */
+        hifi_busy_delay(1);  /* binary BLs 0x030098e4 — see dac_gain_curve note */
         /* Decrement retry counter (external variable) */
         if (--g_retry_counter == 0) break;
         ready = rom_buffer_ready(5);
@@ -196,7 +196,7 @@ void MusicService_Init(void *param1, MusicServiceCtx *ctx) {
         
         rom_bt_playback_init();        /* FUN_0300bb32 - BT passthrough */
         rom_volume_sync();             /* FUN_030059bc - load saved volume */
-        os_delay_ms(0x50);             /* 80ms delay */
+        hifi_busy_delay(0x50);             /* 80ms-ish wait */
         
         rom_dac_unmute(1, 4);          /* func_0x02ff44ce - unmute DAC */
         

@@ -30,21 +30,22 @@
 ```
 0x00000000 - 0x02FDFFFF   Boot ROM (RKnano internal ROM)
 0x02FE0000 - 0x02FFFFFF   ROM API region (I2S, DMA, GPIO, etc.)
-                           - func_0x02ff5752: I2S master config
-                           - func_0x02ff5c30: audio clock setup
-                           - func_0x02ff55c0/55ba: DAC IC init/deinit
-                           - func_0x02ff6814: DMA channel config
-                           - func_0x02ff68f0: I2S/DMA start
-                           - func_0x02ffa410: sample rate set (48000 observed)
-                           - func_0x02ffa6f0/a72a: audio path routing
+                           Ghidra: stub memory block ROM_API (r-x, empty bytes) + named stubs
+                           - rom_i2s_master_config @ 0x02ff5752
+                           - rom_audio_clock_setup @ 0x02ff5c30
+                           - func_0x02ff55c0/55ba: DAC IC init/deinit (unnamed stub TBD)
+                           - rom_dma_config @ 0x02ff6814
+                           - rom_i2s_dma_start @ 0x02ff68f0
+                           - rom_sample_rate_set @ 0x02ffa410 (48000 observed)
+                           - rom_audio_path_route / rom_audio_path_disable @ 0x02ffa6f0 / a72a
                            - func_0x02ffa224: audio buffer status
-                           - func_0x02ff44ce: DAC mute
-                           - func_0x02ff4580: DAC unmute
-                           - func_0x02ff952e/957c: memcpy/memset (HW accel?)
-                           - func_0x02ffb2e0/b3e6: USB connect/disconnect
+                           - rom_dac_mute / rom_dac_unmute @ 0x02ff44ce / 4580
+                           - rom_memcpy @ 0x02ff952e (+ 0x02ff957c memset?)
+                           - rom_usb_connect @ 0x02ffb2e0 (+ 0x02ffb3e6 disconnect?)
                            - func_0x02fee544: SPI command
                            - func_0x02feda18: LCD update
-                           - func_0x02feeedc/eebe: malloc/free
+                           - rom_alloc / rom_hw_init @ 0x02feeedc / eebe
+                           - rom_early_init @ 0x02fe860e
                            - func_0x02fef2b2: unknown (SPI/I2C?)
 0x03000000 - 0x04F4FFFF   Main firmware (loaded from IMG section 3)
     0x03000000 - 0x0300000F   RKnanoFW header (magic + load addr + flags)

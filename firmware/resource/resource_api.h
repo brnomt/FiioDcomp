@@ -2,17 +2,23 @@
  * firmware/resource/resource_api.h
  * ROCK26IMAGERES resource system — bitmaps, fonts, and UI assets
  *
- * Resource table found at ~0x04F14FA0+ in high memory.
- * Format: ROCK26IMAGERES header + array of BMP descriptors.
+ * In HIFIEC*.IMG, resources live in "part5" (u32 offset/size at IMG 0x14C).
+ * Part5 begins with magic "ROCK26IMAGERES" + count, then 16-byte ROCK26
+ * entries, pixel blobs, and a parallel 108-byte metadata catalog.
  *
- * Each descriptor (108 bytes):
- *   offset 0-3:   flags/magic
- *   offset 20-23: offset_in_firmware
- *   offset 24-27: width (pixels)
- *   offset 28-31: height (pixels)
- *   offset 32-95: filename (ASCII, null-terminated, .BMP suffix)
+ * V3.7 metadata entry (108 bytes) — note: table base is NOT 4-byte aligned:
+ *   +0x00 name[64]   ASCII filename (.BMP), may have trailing spaces
+ *   +0x60 offset     uint32 LE — byte offset within part5
+ *   +0x64 width      uint32 LE
+ *   +0x68 height     uint32 LE
  *
- * Image format: RGB565, uncompressed, packed row-major
+ * ROCK26 entry (16 bytes):
+ *   +0x00 (height<<16)|width
+ *   +0x04 flags
+ *   +0x08 byte_size  (= width*height*2)
+ *   +0x0C offset     within part5
+ *
+ * Image format: RGB565, big-endian (byte-swapped), uncompressed, row-major
  *
  * Font format: SMALL and LARGE per-character glyph bitmaps,
  *   organized by Unicode plane (from Flame Ocean extractor)
@@ -21,21 +27,6 @@
  *   {ThemePrefix}_{ElementName}_({X},{Y}).BMP
  *   Theme prefixes: "" (Theme A), "B" (Theme B), "C" (Theme C),
  *                   "D" (Theme D), "E" (Theme E)
- *
- *   Element names observed:
- *     POWERON0..1, Z_POWERON0..16    - boot animation
- *     PONIT_NOSEL*, PONIT_NOSELBLUE* - menu items
- *     NOSEL00_ICON                   - icon placeholders
- *     SETMENU_USERNOSEL*             - settings menu items
- *     KEYCHANGE                      - key mode indicator
- *     MUSIC_BATTERY01..05            - battery icon
- *     CHARGELEVEL0..5                - charging indicator
- *     MUSIC_EQ_{NOR,RETRO,BAS,HEAVY,POP,JAZ,MS,USE} - EQ icons
- *     SM_COM_VOLUME_000..009         - volume digits
- *     VOLNUM_00..                    - volume number
- *     DIALOGBOX_BUTTON{YES,NO}       - dialog buttons
- *     USB_BACKGROUND, USB_DAC*, USB_DATA*, USB_PLAYER*
- *     MUSIC_EQ_*                     - EQ screen elements
  */
 
 #ifndef RESOURCE_API_H
@@ -49,26 +40,27 @@
 
 typedef struct {
     char     magic[16];       /* "ROCK26IMAGERES" */
-    uint32_t table_size;      /* total size */
-    uint32_t entry_count;     /* number of BMP entries */
-    uint32_t header_size;     /* = 32 */
-    /* followed by entry_count * 16-byte entries */
+    uint32_t entry_count;     /* number of ROCK26 / BMP entries */
+    uint32_t reserved0;
+    uint32_t reserved1;
+    uint32_t reserved2;
+    /* followed by entry_count * 16-byte ROCK26Entry */
 } ROCK26Header;
 
 typedef struct {
-    char     name[8];         /* abbreviated BMP name */
+    uint32_t dims;            /* (height << 16) | width */
     uint32_t flags;
-    uint32_t offset;          /* in firmware binary */
+    uint32_t byte_size;       /* width * height * 2 */
+    uint32_t offset;          /* offset within part5 */
 } ROCK26Entry;
 
-/* Full BMP metadata (from metadata table) */
+/* Full BMP metadata (108-byte catalog entry, V3.7 layout) */
 typedef struct {
     char     filename[64];
-    uint32_t data_offset;
+    uint8_t  runtime[32];     /* runtime / unused in stock image */
+    uint32_t data_offset;     /* within part5 */
     uint32_t width;
     uint32_t height;
-    uint32_t flags;
-    /* remaining bytes: padding/alignment */
 } BMPDescriptor;
 
 /* Resource API */
@@ -100,6 +92,6 @@ bool resource_replace_bitmap(uint32_t index, const uint16_t *new_pixels,
 
 /* Firmware packing */
 bool firmware_calc_crc(uint32_t *crc);
-/*   CRC at offset 0x200000 in IMG: 0x1EA1C309 */
+/*   IMG EOF trailer on V3.7.0: 0x1EA1C309 (last 4 bytes; not @ 0x200000) */
 
 #endif /* RESOURCE_API_H */

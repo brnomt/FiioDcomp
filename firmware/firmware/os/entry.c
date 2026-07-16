@@ -3,13 +3,19 @@
  * Reconstructed from Ghidra decompilation of firmware v3.7.0
  *
  * firmware_entry @ 0x03000010
- *   → calls boot ROM for init, then dispatches to subsystems
+ * boot_param_layout @ 0x030000da  (NOT C runtime / BSS init)
  *
- * RKnano boot sequence:
- *   1. Boot ROM initializes clocks, stack, flash controller
- *   2. Bootloader (section 2) verifies signatures, copies segments
- *   3. firmware_entry() starts at 0x03000010
- *   4. Calls ROM init functions, then enters main event loop
+ * Actual Ghidra decomp of firmware_entry:
+ *   boot_param_layout(param);
+ *   ctx = rom_alloc(0x1dc);
+ *   if (!ctx) rom_hw_init2(0x16f);
+ *   else { rom_hw_init(0x1dc); rom_hw_init(0x16f)×2; rom_hw_init2(0x171); rom_hw_init(0x170); }
+ *   rom_early_init();
+ *   if (*param != 0xb) { rom_hw_init2(399); return; }
+ *   rom_hw_init2(0x191); return;
+ *
+ * NOTE: MusicInit / FormatList_Init are NOT called directly from entry —
+ * they are reached later via FUN_0304d022 / event paths.
  */
 
 #include "../firmware.h"
@@ -19,143 +25,98 @@
 #include "../../codecs/codec_api.h"
 #include "../../drivers.h"
 
-/* Global state structure (inferred from multiple function decompilations) */
+/* Layout state written by boot_param_layout (DAT_03000164 / DAT_03000168) */
 typedef struct {
-    uint8_t  current_mode;          /* 0x1ba: media type (0=flash,1=card?) */
-    uint8_t  file_count;            /* 0x1bb: number of files */
-    uint8_t  boot_stage;            /* 0x1bc: 0=init, 1=scan, 2=playback */
-    uint16_t lcd_width;             /* 0x21d: display width */
-    uint8_t  audio_output;          /* 0x34a: DAC filter/mode */
-    uint8_t  dsp_active;            /* 0x356: DSP enabled flag */
-    uint16_t format_signature[2];   /* 0x???: format detection bytes */
-} GlobalState;
+    uint8_t  base;       /* +0  forced to 8 */
+    uint8_t  cols;       /* +1  ((mode/6)*3)*2, possibly -6 */
+    uint8_t  rem;        /* +2  mode - cols */
+    uint8_t  zero;       /* +3  always 0 */
+    uint8_t  pad;        /* +4  min(6, 8-cols) */
+    uint8_t  mode_clamped; /* +5  input mode, max 0xd */
+} BootLayout;
 
-static GlobalState g_state;
+extern BootLayout *g_boot_layout;   /* DAT_03000164 */
+extern uint16_t   *g_boot_mode;     /* DAT_03000168 */
+
+extern void *rom_alloc(uint32_t size);
+extern void  rom_hw_init(uint32_t code);
+extern void  rom_hw_init2(uint32_t code);
+extern void  rom_early_init(void);
+extern void  boot_param_layout(uint16_t *param);
 
 /*
- * firmware_entry() - main entry point
- * @ 0x03000010
+ * firmware_entry @ 0x03000010
  *
- * Called by bootloader after segment copy. Sets up hardware,
- * initializes subsystems, enters main loop.
+ * Bootloader jumps here with a short* boot parameter block.
+ * Mode 0x0B selects the "full" init path (rom_hw_init2(0x191));
+ * any other mode takes the early-exit path (rom_hw_init2(399)).
  */
-void firmware_entry(uint16_t *param) {
-    /* 
-     * Boot ROM call at 0x02feeedc - allocate hardware context
-     * The if-check confirms context allocation succeeded
-     * 0x1dc = 476 bytes context size
-     */
-    void *context = rom_alloc(0x1dc);
-    
-    /* C runtime init - zero BSS, init data sections */
-    firmware_init_runtime(); /* FUN_030000da @ 0x030000da */
+void firmware_entry(uint16_t *param)
+{
+    void *ctx;
 
-    if (context != NULL) {
-        /* ROM hardware init sequence */
-        rom_init_timer(0x1dc);    /* func_0x02feeebe - init hardware timer */
-        rom_init_gpio(0x16f);     /* func_0x02feeebe - GPIO bank init */
-        rom_init_dma(0x16f);      /* func_0x02feeebe - DMA controller init */
+    boot_param_layout(param);
+
+    ctx = rom_alloc(0x1dc);
+    if (ctx == NULL) {
+        rom_hw_init2(0x16f);
+    } else {
+        rom_hw_init(0x1dc);
+        rom_hw_init(0x16f);
+        rom_hw_init(0x16f);
+        rom_hw_init2(0x171);
+        rom_hw_init(0x170);
     }
 
-    /*
-     * Main initialization sequence:
-     *   FormatList_Init → MusicInit → MusicService_Init → event loop
-     */
-    FormatList_Init();           /* @ 0x03013c10 */
-    MusicInit();                 /* @ 0x0302b9d8 */
-    
-    /* Enter event-driven main loop - never returns */
-    while (1) {
-        main_event_loop();
+    rom_early_init();
+
+    if (*param != 0x0b) {
+        rom_hw_init2(399);
+        return;
     }
+    rom_hw_init2(0x191);
 }
 
 /*
- * firmware_init_runtime()
- * @ 0x030000da
+ * boot_param_layout @ 0x030000da
  *
- * Sets up the global state structure with defaults derived from
- * a format table lookup. The switch statement maps mode codes.
+ * Derives a small display/layout descriptor from *param.
+ * Accepted mode codes: 0,1,2,3,4,5,8,10 (else treated as 0).
+ * Clamps mode to ≤ 0x0D, then computes column/padding fields.
  */
-void firmware_init_runtime(void) {
-    uint16_t mode_codes[] = {0, 1, 2, 3, 4, 5, 8, 10};
+void boot_param_layout(uint16_t *param)
+{
     uint16_t mode = 0;
-    uint8_t i;
+    uint32_t m, cols;
+    int pad;
 
-    g_state.lcd_width = 8;
-    
-    /* Look up mode from parameter */
-    for (i = 0; i < sizeof(mode_codes)/sizeof(mode_codes[0]); i++) {
-        if (mode_codes[i] == g_state.current_mode) {
-            mode = mode_codes[i];
-            break;
-        }
-    }
-    
-    g_state.boot_stage = (uint8_t)mode;
-    g_state.dsp_active = (uint8_t)mode;
-    
-    /* Clamp values */
-    if (g_state.dsp_active > 12) g_state.dsp_active = 13;
-    if (g_state.boot_stage > 12) g_state.boot_stage = 13;
-    
-    /* Calculate display dimensions (LCD character grid?) */
-    uint8_t char_width = g_state.dsp_active;
-    uint8_t cols = ((char_width / 6) * 3 & 0x7f) * 2;
-    
-    if (char_width > cols) {
-        cols = cols - 6;
-    }
-    
-    g_state.lcd_width = cols;
-    uint8_t remaining = g_state.dsp_active - cols;
-    
-    uint8_t padding = 8 - (cols & 0xff);
-    if (padding > 6) padding = 6;
-    
-    /* Padding calculation - likely LCD timing */
-    uint8_t unknown = 0;
-}
+    g_boot_layout->base = 8;
 
-/*
- * main_event_loop()
- *
- * RKnano's cooperative event loop. Polls hardware events
- * (key presses, USB mode changes, timer ticks) and dispatches
- * to the appropriate handler.
- */
-static void main_event_loop(void) {
-    uint32_t event = 0;
-    
-    while (1) {
-        /* Poll for pending events */
-        event = event_check(0xFF);        
-        if (event == 0) {
-            os_delay_ms(10);
-            continue;
-        }
-        
-        /* Dispatch based on event */
-        switch (event) {
-        case 0x23: /* Audio init complete */
-            break;
-        case 0x2a: /* Music playback request */
-            MusicInit();
-            break;
-        case 0x55: /* Timer tick / heartbeat */
-            break;
-        case 0x59: /* Playback started */
-            AudioPlayback_Start(NULL);
-            break;
-        case 0xf5: /* USB mode change */
-            /* USB mode switch handled by ROM */
-            break;
-        case 0x114: /* System ready - enter idle */
-            break;
-        case 0x159: /* File operation complete */
-            break;
-        default:
-            break;
-        }
+    switch (*param) {
+    case 0: case 1: case 2: case 3: case 4: case 5: case 8: case 10:
+        mode = *param;
+        break;
+    default:
+        break;
     }
+
+    *g_boot_mode = mode;
+    g_boot_layout->mode_clamped = (uint8_t)mode;
+    if ((mode & 0xff) > 0x0c)
+        g_boot_layout->mode_clamped = 0x0d;
+    if (*g_boot_mode > 0x0c)
+        *g_boot_mode = 0x0d;
+
+    m = g_boot_layout->mode_clamped;
+    cols = ((m / 6) * 3 & 0x7f) * 2;
+    g_boot_layout->cols = (uint8_t)cols;
+    if (m <= cols && cols != m) {
+        cols -= 6;
+        g_boot_layout->cols = (uint8_t)cols;
+    }
+    g_boot_layout->rem = (uint8_t)(m - cols);
+    pad = 8 - (int)(cols & 0xff);
+    if (pad > 6) pad = 6;
+    g_boot_layout->pad = (uint8_t)pad;
+    g_boot_layout->zero = 0;
 }
