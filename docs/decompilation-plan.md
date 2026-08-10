@@ -57,12 +57,13 @@ Ghidra: FIIO-3.7.0-Decomp / section_3_0x00081A14.bin
 | Metric | Count |
 |--------|------:|
 | Total functions in binary | **2,256** |
-| Custom-named (firmware + ROM stubs) | **98** |
-| Still `FUN_*` / unlabeled | **2,142** |
+| Custom-named (firmware + ROM stubs) | **115** |
+| Still `FUN_*` / unlabeled | **2,125** |
 | Phase-2 key symbols with `.c` reconstructions | **all planned subsystems + FS/bitstream/events** |
 
-> Full-IMG goal owns the remaining **2,142** unlabeled functions.
-> Latest pass: fixed misnamed OS symbols; HifiFile / events / bitreaders / APE cuesheet.
+> Full-IMG goal owns the remaining **2,125** unlabeled functions.
+> Latest pass: codec-overlay delay/runtime clones, WMA bitreader/memcmp/log2,
+> APE ROM I/O thunks, BE bitreader, and signed saturation.
 
 #### Substantial reconstructions
 
@@ -88,7 +89,8 @@ Ghidra: FIIO-3.7.0-Decomp / section_3_0x00081A14.bin
 | Module | Notes |
 |--------|-------|
 | ~2,150+ `FUN_*` helpers | full-IMG goal; grind by xref + string anchors |
-| HifiFile Open/Write/Close | timeout strings present; no recovered xrefs yet |
+| HifiFile Open | SDK spin-wait; Open timeout string has no xrefs in Fiio binary |
+| HifiFile Write/Close | Recovered @ `0x0306b9bc` / `0x0306ba1e` (ipc `0x6d` / `0x73`) |
 | Power/Battery UI layer | ROM-delegated; only thin UI left |
 | `DSD_DecodeBlock` FIR body | named in Ghidra; C has stub for the large FIR loop |
 | `AudioPlayback_Start` / `MusicService_Init` split | revisit mid-function boundary |

@@ -33,6 +33,7 @@ Reverse engineering notes, documentation, tooling, patches, and clean-room imple
 ```
 firmware/                       # Rockbox-style modular C project (decompiled)
 ├── firmware.h                  # Address space, ROM calls, segment defines
+├── rockchip/                   # RKNanoD SDK v1.3 port (reference C + codec blobs)
 ├── firmware/
 │   ├── os/                     # Event system, delays, OS primitives
 │   ├── filesystem/             # HifiFile I/O, FAT wrapper, media library
@@ -50,9 +51,12 @@ firmware/                       # Rockbox-style modular C project (decompiled)
 └── resource/                   # ROCK26IMAGERES table, bitmaps, fonts
 
 docs/                           # Documentation
-├── symbol-index.md             # Labeled function reference (31 functions)
+├── symbol-index.md             # Labeled function reference
 ├── memory-map.md               # Complete memory map + SoC pinout
-└── plans/echo-mini-decomp.md   # Decompilation plan
+├── fork-strategy.md            # SDK vs Ghidra source model
+├── flashing-guide.md           # What you can flash today
+├── sdk-porting.md              # SDK grab guide
+└── re-backlog.md               # Prioritized FUN_* RE work
 
 stock/                          # Reference firmware (not distributed)
 ├── ECHO MINI V3.7.0/           # Firmware version 3.7.0

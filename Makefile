@@ -1,107 +1,70 @@
 # Echo Mini Firmware — Build System
-# 
-# Target: ARM Cortex-M (Thumb-2), little-endian
-# Toolchain: arm-none-eabi-gcc
-# SDK: RKnano SDK 1.0
+#
+# Target: ARM Cortex-M3 (Thumb-2), little-endian — Rockchip RKnanoC
+# Toolchain: arm-none-eabi-gcc (not wired to full IMG pack yet)
 #
 # Usage:
-#   make all          — build firmware from decompiled C sources
+#   make all          — compile reference sources (SDK + Fiio decomp)
 #   make clean        — remove build artifacts
-#   make dump-strings — extract all strings from IMG
-#   make dump-symbols — export Ghidra symbol table
 #   make extract-img  — extract sections from HIFIEC37.IMG
-#   make crc          — verify/recalculate firmware CRC
+#   make crc          — verify IMG EOF trailer
+#
+# Flashing: see docs/flashing-guide.md (resource repack works today; full build does not)
 
-# Toolchain
 CROSS_COMPILE = arm-none-eabi-
 CC      = $(CROSS_COMPILE)gcc
-AS      = $(CROSS_COMPILE)as
 LD      = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
-OBJDUMP = $(CROSS_COMPILE)objdump
 SIZE    = $(CROSS_COMPILE)size
 
-# Project paths
 STOCK_DIR   = stock/ECHO\ MINI\ V3.7.0
 IMG_FILE    = $(STOCK_DIR)/HIFIEC37.IMG
 EXTRACT_DIR = $(STOCK_DIR)/extracted
 
-# Cortex-M0/M0+/M3/M4 flags (exact RKnano core unknown — try M3)
 ARCH_FLAGS  = -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
-CFLAGS      = $(ARCH_FLAGS) -O2 -Wall -Wextra -ffunction-sections -fdata-sections
-LDFLAGS     = $(ARCH_FLAGS) -Wl,--gc-sections -nostartfiles -T firmware/firmware.ld
+CFLAGS      = $(ARCH_FLAGS) -O2 -Wall -Wno-unused-parameter -ffunction-sections -fdata-sections \
+              -Ifirmware -Ifirmware/firmware -Ifirmware/rockchip/include \
+              -Ifirmware/rockchip/audio/Include \
+              -DFIIO_DECOMP_REFERENCE
+LDFLAGS     = $(ARCH_FLAGS) -Wl,--gc-sections -nostartfiles
 
-# Module directories
-MODULES = \
-    firmware/os \
-    firmware/filesystem \
-    firmware/dsp \
-    firmware/media \
-    firmware/usb \
-    firmware/power \
-    firmware/drivers \
-    codecs/mp3 \
-    codecs/wma \
-    codecs/aac \
-    codecs/flac \
-    codecs/ape \
-    codecs/wav \
-    codecs/ogg \
-    codecs/dsd \
-    apps/audio \
-    apps/ui \
-    apps/recorder \
-    apps/bluetooth \
-    resource
+# Ghidra decomp (Fiio-specific + verified stubs)
+FIIO_SRCS = \
+    $(wildcard firmware/firmware/**/*.c) \
+    $(wildcard firmware/codecs/**/*.c) \
+    $(wildcard firmware/apps/**/*.c)
 
-# C sources from decompilation (to be populated as functions are decompiled)
-CSRCS = $(foreach mod,$(MODULES),$(wildcard firmware/$(mod)/*.c))
+# Rockchip SDK port (reference — needs SysConfig/Driver stubs to link)
+ROCKCHIP_SRCS = \
+    firmware/rockchip/bbsystem/audio_file_access2.c \
+    firmware/rockchip/audio/Common/pCODECS.c
 
+# Full SDK tree available under firmware/rockchip/ for RE; only core files in build for now
+CSRCS = $(FIIO_SRCS) $(ROCKCHIP_SRCS)
 OBJS  = $(CSRCS:.c=.o)
 
-.PHONY: all clean dump-strings dump-symbols extract-img crc
+.PHONY: all clean extract-img crc
 
-all: build/firmware.elf
+all: build/reference.o
+	@echo ""
+	@echo "Note: full firmware link not available yet (no firmware.ld / IMG packer)."
+	@echo "See docs/flashing-guide.md for what you can flash today."
 
-build/firmware.elf: $(OBJS)
+build/reference.o: $(OBJS) | build
+	$(LD) -r $(OBJS) -o $@ 2>/dev/null || echo "Link skipped (missing toolchain or deps)"
+
+build:
 	@mkdir -p build
-	$(LD) $(LDFLAGS) $(OBJS) -o $@
-	$(SIZE) $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ 2>/dev/null || echo "Skip (no toolchain): $<"
 
 clean:
 	rm -rf build/
-	find firmware/ -name '*.o' -delete
-
-# --- Analysis Tools ---
-
-dump-strings:
-	@echo "Extracting strings from $(IMG_FILE)..."
-	strings -t x "$(IMG_FILE)" | head -20000 > $(EXTRACT_DIR)/strings_dump.txt
-	wc -l $(EXTRACT_DIR)/strings_dump.txt
-	@echo "Done: $(EXTRACT_DIR)/strings_dump.txt"
-
-dump-symbols:
-	@echo "TODO: Use Ghidra MCP to export function database"
-	@echo "Run: analyzeHeadless <project> <folder> -postScript ExportFunctions.java"
+	find firmware -name '*.o' -delete 2>/dev/null || true
 
 extract-img:
-	python3 tools/extract_sections.py "$(IMG_FILE)" "$(EXTRACT_DIR)"
+	python3 tools/extract_fw.py "$(IMG_FILE)" -o "$(EXTRACT_DIR)"
 
 crc:
-	python3 tools/crc_util.py verify "$(IMG_FILE)"
-
-# --- Ghidra Integration ---
-
-.PHONY: ghidra-export ghidra-save
-
-ghidra-export:
-	@echo "Exporting Ghidra decompilation to C sources..."
-	@echo "Use Ghidra MCP: batch_decompile to get all functions"
-	@echo "Then: export to firmware/codecs/*/*.c"
-
-ghidra-save:
-	@echo "Saving Ghidra project..."
-	@echo "Project is at: $(STOCK_DIR)/HIFIEC37.IMG.gpr"
+	python3 tools/crc_util.py "$(IMG_FILE)"

@@ -3,6 +3,8 @@
  * Reconstructed from Ghidra decompilation of:
  *   hifi_flac_dec    @ 0x030df64c
  *   hifi_flac_helper @ 0x030df52a
+ *   flac_bitstream_getbits_u @ 0x030dd736
+ *   flac_bitstream_getbits_s @ 0x030dd6f6
  *   Source: ..\..\Common\Codec\Audio\HIFI\flac\hifi_flacdec.c
  *
  * Fixed-point FLAC decoder from Rockchip HIFI library.
@@ -220,4 +222,25 @@ int hifi_flac_dec(FLACFrameCtx *ctx, int channel_stride, int sample_count) {
     }
     
     return 0;
+}
+
+/*
+ * flac_bitstream_getbits_u @ 0x030dd736 — unsigned N-bit pull from FLAC bank reader.
+ * flac_bitstream_getbits_s @ 0x030dd6f6 — signed sibling (sign-extend).
+ */
+uint32_t flac_bitstream_getbits_u(void *br, int nbits)
+{
+    extern uint32_t rom_bitstream_read(uint32_t ctx, int nbits);
+    return rom_bitstream_read((uint32_t)(uintptr_t)br, nbits);
+}
+
+int32_t flac_bitstream_getbits_s(void *br, int nbits)
+{
+    uint32_t u = flac_bitstream_getbits_u(br, nbits);
+    if (nbits == 0)
+        return 0;
+    uint32_t sign = 1u << (nbits - 1);
+    if (u & sign)
+        return (int32_t)(u | (~0u << nbits));
+    return (int32_t)u;
 }

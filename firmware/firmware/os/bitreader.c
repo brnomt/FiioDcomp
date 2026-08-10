@@ -5,7 +5,10 @@
  *   bitreader_peek     @ 0x0301e724  (157-xref sibling cluster)
  *   bitreader_refill   @ 0x0301e760  (top xref unlabeled → now named)
  *   bitstream_getbits  @ 0x030b15ca
+ *   bitreader_get_u32_be @ 0x030f068c
  *   mp3_bitstream_getbits @ 0x0302837a
+ *   sbuf_read_bits     @ 0x030ce930  (segmented-buffer getbits)
+ *   sbuf_byte_at       @ 0x030c6984  (segmented-buffer random byte)
  */
 
 #include <stdint.h>
@@ -125,4 +128,103 @@ void memset_byte(uint8_t *dst, uint8_t val, uint32_t n)
         p += 2;
         *p = val;
     }
+}
+
+/* bitreader_get_u32_be @ 0x030f068c */
+uint32_t bitreader_get_u32_be(void *ctx)
+{
+    extern uint32_t bitreader_get_bits(void *ctx, uint32_t nbits);
+    uint32_t value = 0;
+    uint32_t remaining = 32;
+
+    do {
+        value = (value << 8) + bitreader_get_bits(ctx, 8);
+        remaining -= 8;
+    } while (remaining > 7);
+
+    value = (value << remaining) + bitreader_get_bits(ctx, remaining);
+    return (value >> 24) |
+           (((value & 0x00ffffffu) >> 16) << 8) |
+           (((value & 0x0000ffffu) >> 8) << 16) |
+           (value << 24);
+}
+
+/* saturate_s16 @ 0x030b38e0 */
+int32_t saturate_s16(int32_t value)
+{
+    if ((value >> 31) != (value >> 15))
+        return (value >> 31) ^ 0x7fff;
+    return (int16_t)value;
+}
+
+/*
+ * Segmented / scatter-buffer reader (linked nodes: next@+0xc, len@+8).
+ * Used by Huffman/prefix decoders that walk a chain of buffer segments.
+ */
+typedef struct SegNode {
+    uint8_t *base;
+    uint32_t off;
+    uint32_t len;            /* +8 */
+    struct SegNode *next;    /* +0xc */
+} SegNode;
+
+typedef struct {
+    uint32_t bitoff;         /* [0] bit offset within current byte */
+    uint8_t *ptr;            /* [1] */
+    int32_t rem;             /* [2] bytes remaining in segment (−1 = EOF) */
+    SegNode *seg;            /* [3] */
+    uint32_t _pad4;
+    uint32_t consumed;       /* [5] */
+} SegBitReader;
+
+typedef struct {
+    SegNode *head;           /* +0 */
+    SegNode *cur;            /* +4 */
+    uint8_t *data;           /* +8 */
+    int32_t base;            /* +0xc current segment base offset */
+    int32_t end;             /* +0x10 current segment end offset */
+} SegBuf;
+
+extern uint32_t sbuf_peek_bits(SegBitReader *br, int nbits); /* FUN_030ce7f0 */
+extern void sbuf_seek(SegBuf *sb, int pos);                  /* FUN_030c68b8 */
+
+/* sbuf_read_bits @ 0x030ce930 — peek then advance across segment chain */
+uint32_t sbuf_read_bits(SegBitReader *br, int nbits)
+{
+    uint32_t val = sbuf_peek_bits(br, nbits);
+    uint32_t bitpos = br->bitoff + (uint32_t)nbits;
+    br->bitoff = bitpos & 7;
+    int bytes = (int)(bitpos >> 3);
+    int rem = (int)br->rem - bytes;
+    br->rem = rem;
+    br->ptr += bytes;
+    while (rem <= 0) {
+        SegNode *n = br->seg ? br->seg->next : 0;
+        if (!n) {
+            if ((int)br->bitoff > rem * 8)
+                br->rem = -1;
+            break;
+        }
+        br->consumed += br->seg->len;
+        br->seg = n;
+        if ((int)n->len + rem > 0)
+            br->ptr = n->base + n->off - rem;
+        rem += (int)n->len;
+        br->rem = rem;
+    }
+    return val;
+}
+
+/* sbuf_byte_at @ 0x030c6984 — random-access byte in segmented buffer */
+uint8_t sbuf_byte_at(SegBuf *sb, int pos)
+{
+    if (pos < sb->end) {
+        SegNode *h = sb->head;
+        sb->end = 0;
+        sb->cur = h;
+        sb->base = (int32_t)h->off;
+        sb->data = h->base + h->len; /* +4 field used as data offset in binary */
+    }
+    sbuf_seek(sb, pos);
+    return sb->data[pos - sb->end];
 }

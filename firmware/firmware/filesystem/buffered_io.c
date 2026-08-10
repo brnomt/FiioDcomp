@@ -4,6 +4,8 @@
  *
  *   buffered_fread @ 0x030ae6b0  (85 xrefs)
  *   buffered_fseek @ 0x030ae61a  (76 xrefs)
+ *   buffered_fread_ovl_0e65 @ 0x030e6560  (FLAC bank twin)
+ *   buffered_fseek_ovl_0e64 @ 0x030e64ca
  */
 
 #include <stdint.h>
@@ -77,4 +79,18 @@ refill:
     bf->pos = 0;
     bf->end = 0;
     return 0;
+}
+
+/*
+ * Overlay twins in the FLAC codec bank — same 512-byte window protocol,
+ * relocated g_buf_read / g_buf_seek pointers.
+ */
+int buffered_fread_ovl_0e65(void *ptr, int size, int nmemb, BufferedFile *bf)
+{
+    return buffered_fread(ptr, size, nmemb, bf);
+}
+
+uint32_t buffered_fseek_ovl_0e64(BufferedFile *bf, int offset, uint32_t whence)
+{
+    return buffered_fseek(bf, offset, whence);
 }

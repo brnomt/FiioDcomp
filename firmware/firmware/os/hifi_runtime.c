@@ -66,6 +66,49 @@ void hifi_busy_delay(int param_1)
     } while (--u != 0);
 }
 
+/*
+ * Codec overlays carry byte-identical calibrated delay implementations with
+ * relocated clock globals. Keeping separate wrappers preserves IMG symbols.
+ */
+static void overlay_busy_delay(int ticks, uintptr_t clock, uint32_t divisor,
+                               uint32_t multiplier)
+{
+    uint32_t loops =
+        (uint32_t)(((uint64_t)multiplier *
+                    (uint64_t)((*(uint32_t *)(clock + 0x20) / divisor) *
+                               (uint32_t)ticks)) >>
+                   0x22);
+    while (loops != 0)
+        --loops;
+}
+
+#define DEFINE_OVERLAY_DELAY(name, clock_sym, div_sym, mul_sym) \
+    extern uintptr_t clock_sym;                                 \
+    extern uint32_t div_sym, mul_sym;                            \
+    void name(int ticks)                                        \
+    {                                                           \
+        overlay_busy_delay(ticks, clock_sym, div_sym, mul_sym); \
+    }
+
+DEFINE_OVERLAY_DELAY(hifi_busy_delay_ovl_0817,
+                     g_delay_0817_clock, g_delay_0817_div, g_delay_0817_mul)
+DEFINE_OVERLAY_DELAY(hifi_busy_delay_ovl_09e3,
+                     g_delay_09e3_clock, g_delay_09e3_div, g_delay_09e3_mul)
+DEFINE_OVERLAY_DELAY(hifi_busy_delay_ovl_0ab8,
+                     g_delay_0ab8_clock, g_delay_0ab8_div, g_delay_0ab8_mul)
+DEFINE_OVERLAY_DELAY(hifi_busy_delay_ovl_0bff,
+                     g_delay_0bff_clock, g_delay_0bff_div, g_delay_0bff_mul)
+DEFINE_OVERLAY_DELAY(hifi_busy_delay_ovl_0dc7,
+                     g_delay_0dc7_clock, g_delay_0dc7_div, g_delay_0dc7_mul)
+DEFINE_OVERLAY_DELAY(hifi_busy_delay_ovl_0e48,
+                     g_delay_0e48_clock, g_delay_0e48_div, g_delay_0e48_mul)
+DEFINE_OVERLAY_DELAY(hifi_busy_delay_ovl_0ed6,
+                     g_delay_0ed6_clock, g_delay_0ed6_div, g_delay_0ed6_mul)
+DEFINE_OVERLAY_DELAY(hifi_busy_delay_ovl_0f53,
+                     g_delay_0f53_clock, g_delay_0f53_div, g_delay_0f53_mul)
+DEFINE_OVERLAY_DELAY(hifi_busy_delay_ovl_0fd1,
+                     g_delay_0fd1_clock, g_delay_0fd1_div, g_delay_0fd1_mul)
+
 /* ipc_post_cmd @ 0x03073c7c — write opcode into slot bank */
 int ipc_post_cmd(uint32_t opcode, int slot, int bank)
 {
@@ -103,7 +146,17 @@ int ipc_post_arg(void *arg, int slot, int bank)
 void hifi_debug_printf(const char *fmt, ...)
 {
     /* Timestamp digit extraction + UART write — see Ghidra for full body.
-       Overlay twin: hifi_debug_printf_ovl @ 0x030ab6b6 */
+       Overlay twins: hifi_debug_printf_ovl @ 0x030ab6b6,
+       hifi_debug_printf_ovl_09e0 / _0dc5, hifi_debug_printf_sync_ovl_0e45 */
+    (void)fmt;
+}
+
+/*
+ * log_printf_ts @ 0x030ed3e6
+ * Alternate bank logger: "\r\n[B][<dotted-tick>]" + vsnprintf + UART write.
+ */
+void log_printf_ts(const char *fmt, ...)
+{
     (void)fmt;
 }
 

@@ -1,9 +1,13 @@
 # Echo Mini Firmware — Module Reference
 
-## Labeled Functions (Ghidra custom-named grows each pass; ~2,175 `FUN_*` remain)
+## Labeled Functions (Ghidra custom-named grows each pass; ~2,258 total)
 
 Phase goal: convert the entire IMG to C. Progress is tracked by custom-named
-count vs total (~2,256). New C files land under `firmware/` as symbols are named.
+count vs total. New C files land under `firmware/` as symbols are named.
+
+**Boundary repair pending (do not trust oversized decomp bodies):**
+`hifi_busy_delay_ovl_09e3`, `_0fd1`, `_0e48` — Ghidra body starts ~0xb00 before entry.
+Needs `delete_function` + `create_function` at the true entry when approved.
 
 ### Entry & Init
 | Name | Address | Tags |
@@ -28,16 +32,39 @@ count vs total (~2,256). New C files land under `firmware/` as symbols are named
 | `dac_gain_curve_apply` | `0x030098e4` | audio, volume (**was** `os_delay_ms`) |
 | `MediaLib_thunk_GetFiles` | `0x03012838` | media (**was** `debug_printf`) |
 | `hifi_busy_delay` | `0x0306c2e8` | os, utility |
+| `hifi_busy_delay_ovl_0817` | `0x0308175c` | os, overlay |
+| `hifi_busy_delay_ovl_09e3` | `0x0309e334` | os, overlay (**body unsound**) |
+| `hifi_busy_delay_ovl_0ab8` | `0x030ab880` | os, overlay |
+| `hifi_busy_delay_ovl_0bff` | `0x030bff80` | os, overlay |
+| `hifi_busy_delay_ovl_0dc7` | `0x030dc734` | os, overlay |
+| `hifi_busy_delay_ovl_0e48` | `0x030e4808` | os, overlay (**body unsound**) |
+| `hifi_busy_delay_ovl_0ed6` | `0x030ed650` | os, overlay |
+| `hifi_busy_delay_ovl_0f53` | `0x030f5360` | os, overlay |
+| `hifi_busy_delay_ovl_0fd1` | `0x030fd100` | os, overlay (**body unsound**) |
 | `hifi_debug_printf` | `0x0306c07e` | os, utility |
 | `hifi_debug_printf_ovl` | `0x030ab6b6` | os, utility |
+| `hifi_debug_printf_ovl_09e0` | `0x0309e078` | os, overlay |
+| `hifi_debug_printf_ovl_0dc5` | `0x030dc56a` | os, overlay |
+| `hifi_debug_printf_sync_ovl_0e45` | `0x030e454c` | os, overlay |
+| `log_printf_ts` | `0x030ed3e6` | os, logging |
 | `hifi_memmove` | `0x0306d330` | os, utility |
 | `memset_byte` | `0x030bfa36` | os, utility |
+| `modinv_u32` | `0x0308fb94` | os, math |
+| `softfloat_dmul_a` | `0x030f6622` | os, softfloat |
+| `softfloat_dmul_b` | `0x030fe3c2` | os, softfloat |
+| `softfloat_dadd_a` | `0x030f6a66` | os, softfloat |
+| `softfloat_dadd_b` | `0x030fe806` | os, softfloat |
+| `sbuf_read_bits` | `0x030ce930` | os, bitstream, sbuf |
+| `sbuf_byte_at` | `0x030c6984` | os, bitstream, sbuf |
 | `ipc_post_cmd` | `0x03073c7c` | os, ipc |
 | `ipc_post_arg` | `0x03073ca8` | os, ipc |
 | `bitreader_peek` | `0x0301e724` | os, bitstream |
 | `bitreader_refill` | `0x0301e760` | os, bitstream |
 | `bitstream_getbits` | `0x030b15ca` | os, bitstream |
 | `bitstream_getbits_be` | `0x03070b0c` | os, bitstream |
+| `bitstream_getbits_be_ovl_01c7` | `0x0301c7dc` | os, bitstream |
+| `bitreader_get_u32_be` | `0x030f068c` | os, bitstream |
+| `saturate_s16` | `0x030b38e0` | os, math |
 | `mp3_bitstream_getbits` | `0x0302837a` | os, bitstream, mp3 |
 | `MediaLib_GetTotalFiles` | `0x03000f94` | media, library |
 | `MediaLib_GetTotalFiles_b` | `0x03000fb0` | media, library |
@@ -53,6 +80,8 @@ count vs total (~2,256). New C files land under `firmware/` as symbols are named
 |------|---------|------|
 | `HifiFileSeek` | `0x0306b8e6` | fs |
 | `HifiFileRead` | `0x0306b94c` | fs |
+| `HifiFileWrite` | `0x0306b9bc` | fs |
+| `HifiFileClose` | `0x0306ba1e` | fs |
 | `HifiFileSeek_ovl` | `0x03080e96` | fs, overlay |
 | `HifiFileRead_ovl` | `0x03080efc` | fs, overlay |
 | `AudioFileInput2` | `0x0306dac4` | fs, audio |
@@ -64,6 +93,8 @@ count vs total (~2,256). New C files land under `firmware/` as symbols are named
 | `FLAC_FileGetSeekInfo` | `0x0306e24a` | fs, flac |
 | `buffered_fread` | `0x030ae6b0` | fs, buffer |
 | `buffered_fseek` | `0x030ae61a` | fs, buffer |
+| `buffered_fread_ovl_0e65` | `0x030e6560` | fs, buffer, overlay |
+| `buffered_fseek_ovl_0e64` | `0x030e64ca` | fs, buffer, overlay |
 
 ### Codec — MP3
 | Name | Address | Tags |
@@ -75,6 +106,13 @@ count vs total (~2,256). New C files land under `firmware/` as symbols are named
 | Name | Address | Tags |
 |------|---------|------|
 | `wma_audio_parse` | `0x0308cddc` | codec, wma |
+| `wma_memcmp` | `0x0308283c` | codec, wma |
+| `wma_memmove` | `0x030827ca` | codec, wma |
+| `wma_memset` | `0x0308280a` | codec, wma |
+| `wma_memclr` | `0x03082818` | codec, wma |
+| `wma_input_cache_read` | `0x03083d48` | codec, wma |
+| `wma_bitreader_getbits` | `0x03084970` | codec, wma |
+| `wma_floor_log2` | `0x030842cc` | codec, wma |
 
 ### Codec — AAC/M4A
 | Name | Address | Tags |
@@ -89,6 +127,8 @@ count vs total (~2,256). New C files land under `firmware/` as symbols are named
 |------|---------|------|
 | `hifi_flac_dec` | `0x030df64c` | codec, flac |
 | `hifi_flac_helper` | `0x030df52a` | codec, flac |
+| `flac_bitstream_getbits_u` | `0x030dd736` | codec, flac, bitstream |
+| `flac_bitstream_getbits_s` | `0x030dd6f6` | codec, flac, bitstream |
 
 ### Codec — WAV
 | Name | Address | Tags |
@@ -107,6 +147,8 @@ count vs total (~2,256). New C files land under `firmware/` as symbols are named
 |------|---------|------|
 | `APE_Codec_Open` | `0x030eef60` | codec, ape |
 | `ape_scan_cuesheet` | `0x0301dcb8` | codec, ape |
+| `ape_rom_read_thunk` | `0x0301d670` | codec, ape, fs |
+| `ape_rom_seek_thunk` | `0x0301d678` | codec, ape, fs |
 | `DSD_BufferReady` | `0x030ff2d8` | codec, dsd |
 | `DSD_IFF_Open` | `0x030ff2e8` | codec, dsd |
 | `DSD_DecodeBlock` | `0x030ffa3c` | codec, dsd |

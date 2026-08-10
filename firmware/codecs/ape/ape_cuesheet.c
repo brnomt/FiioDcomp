@@ -21,7 +21,8 @@ typedef struct {
     uint32_t window[0x100]; /* [9+] scratch */
 } ApeCueCtx;
 
-extern uint32_t ape_fill_window(uint32_t *dst, uint32_t want, uint32_t arg);
+extern uint32_t ape_rom_read_thunk(uint32_t *dst, uint32_t want, int8_t fd);
+extern uint32_t ape_rom_seek_thunk(int32_t offset, uint8_t whence, int8_t fd);
 extern uint32_t ape_tell(uint32_t *io);
 
 uint32_t ape_scan_cuesheet(ApeCueCtx *ctx)
@@ -39,7 +40,7 @@ uint32_t ape_scan_cuesheet(ApeCueCtx *ctx)
             fr = (uint32_t *)((uint8_t *)ctx + ctx->buf_pos + 0x24);
             ctx->buf_pos += 0x10;
         } else {
-            want = ape_fill_window(ctx->window, 0x400, ctx->_1);
+            want = ape_rom_read_thunk(ctx->window, 0x400, (int8_t)ctx->_1);
             if (want < 0x10)
                 return 2;
             g_ape_meta[7] = want;
