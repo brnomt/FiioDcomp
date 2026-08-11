@@ -32,7 +32,8 @@ Reverse engineering notes, documentation, tooling, patches, and clean-room imple
 
 Function naming status in Ghidra (v3.7.0, live): **852 / 2,776 functions named (30.7%)**
 Decompiled to pseudocode: **2,764 / 2,776** (see `build/all_decompilations.json`)
-Exported to C: **3,477 files under `firmware/`**
+Exported to C: **3,477 files under `firmware/`** (394 named + 2,597 unidentified + SDK reference)
+Compilable (named tree): **327 / 394 (83%)** — see `docs/c-cleanup-status.md` for the deep-cleanup backlog
 
 Run `python tools/check_decompilation_status.py` for a live status from Ghidra.
 
