@@ -9,6 +9,8 @@
  */
 
 #include <stdint.h>
+#include "decomp_support.h"
+#include "decomp_globals.h"
 
 typedef struct {
     uint8_t  window[0x200];

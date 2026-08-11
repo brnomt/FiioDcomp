@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/codecs/dsd/dsd_dec.c
  * Reconstructed from Ghidra decompilation of:

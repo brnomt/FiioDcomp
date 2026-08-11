@@ -12,6 +12,8 @@
  */
 
 #include <stdint.h>
+#include "decomp_support.h"
+#include "decomp_globals.h"
 
 typedef struct {
     uint32_t cache;       /* [0] current bit cache */

@@ -4,9 +4,18 @@
  * Auto-exported from Ghidra decompilation
  */
 
-void wma_memclr(undefined4 param_1,undefined4 param_2)
-
-{
-  wma_memset(param_1,param_2,0);
-  return;
+#include "decomp_support.h"
+#include "decomp_globals.h"
+
+
+void wma_memclr(undefined4 param_1,undefined4 param_2)
+
+
+
+{
+
+  wma_memset(param_1,param_2,0);
+
+  return;
+
 }

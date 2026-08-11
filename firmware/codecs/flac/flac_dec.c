@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/codecs/flac/flac_dec.c
  * Reconstructed from Ghidra decompilation of:

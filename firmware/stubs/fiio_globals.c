@@ -5,6 +5,8 @@
  */
 
 #include <stdint.h>
+#include "decomp_support.h"
+#include "decomp_globals.h"
 
 /* entry.c */
 typedef struct {

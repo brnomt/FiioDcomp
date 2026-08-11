@@ -8,6 +8,8 @@
  */
 
 #include <stdint.h>
+#include "decomp_support.h"
+#include "decomp_globals.h"
 
 extern void firmware_entry(uint16_t *param);
 

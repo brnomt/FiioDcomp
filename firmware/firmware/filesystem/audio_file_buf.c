@@ -13,6 +13,8 @@
  */
 
 #include <stdint.h>
+#include "decomp_support.h"
+#include "decomp_globals.h"
 
 extern uint32_t HifiFileRead(uint32_t buf, uint32_t len, uint8_t fd);
 extern uint8_t  HifiFileSeek(uint32_t offset, uint32_t whence, uint8_t fd);

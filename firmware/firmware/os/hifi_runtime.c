@@ -15,6 +15,8 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+#include "decomp_support.h"
+#include "decomp_globals.h"
 
 extern uint32_t g_tick_scale_a; /* DAT_0306c364.. */
 extern uint32_t g_tick_scale_b;

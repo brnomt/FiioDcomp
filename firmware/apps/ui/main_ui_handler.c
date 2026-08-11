@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/apps/ui/main_ui_handler.c
  * Reconstructed from Ghidra decompilation of:

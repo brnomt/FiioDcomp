@@ -3,13 +3,26 @@
  * Structural-matcher sweep (post-boundary-repair, module-validated).
  */
 
-/* WARNING: Control flow encountered bad instruction data */
-
-void record_shell_help(void)
-
-{
-  record_ui_helper();
-  FUN_033936b0();
-                    /* WARNING: Bad instruction - Truncating control flow here */
-  halt_baddata();
+#include "decomp_support.h"
+#include "decomp_globals.h"
+
+
+/* WARNING: Control flow encountered bad instruction data */
+
+
+
+void record_shell_help(void)
+
+
+
+{
+
+  record_ui_helper();
+
+  FUN_033936b0();
+
+                    /* WARNING: Bad instruction - Truncating control flow here */
+
+  halt_baddata();
+
 }

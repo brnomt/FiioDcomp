@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/apps/bluetooth/bt_handler.c
  * Reconstructed from Ghidra decompilation of BT_Music_Handler @ 0x0300ddea

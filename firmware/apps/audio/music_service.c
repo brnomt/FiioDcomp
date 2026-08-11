@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/apps/audio/music_service.c
  * Reconstructed from Ghidra decompilation of MusicService_Init @ 0x0302a3e0

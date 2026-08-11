@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * Weak ROM API stubs for host compile / link tests.
  * Not used on device when calls resolve to boot ROM @ 0x02FE0000.

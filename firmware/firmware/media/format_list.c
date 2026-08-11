@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/firmware/media/format_list.c
  * Reconstructed from Ghidra decompilation of FormatList_Init @ 0x03013c10

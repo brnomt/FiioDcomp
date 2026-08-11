@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/firmware/os/entry.c
  * Reconstructed from Ghidra decompilation of firmware v3.7.0

@@ -21,6 +21,8 @@
 #include <stddef.h>
 
 #include "fs_layer.h"
+#include "decomp_support.h"
+#include "decomp_globals.h"
 
 extern int ipc_post_cmd(uint32_t opcode, int slot, int bank);
 extern int ipc_post_arg(void *arg, int slot, int bank);

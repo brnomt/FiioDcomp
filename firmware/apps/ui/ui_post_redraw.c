@@ -4,9 +4,18 @@
  * Auto-exported from Ghidra decompilation
  */
 
-void ui_post_redraw(void)
-
-{
-  FUN_02ff05f0(0x172);
-  return;
+#include "decomp_support.h"
+#include "decomp_globals.h"
+
+
+void ui_post_redraw(void)
+
+
+
+{
+
+  FUN_02ff05f0(0x172);
+
+  return;
+
 }

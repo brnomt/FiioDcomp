@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/apps/audio/music_init.c
  * Reconstructed from Ghidra decompilation of MusicInit @ 0x0302b9d8

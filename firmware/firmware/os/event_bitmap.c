@@ -11,6 +11,8 @@
  */
 
 #include <stdint.h>
+#include "decomp_support.h"
+#include "decomp_globals.h"
 
 extern uint32_t *g_event_flags; /* DAT_030738bc */
 

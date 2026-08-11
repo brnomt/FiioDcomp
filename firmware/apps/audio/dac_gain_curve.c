@@ -12,6 +12,8 @@
  */
 
 #include <stdint.h>
+#include "decomp_support.h"
+#include "decomp_globals.h"
 
 extern uint32_t g_gain_scale_k; /* DAT_03009ce0 */
 

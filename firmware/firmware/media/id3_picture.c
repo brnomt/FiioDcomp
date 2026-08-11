@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/firmware/media/id3_picture.c
  * Reconstructed from Ghidra decompilation of:

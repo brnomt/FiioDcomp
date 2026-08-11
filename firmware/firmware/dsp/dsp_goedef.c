@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/firmware/dsp/dsp_goedef.c
  * Reconstructed from Ghidra decompilation of:

@@ -1,3 +1,5 @@
+#include "decomp_support.h"
+#include "decomp_globals.h"
 /*
  * firmware/apps/ui/bromem_sel_key_menu.c
  * Reconstructed from Ghidra decompilation of:
