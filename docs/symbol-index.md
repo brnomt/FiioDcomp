@@ -173,6 +173,24 @@ Needs `delete_function` + `create_function` at the true entry when approved.
 | `hifi_flac_helper` | `0x030df52a` | codec, flac |
 | `flac_bitstream_getbits_u` | `0x030dd736` | codec, flac, bitstream |
 | `flac_bitstream_getbits_s` | `0x030dd6f6` | codec, flac, bitstream |
+| `flac_bs_bswap32` | `0x030dd6d0` | codec, flac, bitstream |
+| `flac_clz32` | `0x030dd956` | codec, flac, util |
+| `flac_bs_getbits_u` | `0x030dd842` | codec, flac, bitstream |
+| `flac_bs_init` | `0x030dd888` | codec, flac, bitstream |
+| `flac_bs_getbits_s` | `0x030df3ae` | codec, flac, bitstream |
+| `flac_bs_getbits_u_wide` | `0x030df46c` | codec, flac, bitstream |
+| `flac_frame_header_parse` | `0x030df30e` | codec, flac, parser |
+| `flac_decode_subframe` | `0x030ded62` | codec, flac, decoder |
+| `flac_decode_frame` | `0x030df9fa` | codec, flac, decoder |
+| `flac_decode_residual` | `0x030def58` | codec, flac, decoder |
+| `flac_lpc_compute` | `0x030ddd0a` | codec, flac, lpc |
+| `flac_hifi_cfg_write` | `0x030de824` | codec, flac, hifi |
+| `flac_hifi_ctrl_clear` | `0x030e0920` | codec, flac, hifi |
+| `flac_hifi_ctrl_set` | `0x030e0936` | codec, flac, hifi |
+
+*FLAC decoder internals named via changelog-anchored lineage (v3.6.0
+introduced them = FLAC decoder rewrite per changelog + string diff).
+Exported to `firmware/codecs/flac/`.*
 
 ### Codec — WAV
 | Name | Address | Tags |
