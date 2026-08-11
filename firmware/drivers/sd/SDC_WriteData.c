@@ -1,11 +1,9 @@
 /**
  * SDC_WriteData @ 0x030f0384
- * Tags: sd, storage
- * Auto-exported from Ghidra decompilation
+ * SDK-matched (structural+combined, documented in MULTI-VERSION-PLAN §10).
  */
 
-
-void FUN_030f0384(void)
+void SDC_WriteData(void)
 
 {
   int iVar1;
@@ -28,6 +26,4 @@ void FUN_030f0384(void)
     iVar3 = iVar3 + 1;
   } while (iVar3 < 3);
   return;
-}
-
-
+}

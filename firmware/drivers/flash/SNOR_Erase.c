@@ -1,11 +1,9 @@
 /**
  * SNOR_Erase @ 0x030264dc
- * Tags: flash, storage
- * Auto-exported from Ghidra decompilation
+ * SDK-matched (structural+combined, documented in MULTI-VERSION-PLAN §10).
  */
 
-
-undefined4 FUN_030264dc(int param_1,undefined4 param_2)
+undefined4 SNOR_Erase(int param_1,undefined4 param_2)
 
 {
   int iVar1;
@@ -16,7 +14,7 @@ undefined4 FUN_030264dc(int param_1,undefined4 param_2)
   if (param_1 * 0x10 == -1) {
     return 0;
   }
-  iVar1 = FUN_03026d80(DAT_03026560);
+  iVar1 = mbedtls_dhm_self_test(DAT_03026560);
   if (iVar1 == 0) {
     FUN_03021cc4(unaff_r4 + 0xc,unaff_r4 + 0x10,*(undefined4 *)(unaff_r4 + 0x1c),
                  *(undefined4 *)(unaff_r4 + 0x20));
@@ -28,6 +26,4 @@ undefined4 FUN_030264dc(int param_1,undefined4 param_2)
     }
   }
   return 0;
-}
-
-
+}

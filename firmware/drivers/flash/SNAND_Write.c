@@ -1,15 +1,13 @@
 /**
  * SNAND_Write @ 0x03019246
- * Tags: flash, storage
- * Auto-exported from Ghidra decompilation
+ * SDK-matched (structural+combined, documented in MULTI-VERSION-PLAN §10).
  */
 
-
 /* WARNING: Control flow encountered bad instruction data */
 /* WARNING: Possible PIC construction at 0x03019274: Changing call to branch */
 /* WARNING: Removing unreachable block (ram,0x03019278) */
 
-void FUN_03019246(void)
+void SNAND_Write(void)
 
 {
   int iVar1;
@@ -28,6 +26,4 @@ void FUN_03019246(void)
   FUN_02ffcf3a();
                     /* WARNING: Bad instruction - Truncating control flow here */
   halt_baddata();
-}
-
-
+}

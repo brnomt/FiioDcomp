@@ -1,11 +1,9 @@
 /**
  * UartDevShellBspSetStopB @ 0x030506b0
- * Tags: uart, config
- * Auto-exported from Ghidra decompilation
+ * SDK-matched (structural+combined, documented in MULTI-VERSION-PLAN §10).
  */
 
-
-void FUN_030506b0(undefined4 param_1,undefined4 param_2)
+void UartDevShellBspSetStopB(undefined4 param_1,undefined4 param_2)
 
 {
   byte bVar1;
@@ -82,6 +80,4 @@ void FUN_030506b0(undefined4 param_1,undefined4 param_2)
   }
   *DAT_0303fe14 = 2;
   return;
-}
-
-
+}

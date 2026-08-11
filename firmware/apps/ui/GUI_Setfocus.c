@@ -1,13 +1,11 @@
 /**
  * GUI_Setfocus @ 0x0308cb4c
- * Tags: ui, gui
- * Auto-exported from Ghidra decompilation
+ * SDK-matched (structural+combined, documented in MULTI-VERSION-PLAN §10).
  */
 
-
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-undefined4 FUN_0308cb4c(uint *param_1)
+undefined4 GUI_Setfocus(uint *param_1)
 
 {
   byte bVar1;
@@ -68,6 +66,4 @@ undefined4 FUN_0308cb4c(uint *param_1)
     return 4;
   }
   return 3;
-}
-
-
+}

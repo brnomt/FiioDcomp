@@ -1,11 +1,9 @@
 /**
  * SDC_Init @ 0x03004612
- * Tags: sd, init
- * Auto-exported from Ghidra decompilation
+ * SDK-matched (structural+combined, documented in MULTI-VERSION-PLAN §10).
  */
 
-
-undefined4 FUN_03004612(int *param_1)
+undefined4 SDC_Init(int *param_1)
 
 {
   ushort uVar1;
@@ -40,12 +38,10 @@ LAB_030046ce:
         sVar2 = 8;
         goto LAB_030046ce;
       }
-      iVar4 = FUN_03004338();
+      iVar4 = MsgDevSuspend();
     }
     if (iVar4 == -1) {
       return 0xffffffff;
     }
   } while( true );
-}
-
-
+}
