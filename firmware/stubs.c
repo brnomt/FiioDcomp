@@ -113,12 +113,7 @@ uint32_t SysTickPeriodSet2 __attribute__((used));
 uint32_t System_Power_On __attribute__((used));
 uint32_t TaskID2Str __attribute__((used));
 uint32_t ValidSysDisk __attribute__((used));
-uint32_t __CPU_IntDefaultHandler2 __attribute__((used));
-uint32_t __RESETFAULTMASK2 __attribute__((used));
-uint32_t __RESETPRIMASK2 __attribute__((used));
-uint32_t __SETFAULTMASK2 __attribute__((used));
-uint32_t __SETPRIMASK2 __attribute__((used));
-uint32_t __WFI2 __attribute__((used));
+/* (these ARM intrinsics are real functions — see below) */
 uint32_t bb_printf1 __attribute__((used));
 uint32_t bt_a2dp_connect __attribute__((used));
 uint32_t chip_freq __attribute__((used));
@@ -227,3 +222,12 @@ void IntMasterEnable(void)
 {
     __asm volatile("cpsie i" ::: "memory");
 }
+
+/* ---- ARM intrinsics the SDK calls as functions (real impls) ----
+ * Replaces the zeroed VARIABLES that previously collided with these names.
+ * __CPU_IntDefaultHandler2 is the real fault handler in firmware/fault.c. */
+__attribute__((naked)) void __SETPRIMASK2(void)     { __asm__ volatile("cpsid i; bx lr"); }
+__attribute__((naked)) void __RESETPRIMASK2(void)   { __asm__ volatile("cpsie i; bx lr"); }
+__attribute__((naked)) void __SETFAULTMASK2(void)   { __asm__ volatile("cpsid f; bx lr"); }
+__attribute__((naked)) void __RESETFAULTMASK2(void) { __asm__ volatile("cpsie f; bx lr"); }
+__attribute__((naked)) void __WFI2(void)            { __asm__ volatile("wfi; bx lr"); }
