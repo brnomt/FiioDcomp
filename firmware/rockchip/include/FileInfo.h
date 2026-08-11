@@ -22,5 +22,5 @@ extern FILE_INFO FileInfo[];
 
 /* HANDLE — generic handle type (AudioControl.c casts with it) */
 #ifndef HANDLE
-typedef void *HANDLE;
+typedef int8 HANDLE;
 #endif
