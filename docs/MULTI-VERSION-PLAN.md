@@ -7,8 +7,8 @@
 > `docs/changelog-string-diff.md` before doing anything. This file exists so
 > the process is never lost.
 >
-> **Last updated:** Aug 2026 · v1.7.0 analysis complete (90 names); **next up: 1.6.2**.
-> 1.7.0→1.8.0 had a relink shift (31/32 moved); 14-hop chain to v3.7 at
+> **Last updated:** Aug 2026 · v1.6.2 analysis complete (92 names); **next up: 1.5.0**.
+> 1.6.2→1.7.0 had a relink shift (27/32 moved); 15-hop chain to v3.7 at
 > threshold 0.9 without offset check.
 
 ---
@@ -267,7 +267,8 @@ no dedup possible.** There are no regional variants with identical section 3.
 | **2.4.0** | ✅ | `sec3_2_4_0.bin` | 1,639 | **89** | 73 direct (≥0.9) + 73 chainN 12-hop (combo ≥0.9, no offset); saved |
 | **1.8.0** | ✅ | `sec3_1_8_0.bin` | 1,580 | **89** | 74 direct (≥0.9) + 74 chainN 13-hop (combo ≥0.9, no offset); saved |
 | **1.7.0** | ✅ | `sec3_1_7_0.bin` | 1,573 | **90** | 78 direct (≥0.9) + 78 chainN 14-hop (combo ≥0.9, no offset); saved |
-| 1.6.2 | ▶ | — | — | — | **NEXT** — extract `sec3_1_6_2.bin`, chain 1.6→…→3.7 (15 hops) |
+| **1.6.2** | ✅ | `sec3_1_6_2.bin` | 1,549 | **92** | 78 direct (≥0.9) + 78 chainN 15-hop (combo ≥0.9, no offset); saved |
+| 1.5.0 | ▶ | — | — | — | **NEXT** — extract `sec3_1_5_0.bin`, chain 1.5→…→3.7 (16 hops) |
 | 3.2.0 | ⬜ | — | — | — | — |
 | 3.1.0 | ⬜ | — | — | — | — |
 | 3.0.0 | ⬜ | — | — | — | — |
@@ -412,6 +413,22 @@ edited modules.
 - Main code 43.5% changed; 513,747 small diff regions (relink fixups).
 - Changelog symbols all show ~4KB changed windows → **addresses moved**, so
   never assume v3.7 Ghidra addresses apply to v3.8.
+
+### ✅ 1.6.2→1.7.0 pair (done Aug 2026 session)
+
+**Relink shift (27/32 segments changed).**
+
+- Fuzzy match 1.6.2 vs 1.7.0: 1,073 matches; 403 ≥0.9; 81 named targets.
+- Direct renames (threshold 0.9): **78 applied**.
+- Chain 15 (chainN): **78 applied** (combo ≥0.9) — `wma_floor_log2`,
+  `event_set`, `ipc_post_cmd/arg`, `hifi_busy_delay`, etc.
+- **v1.6.2 now has 92 named / 1,549 functions (5.9%)** — was 0 before.
+
+**Ghidra program state (saved Aug 2026):** 17 programs — add `sec3_1_6_2.bin`
+(v1.6.2, 1,549 funcs, **92 named**) to the table above.
+
+Rename history: `build/cross_version_renames_log.json` (keys include
+`sec3_1_6_2.bin.chainN`).
 
 ### ✅ 1.7.0→1.8.0 pair (done Aug 2026 session)
 
