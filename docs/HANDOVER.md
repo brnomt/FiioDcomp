@@ -255,6 +255,44 @@ exports), `firmware/rockchip_wireless/` (259 MB — wrong SDK, Wireless V1.5).
 
 ---
 
+## 8b. QEMU GUI dev harness (use this before flashing!)
+
+Iterate the ReChord GUI in QEMU instead of flash-testing every build.
+
+**Why:** QEMU 11 mps2-an385/an511 have the CLCD/LCD as "unimplemented"
+(no GUI); vexpress-a9 PL111 is real but bare-metal boot is painful;
+the lm3s6965evb OLED (ssd0323) is wired via a pl022 whose SPI master
+mode QEMU does not implement. **The working path is framebuffer-in-RAM:**
+
+1. Harness (`firmware/qemu/qemu_gui_menu.c`) draws into RAM @ 0x20000000
+   (128x64 RGB565) on lm3s6965evb.
+2. Run in QEMU with a TCP monitor.
+3. `tools/render_qemu_fb.py` reads the RAM via monitor `x` and renders PNG.
+
+```bash
+arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -Os -nostdlib   -T firmware/qemu/qemu_ld_test.ld firmware/qemu/qemu_gui_menu.c   -o build/qemu_gui_menu.elf
+arm-none-eabi-objcopy -O binary build/qemu_gui_menu.elf build/qemu_gui_menu.bin
+python tools/render_qemu_fb.py --bin build/qemu_gui_menu.bin --out build/gui.png
+```
+
+**Key gotchas:**
+- lm3s6965evb RAM is 64KB @ 0x20000000-0x2000FFFF — SP must be inside
+  (use 0x2000FC00), not 0x20010000 (overflows -> code never runs).
+- `-kernel` loads the vector table at 0x00000000 (flash). QEMU boots M3
+  from the vector table: [0]=SP, [1]=reset, rest=handlers.
+- The monitor `x` output is "ADDR: 0xVAL ..." — parse only after ':'.
+- Font tables as C arrays get optimized into memcpy — provide a local
+  memcpy or compile with -fno-builtin.
+- Windows newline trap: writing `
+` inside a C string via python
+  heredoc produces a literal LF and breaks the string. Fix with byte
+  replace (b"\n").
+
+**Harness files** (`firmware/qemu/`): qemu_gui_fb.c (color boxes, works),
+qemu_gui_menu.c (menu w/ title bar + cursor + status bar, works),
+qemu_ui_lm3s.c (pl022/OLED attempt — blocked by QEMU model),
+qemu_test1.c/qemu_probe.c (mps2 probes), qemu_ld_test.ld.
+
 ## 9. Flash safety rules (device is the user's ONLY one)
 
 1. **Official method only:** copy IMG to internal storage root, remove TF,
