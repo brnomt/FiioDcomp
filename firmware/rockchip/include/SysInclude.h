@@ -3,7 +3,7 @@
 *                   Copyright (C),2004-2015, Fuzhou Rockchip Electronics Co.,Ltd.
 *                         All rights reserved.
 *
-* File Name£º   SysInclude.h
+* File Nameï¿½ï¿½   SysInclude.h
 * 
 * Description:  
 *
@@ -29,6 +29,8 @@
 #include "Macro.h"
 #include "global.h"
 #include "debug.h"
+#include "driverlib_def.h"
+#include "armcc_compat.h"
 
 #include "backlight.h"
 #include "LcdInclude.h"

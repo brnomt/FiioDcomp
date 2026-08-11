@@ -1,16 +1,10 @@
-/* DriverInclude.h — Driver layer includes (DAC, SD, I2C, SPI, UART).
- * Auto-created for SDK build (Aug 2026).
- */
+/* DriverInclude.h — driver layer master include.
+ * The SDK driver sources (cru2.c, dma2.c, interrupt2.c...) expect the
+ * SoC register definitions here. */
 #ifndef DRIVERINCLUDE_H
 #define DRIVERINCLUDE_H
 
 #include "typedef.h"
-
-#include "dac.h"
-#include "sd.h"
-#include "i2c.h"
-#include "spi.h"
-#include "uart.h"
-
+#include "driverlib_def.h"
 
 #endif /* DRIVERINCLUDE_H */

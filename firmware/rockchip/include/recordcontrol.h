@@ -11,3 +11,11 @@ API void RecordControl_Start(void);
 API void RecordControl_Stop(void);
 
 #endif /* RECORDCONTROL_H */
+
+/* ---- Recorder encode types ---- */
+#ifndef RECORDCONTROL_ENCODE
+#define RECORDCONTROL_ENCODE
+#define RECORD_ENCODE_TYPE_PCM  0
+#define RECORD_ENCODE_TYPE_WAV  1
+#define RECORD_ENCODE_TYPE_REV  2
+#endif

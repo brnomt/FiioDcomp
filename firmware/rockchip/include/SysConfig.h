@@ -52,3 +52,16 @@
 #define FIRMWARE_PATCH  0
 
 #endif /* SYSCONFIG_H */
+
+/* ---- Codec type constants (Main2.c) ---- */
+#ifndef SYSCONFIG_CODEC
+#define SYSCONFIG_CODEC
+#define CODEC_MP3_DEC   1
+#define CODEC_WMA_DEC   2
+#define CODEC_AAC_DEC   3
+#define CODEC_FLAC_DEC  4
+#define CODEC_APE_DEC   5
+#define CODEC_OGG_DEC   6
+#define CODEC_WAV_DEC   7
+#define CODEC_DSD_DEC   8
+#endif

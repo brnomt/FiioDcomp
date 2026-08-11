@@ -78,46 +78,9 @@ void Delay100cyc2(UINT32 count)
   desc:         ORG
 --------------------------------------------------------------------------------
 */
-__asm void ASMDelay2(uint32 i)
+void ASMDelay2(uint32 i)
 {
-ASMDelayxx
-	SUBS    R0, R0, #1
-	BHI     ASMDelayxx
-	BX      LR
-}
-
-
-void DelayUs2(UINT32 us)
-{
-    uint32 SysFreq;
-    volatile uint32 i;
-
-    SysFreq = chip_freq2.stclk_cal_core / 1000000;
-    i = (SysFreq*us)/5;
-
-	if(i)
-        ASMDelay2(i);
-}
-
-/*
---------------------------------------------------------------------------------
-  Function name : void DelayMs(UINT32 mSec)
-  Author        : yangwenjie
-  Description   : how many ms that software will to delay 
-                  
-  Input         : 
-  Return        : нч
-
-  History:     <author>         <time>         <version>       
-             yangwenjie       2008-1-15          Ver1.0
-  desc:         ORG
---------------------------------------------------------------------------------
-*/
-void DelayMs2(UINT32 ms)
-{
-    ms *= chip_freq2.hclk_cal_core / (1000 * 3);
-
-    while (--ms);
+    __asm__ volatile("subs r0, r0, #1; bhi .-4; bx lr");
 }
 /*
 --------------------------------------------------------------------------------
