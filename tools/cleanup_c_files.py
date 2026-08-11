@@ -81,6 +81,10 @@ def collect_globals(files: list[Path]) -> tuple[set[str], set[str], set[str]]:
         # Ghidra RAM/register globals: uRam, bRam, wRam, dRam, g_* named globals
         oths.update(re.findall(r"\b[uUbBwWdDqQ]Ram[0-9a-fA-F]{6,}", text))
         oths.update(re.findall(r"\bg_[a-zA-Z0-9_]+", text))
+        # Ghidra stack variables and misc symbols
+        oths.update(re.findall(r"\bstack0x[0-9a-fA-F]+", text))
+        oths.update(re.findall(r"\b_[A-Za-z][A-Za-z0-9_]*_[0-9a-fA-F]{6}", text))
+        oths.update(re.findall(r"\bReserved\d+\b", text))
     return dats, funs, strs, oths
 
 
@@ -137,9 +141,13 @@ def write_globals_h(dats, funs, strs, oths, defined_addrs) -> None:
         lines.append(f'extern char {s}[] __attribute__((weak));')
     lines.append("")
     lines.append("/* uRam/…/g_*: Ghidra RAM registers and named globals */")
+    # exclude globals that already have a real definition in the tree
+    defined_names = set(defined_addrs.values())
     for o in sorted(oths):
-        if o.startswith(("uRam", "bRam", "wRam", "dRam", "qRam")):
+        if o.startswith(("uRam", "bRam", "wRam", "dRam", "qRam", "stack0x")):
             lines.append(f'extern uint32_t {o} __attribute__((weak));')
+        elif o in defined_names:
+            continue  # real definition exists elsewhere
         else:
             lines.append(f'extern int {o} __attribute__((weak));')
     lines.append("")

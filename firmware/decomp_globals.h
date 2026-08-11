@@ -1550,6 +1550,12 @@ extern char s_totalFmfile____d_0300162c[] __attribute__((weak));
 extern char s_vorbis_030243d0[] __attribute__((weak));
 
 /* uRam/…/g_*: Ghidra RAM registers and named globals */
+extern int Reserved2 __attribute__((weak));
+extern int _DAT_0300fe __attribute__((weak));
+extern int _DAT_030ad6 __attribute__((weak));
+extern int _DAT_030adb __attribute__((weak));
+extern int _DAT_e000e0 __attribute__((weak));
+extern int _FUN_030056 __attribute__((weak));
 extern int g_afb __attribute__((weak));
 extern int g_afb_file_size __attribute__((weak));
 extern int g_afb_filled __attribute__((weak));
@@ -1767,6 +1773,30 @@ extern int g_wav_fd_slot __attribute__((weak));
 extern int g_wav_read __attribute__((weak));
 extern int g_wav_seek __attribute__((weak));
 extern int g_wma_bit_masks __attribute__((weak));
+extern uint32_t stack0x00000000 __attribute__((weak));
+extern uint32_t stack0x0000000c __attribute__((weak));
+extern uint32_t stack0x0000001c __attribute__((weak));
+extern uint32_t stack0x00000048 __attribute__((weak));
+extern uint32_t stack0x00000078 __attribute__((weak));
+extern uint32_t stack0x00000150 __attribute__((weak));
+extern uint32_t stack0x0000015c __attribute__((weak));
+extern uint32_t stack0x00000160 __attribute__((weak));
+extern uint32_t stack0x000001e0 __attribute__((weak));
+extern uint32_t stack0x00000200 __attribute__((weak));
+extern uint32_t stack0x00000201 __attribute__((weak));
+extern uint32_t stack0x00000220 __attribute__((weak));
+extern uint32_t stack0x00000244 __attribute__((weak));
+extern uint32_t stack0x00000248 __attribute__((weak));
+extern uint32_t stack0x00000250 __attribute__((weak));
+extern uint32_t stack0x00000400 __attribute__((weak));
+extern uint32_t stack0x00000600 __attribute__((weak));
+extern uint32_t stack0x00000700 __attribute__((weak));
+extern uint32_t stack0x00000738 __attribute__((weak));
+extern uint32_t stack0x00000740 __attribute__((weak));
+extern uint32_t stack0x00000748 __attribute__((weak));
+extern uint32_t stack0x0000074c __attribute__((weak));
+extern uint32_t stack0x00000754 __attribute__((weak));
+extern uint32_t stack0xffffffb9 __attribute__((weak));
 extern uint32_t uRam0301d750 __attribute__((weak));
 
 #endif /* DECOMP_GLOBALS_H */
