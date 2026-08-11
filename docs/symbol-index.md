@@ -187,6 +187,17 @@ Needs `delete_function` + `create_function` at the true entry when approved.
 | `flac_hifi_cfg_write` | `0x030de824` | codec, flac, hifi |
 | `flac_hifi_ctrl_clear` | `0x030e0920` | codec, flac, hifi |
 | `flac_hifi_ctrl_set` | `0x030e0936` | codec, flac, hifi |
+| `media_lib_service_dispatch` | `0x03029730` | media, service |
+| `media_lib_op_cmd01` / `_cmd04` / `_cmd08` / `_cmd10` / `_cmd18` / `_cmd20` / `_cmd40` / `_cmd80` | `0x030295d0` / `0x030295fc` / `0x03029628` / `0x03029654` / `0x03029680` / `0x030296ac` / `0x030296d8` / `0x03029704` | media, service |
+| `media_lib_op_dispatch_core` | `0x03029246` | media, service |
+| `OGG_Picture_Parser` | `0x030241f8` | codec, ogg, tags |
+| `wma_input_read` | `0x0308c9a4` | codec, wma |
+| `wma_debug_helper` | `0x0309fe6a` | codec, wma |
+
+*Media-library service + OGG picture parser + WMA helpers above named via
+changelog-anchored lineage (introduced in v3.5.0 — album sorting / Favorites
+resume). Exported to `firmware/firmware/media/`, `firmware/codecs/ogg/`,
+`firmware/codecs/wma/`.*
 
 *FLAC decoder internals named via changelog-anchored lineage (v3.6.0
 introduced them = FLAC decoder rewrite per changelog + string diff).
