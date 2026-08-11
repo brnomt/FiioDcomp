@@ -42,3 +42,10 @@ typedef struct _FIND_DATA {
 #define FS_96000Hz   96000
 #define FS_192000Hz  192000
 #endif
+
+/* MAX_FILENAME_LEN (AudioControl.h) */
+#ifndef FSINCLUDE_NAME
+#define FSINCLUDE_NAME
+#define MAX_FILENAME_LEN   256
+#define MAX_PATH_LEN       512
+#endif

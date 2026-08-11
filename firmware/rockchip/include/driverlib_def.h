@@ -79,7 +79,6 @@ typedef struct {
 #define SYS_CRU_BASE             RKNANO_CRU_BASE
 #define SYS_INTC_BASE            RKNANO_INTC_BASE
 
-#endif /* DRIVERLIB_DEF_H */
 
 /* ---- CRU clock gate / soft-reset enums (cru2.c) ---- */
 #ifndef DRIVERLIB_CRU_ENUMS
@@ -111,16 +110,208 @@ typedef enum {
 } eSOFT_RST;
 #endif
 
-/* ---- CPU frequency type (Delay2.c) ---- */
+/* ---- CPU frequency calibration struct (Delay2/systick2) ---- */
 #ifndef DRIVERLIB_FREQ
 #define DRIVERLIB_FREQ
-typedef enum {
-    CHIP_FREQ_24M = 0,
-    CHIP_FREQ_48M,
-    CHIP_FREQ_96M,
-    CHIP_FREQ_120M,
-    CHIP_FREQ_144M,
-    CHIP_FREQ_192M,
-    CHIP_FREQ_MAX
+typedef struct tagCHIP_FREQ {
+    uint32 pll;             /* PLL frequency (Hz) */
+    uint32 armFreq;         /* ARM core freq */
+    uint32 hclk_cal_core;   /* HCLK calibration count */
+    uint32 stclk_cal_core;  /* SysTick calibration count */
+    uint32 sdramFreq;
 } chip_freq_t;
+extern chip_freq_t chip_freq2;
 #endif
+
+/* ================= DMA (DesignWare DW_ahb_dma) ================= */
+#define RKNANO_DMAC_BASE    0x40010000UL
+
+typedef struct tagDMA_LLP {
+    volatile uint32_t SAR;      /* source address */
+    volatile uint32_t DAR;      /* dest address */
+    volatile uint32_t LLP;      /* linked list pointer (next LLP) */
+    volatile uint32_t CTLL;     /* control low */
+    volatile uint32_t CTLH;     /* control high */
+    volatile uint32_t SSTAT;    /* source status */
+    volatile uint32_t DSTAT;    /* dest status */
+    volatile uint32_t SSTAR;    /* source status addr */
+    volatile uint32_t DSTAR;    /* dest status addr */
+    volatile uint32_t RESERVED[3];
+    volatile uint32_t CFGL;     /* config low */
+    volatile uint32_t CFGH;     /* config high */
+    volatile uint32_t SIZE;     /* transfer size (used by dma2.c) */
+} DMA_LLP;
+
+typedef DMA_LLP *pDMA_LLP;  /* pointer to LLP entry (SDK indexes pllplist[i]) */
+
+typedef struct {
+    volatile uint32_t SAR;      /* +0x00 source address */
+    volatile uint32_t DAR;      /* +0x04 dest address */
+    volatile uint32_t LLP;      /* +0x08 linked list */
+    volatile uint32_t CTL_L;    /* +0x0C control low */
+    volatile uint32_t CTL_H;    /* +0x10 control high */
+    volatile uint32_t SSTAT;    /* +0x14 */
+    volatile uint32_t DSTAT;    /* +0x18 */
+    volatile uint32_t SSTAR;    /* +0x1C */
+    volatile uint32_t DSTAR;    /* +0x20 */
+    volatile uint32_t RESERVED[3]; /* +0x24..0x2C */
+    volatile uint32_t CFG_L;    /* +0x30 config low */
+    volatile uint32_t CFG_H;    /* +0x34 config high */
+    volatile uint32_t SIZE;     /* +0x38 transfer size */
+} DMA_CHANNEL;
+
+typedef struct {
+    volatile uint32_t ChEnReg;      /* +0x00 channel enable */
+    volatile uint32_t ChEnWeReg;    /* +0x04 channel enable write */
+    volatile uint32_t ClearTfr;     /* +0x08 clear transfer */
+    volatile uint32_t StatusTfr;    /* +0x0C transfer status */
+    volatile uint32_t ClearBlock;   /* +0x10 */
+    volatile uint32_t StatusBlock;  /* +0x14 */
+    volatile uint32_t ClearSrcTran; /* +0x18 */
+    volatile uint32_t StatusSrcTran;/* +0x1C */
+    volatile uint32_t ClearDstTran; /* +0x20 */
+    volatile uint32_t StatusDstTran;/* +0x24 */
+    volatile uint32_t ClearErr;     /* +0x28 */
+    volatile uint32_t StatusErr;    /* +0x2C */
+    volatile uint32_t StatusInt;    /* +0x30 */
+    volatile uint32_t MaskTfr;      /* +0x34 transfer mask */
+    volatile uint32_t MaskBlock;    /* +0x38 */
+    volatile uint32_t MaskSrcTran;  /* +0x3C */
+    volatile uint32_t MaskDstTran;  /* +0x40 */
+    volatile uint32_t MaskErr;      /* +0x44 */
+    volatile uint32_t MaskInt;      /* +0x48 */
+    volatile uint32_t ClearInt;     /* +0x4C */
+    volatile uint32_t DmaCfgReg;    /* +0x50 DMA config */
+    volatile uint32_t DmaCfgWeReg;  /* +0x54 */
+    DMA_CHANNEL CHANNEL[8];         /* +0x58 channels */
+} RKNANO_DMA;
+
+#define DmaReg2  ((volatile RKNANO_DMA *)RKNANO_DMAC_BASE)
+
+/* DMA states */
+#define DMA_IDLE    0
+#define DMA_BUSY    1
+
+/* CFGL bits */
+#define B_CFGL_FIFO_EMPTY   0x00000008
+#define B_CFGL_CH_SUSP      0x00000004
+#define B_CTLL_LLP_SRC_EN   0x00000008
+#define B_CTLL_LLP_DST_EN   0x00000004
+#define B_CTLL_SRC_TR_WIDTH_MASK 0x00000070
+#define B_CTLL_DST_TR_WIDTH_MASK 0x00000700
+
+/* ---- DMA config parameter (pDMA_CFGX) ---- */
+typedef struct {
+    volatile uint32_t CFGL;
+    volatile uint32_t CFGH;
+    volatile uint32_t CTLL;
+    volatile uint32_t CTLH;
+    volatile uint32_t dma_mode;
+} DMA_CFGX;
+
+typedef DMA_CFGX *pDMA_CFGX;
+
+/* ---- generic return codes ---- */
+#ifndef RETURN_OK
+#define RETURN_OK   0
+#define RETURN_ERROR (-1)
+#endif
+
+/* ================= NVIC / SysTick (Cortex-M3 SCB) ================= */
+#define RKNANO_SCB_BASE     0xE000E000UL
+#define RKNANO_SYSTICK_BASE 0xE000E010UL
+
+typedef struct {
+    volatile uint32_t Ctrl;        /* +0x00 */
+    volatile uint32_t Reload;      /* +0x04 */
+    volatile uint32_t Value;       /* +0x08 */
+    volatile uint32_t Calibration; /* +0x0C */
+} RKNANO_SYSTICK;
+
+typedef struct {
+    volatile uint32_t CPUID;       /* +0x00 */
+    volatile uint32_t ICSR;        /* +0x04 */
+    volatile uint32_t VTOR;        /* +0x08 */
+    volatile uint32_t AIRCR;       /* +0x0C */
+    volatile uint32_t SCR;         /* +0x10 */
+    volatile uint32_t CCR;         /* +0x14 */
+    volatile uint32_t SHPR[3];     /* +0x18 */
+    volatile uint32_t SHCSR;       /* +0x24 */
+    volatile uint32_t CFSR;        /* +0x28 */
+    volatile uint32_t HFSR;        /* +0x2C */
+    volatile uint32_t DFSR;        /* +0x30 */
+    volatile uint32_t MMFAR;       /* +0x34 */
+    volatile uint32_t BFAR;        /* +0x38 */
+    volatile uint32_t AFSR;        /* +0x3C */
+    RKNANO_SYSTICK SysTick;        /* +0x40 (0xE000E010) */
+    volatile uint32_t RESERVED[52];
+    volatile uint32_t NVIC_ISER[8];   /* +0x100 */
+    volatile uint32_t NVIC_ICER[8];   /* +0x180 */
+    volatile uint32_t NVIC_ISPR[8];   /* +0x200 */
+    volatile uint32_t NVIC_ICPR[8];   /* +0x280 */
+    volatile uint32_t NVIC_IABR[8];   /* +0x300 */
+    volatile uint32_t RESERVED2[56];
+    volatile uint32_t NVIC_IPR[60];   /* +0x400 */
+} RKNANO_NVIC;
+
+#define nvic  ((volatile RKNANO_NVIC *)RKNANO_SCB_BASE)
+
+/* SysTick control bits */
+#define NVIC_SYSTICKCTRL_ENABLE     0x00000001
+#define NVIC_SYSTICKCTRL_TICKINT    0x00000002
+#define NVIC_SYSTICKCTRL_CLKSOURCE  0x00000004
+#define NVIC_SYSTICKCTRL_CLKIN      0x00000000
+#define NVIC_SYSTICKCTRL_COUNTFLAG  0x00010000
+#define NVIC_SYSTICKCALIB_NOREF     0x80000000
+#define NVIC_SYSTICKCALIB_SKEW      0x40000000
+#define NVIC_SYSTICKCALIB_TEMMS_MASK 0x00FFFFFF
+
+/* DMA block sizes + interrupt enable */
+#ifndef DRIVERLIB_DMA_EXTRA
+#define DRIVERLIB_DMA_EXTRA
+#define DMA_MAX_BLOCK_SIZE  0x1000   /* 4KB per block */
+#define LLP_BLOCK_SIZE      0x1000
+#define B_CTLL_INT_EN       0x00000001
+#endif
+
+/* DMA address increment modes (DW ahb-dma CTLL) */
+#ifndef DRIVERLIB_DMA_INC
+#define DRIVERLIB_DMA_INC
+#define B_CTLL_SINC_MASK    0x00000300
+#define B_CTLL_SINC_INC     0x00000000
+#define B_CTLL_SINC_DEC     0x00000100
+#define B_CTLL_DINC_MASK    0x00000C00
+#define B_CTLL_DINC_INC     0x00000000
+#define B_CTLL_DINC_DEC     0x00000400
+#endif
+
+#ifndef NULL
+#define NULL  ((void *)0)
+#endif
+
+#endif /* DRIVERLIB_DEF_H */
+
+/* ================= GRF (General Register File) ================= */
+#ifndef DRIVERLIB_GRF
+#define DRIVERLIB_GRF
+#define RKNANO_GRF_BASE     0x400C0000UL
+
+typedef struct {
+    volatile uint32_t GRF_GPIO0_DIR;        /* +0x00 */
+    volatile uint32_t GRF_GPIO0_DR;         /* +0x04 */
+    volatile uint32_t GRF_GPIO0_DDR;        /* +0x08 */
+    volatile uint32_t GRF_GPIO0_SR;         /* +0x0C */
+    volatile uint32_t GRF_GPIO0_SL;         /* +0x10 */
+    volatile uint32_t GRF_GPIO0_SMT;        /* +0x14 */
+    volatile uint32_t GRF_GPIO0_IE;         /* +0x18 */
+    volatile uint32_t GRF_GPIO0_E;          /* +0x1C */
+    volatile uint32_t GRF_SOC_CON[16];      /* +0x20 SoC control */
+    volatile uint32_t GRF_SOC_STATUS[16];   /* +0x60 SoC status */
+    volatile uint32_t GRF_SOC_USB_STATUS;    /* USB status (Hook.c) */
+    volatile uint32_t GRF_IOFUNC_CON[16];   /* +0xA0 pin mux */
+    volatile uint32_t GRF_IOFUNC_STATUS[16];/* +0xE0 */
+} RKNANO_GRF;
+
+#define Grf  ((volatile RKNANO_GRF *)RKNANO_GRF_BASE)
+
+#endif /* DRIVERLIB_GRF */
