@@ -272,3 +272,57 @@ Container magic: `g_dwDictMagicVaT` @ `0x0304fd4c` ('VaT '), `g_dwDictMagicVAT` 
 | `FW_Ansi2Unicode` | `0x030c4dec` | encoding, conversion |
 | `APEV1_Parse` | `0x030cb34a` | codec, ape, tags |
 | `SDC_WriteData` | `0x030f0384` | sd, storage |
+
+### v3.4.0 Cross-Version Names (Aug 2026, program `sec3_3_4_0.bin`)
+
+104 functions named via 3.4.0→3.5.0 fuzzy match (73 direct ≥0.9) +
+3-hop chain 3.4→3.5→3.6→3.7 (39, combo ≥0.7, offset-ok). Addresses are
+v3.4.0 addresses (imported at base 0x03000000).
+
+| Name | Address (v3.4.0) | Tags |
+|------|------------------|------|
+| `dac_gain_curve_apply` | `0x030096f4` | audio, dac, volume |
+| `AmrFunction` | `0x0300dafc` | codec, amr |
+| `RKDeviceUnRegister` | `0x03009d00` | system, device |
+| `SDDecodeCSD` | `0x030175f2` | sd, config |
+| `pbuf_free` | `0x0302145a` | network, pbuf |
+| `cmd_wifi_tcp_server` | `0x03028a02` | network, wifi |
+| `USBGetRxFIFOIntType` | `0x03027428` | usb, dma |
+| `my_bui_clz` | `0x03026530` | util, bit |
+| `CodeResume` | `0x0301fa9c` | codec, state |
+| `udp_server` | `0x0302af84` | network, udp |
+| `IsrDisable2` | `0x03087db0` | system, irq |
+| `UsbAdpterProbe` | `0x03087fa4` | usb, init |
+| `mbedtls_havege_random` | `0x0304c942` | crypto, rng |
+| `StartCASystem` | `0x03050348` | crypto, ca |
+| `FmFreqToChan` | `0x0306af18` | audio, fm |
+| `hifi_busy_delay` | `0x0306c038` | util, delay |
+| `hifi_memmove` | `0x0306d080` | util, memory |
+| `wma_memcmp` | `0x0308258c` | codec, wma |
+| `FatDev_PrevDir` | `0x030825a6` | fs, fat |
+| `DmaConfig_for_LLP2` | `0x03083cac` | dma, config |
+| `DmaReConfig2` | `0x03083cfa` | dma, config |
+| `wma_floor_log2` | `0x0308401c` | codec, wma |
+| `Unicode2Ascii2` | `0x03087808` | encoding, conversion |
+| `Unicode2Ascii` | `0x0308783e` | encoding, conversion |
+| `modinv_u32` | `0x0308f8e4` | util, math |
+| `FsIsLongName` | `0x030a21cc` | fs, utility |
+| `SetSPIFreq` | `0x030a286c` | flash, spi |
+| `buffered_fseek` | `0x030ae36a` | fs, io |
+| `find_option` | `0x030b4714` | util, parser |
+| `aac_aac_dec` | `0x030ad3e0` | codec, aac |
+| `aac_movfile_parser` | `0x030ae8e0` | codec, aac, parser |
+| `AudioFileOpen` | `0x030aeed2` | audio, file |
+| `AudioFileMhSeek2` | `0x0306dc14` | audio, file |
+| `AudioControlTask_Enter` | `0x03085274` | audio, task |
+| `ReadFDTInfo` | `0x0306e6e0` | fs, fat |
+| `DICTDECODER_InitStream` | `0x0304f894` | codec, dict |
+| `OGGInfo_Parse` | `0x030c885c` | codec, ogg |
+| `rkos_memory_malloc` | `0x030c9128` | os, heap |
+| `FW_Ansi2UnicodeStr` | `0x030c9950` | encoding, conversion |
+| `rkos_memory_free` | `0x030c9a2c` | os, heap |
+| `printchar` | `0x030c9e4e` | os, logging |
+| `RecordStop` | `0x030adbd4` | recording |
+| `event_set` | `0x03073590` (×8 sites) | os, event |
+| `ipc_post_cmd` / `ipc_post_arg` | `0x030739cc` / `0x030739f8` (×9 sites) | os, ipc |
+| `hifi_busy_delay_ovl_0817` / `_09e3` / `_0bff` | `0x030814ac` / `0x0309e084` / `0x030bfcd0` | util, delay |

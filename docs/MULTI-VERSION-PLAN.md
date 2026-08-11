@@ -7,8 +7,10 @@
 > `docs/changelog-string-diff.md` before doing anything. This file exists so
 > the process is never lost.
 >
-> **Last updated:** Aug 2026 · 3.5.0→3.6.0 analysis complete (75 names in v3.5.0);
-> per-version checklist added — **next up: 3.4.0**.
+> **Last updated:** Aug 2026 · v3.4.0 analysis complete (104 names); **next up: 3.3.0**.
+> v3.4.0 used a NEW 3-level chain (`tools/chain3_propagate_names.py`) since names
+> must travel v3.4→v3.5→v3.6→v3.7 (the old 2-level chain script only reaches
+> v3.6's ~29 names).
 
 ---
 
@@ -254,8 +256,8 @@ no dedup possible.** There are no regional variants with identical section 3.
 | **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **651** | primary: decompiled + exported to C |
 | **3.6.0** | 🟨 | `sec3_3_6_0.bin` (Cortex) | 2,217 | **29** | fuzzy match vs 3.7.0 (9 renames); orphan `sec3_3_6_0.bin.0` to ignore |
 | **3.5.0** | ✅ | `sec3_3_5_0.bin` | 1,726 | **75** | 3.5→3.6→3.7 chain done (54 chained + 9 direct, 13 weak reverted) |
-| **3.4.0** | ▶ | `sec3_3_4_0.bin` (TODO) | — | — | **NEXT** — start here tomorrow |
-| 3.3.0 | ⬜ | — | — | — | — |
+| **3.4.0** | ✅ | `sec3_3_4_0.bin` | 1,712 | **104** | 73 direct (≥0.9) + 39 chain3 (combo ≥0.7, offset-ok); saved |
+| 3.3.0 | ▶ | — | — | — | **NEXT** — extract `sec3_3_3_0.bin`, chain 3.3→3.4→3.5→3.7 |
 | 3.2.0 | ⬜ | — | — | — | — |
 | 3.1.0 | ⬜ | — | — | — | — |
 | 3.0.0 | ⬜ | — | — | — | — |
@@ -291,7 +293,7 @@ For **X.Y.Z** (target: the NEXT version back, e.g. 3.4.0 when 3.5.0 is done):
 
 **Apply names (Ghidra running)**
 - [ ] `python tools/apply_cross_version_names.py sec3_X_Y_Z.bin --matches build/fuzzy_match_vXY_vXZ.json --threshold 0.9`
-- [ ] `python tools/chain_propagate_names.py --old-match build/fuzzy_match_vXY_vXZ.json --new-match build/fuzzy_match_v<newer>_<newest>.json --program sec3_X_Y_Z.bin --require-offset --threshold 0.7` (verify the printed auto-delta is sane)
+- [ ] `python tools/chain3_propagate_names.py --m45 build/fuzzy_match_vXY_vXZ.json --m56 build/fuzzy_match_v<prev>_vXY.json --m67 build/fuzzy_match_v<next>_v<newer>.json --program sec3_X_Y_Z.bin --threshold 0.7 --require-offset` (N-hop chain from target back to v3.7; add more match files for versions older than 3.4 — see section 9) (verify the printed per-hop deltas look sane)
 - [ ] `python tools/revert_weak_chain_names.py --old-match build/fuzzy_match_vXY_vXZ.json --new-match build/fuzzy_match_v<newer>_<newest>.json --program sec3_X_Y_Z.bin --min-chain 0.6`
 - [ ] **`save_program` immediately**
 
@@ -401,6 +403,71 @@ edited modules.
 - Changelog symbols all show ~4KB changed windows → **addresses moved**, so
   never assume v3.7 Ghidra addresses apply to v3.8.
 
+### ✅ 3.4.0→3.5.0 pair (done Aug 2026 session)
+
+**String diff 3.3.0→3.4.0 (what v3.4.0 ADDED):**
+- **Button-mode strings**: `Double click volume` @ 0x03728324, `Short press
+  volume` @ 0x03728222, `Button Switching` @ 0x0372A86E (v3.4 changelog:
+  Button Modes A/B ✓) — these live in the UI resource region (0x037xxxxx),
+  no code xrefs (gotcha 8), and were renamed away by v3.7's Button C Mode.
+- **DSD/dff debug strings**: `NO.%d frame dsdiff read frame err!` @
+  0x030F68C0, `dff seek_fail` @ 0x030F68E8 (DSD region).
+
+**Segment table diff 3.4.0→3.5.0:** **0/32 segments changed** — identical
+memory layout (same as 3.5→3.6). Addresses are very stable across
+3.4.0→3.5.0→3.6.0.
+
+**Bulk fuzzy match 3.4.0 vs 3.5.0:** 1,132 matches; 404 ≥0.9; 97 matched to
+named targets (71 @ score 1.0).
+
+**Direct renames (threshold 0.9): 73 applied** — `aac_movfile_parser`,
+`aac_aac_dec`, `OGGInfo_Parse`, `DICTDECODER_InitStream`, `event_set`,
+`ipc_post_cmd/arg`, `hifi_busy_delay`, `hifi_memmove`, `wma_memcmp`,
+`dac_gain_curve_apply` @ 0x030096F4 (volume cluster anchored!),
+`buffered_fseek`, `find_option`, `SDDecodeCSD`, `AmrFunction`, `pbuf_free`,
+`CodeResume`, `my_bui_clz`, `USBGetRxFIFOIntType`, `cmd_wifi_tcp_server`,
+`udp_server`, `mbedtls_havege_random`, `StartCASystem`, `IsrDisable2`,
+`UsbAdpterProbe`, `FmFreqToChan`, `wma_floor_log2`, `Unicode2Ascii(2)`,
+`modinv_u32`, `FsIsLongName`, `SetSPIFreq`, `FatDev_PrevDir`,
+`DmaConfig_for_LLP2`, `DmaReConfig2`, `RKDeviceUnRegister`, etc.
+
+**Chain propagation — NEW 3-LEVEL CHAIN (`tools/chain3_propagate_names.py`):**
+- The old `chain_propagate_names.py` only chains 2 hops (v3.4→v3.5→v3.6) and
+  harvests names from the 2nd match's targets — that only reaches v3.6's ~29
+  names (0 applied). Names live in v3.7 (651), so v3.4 needs a 3-hop chain:
+  v3.4→v3.5 (`fuzzy_match_v34_v35.json`) → v3.6 (`fuzzy_match_v35_v36.json`)
+  → v3.7 (`fuzzy_match_v36_v8m_full.json`).
+- Per-hop deltas auto-computed from dominant hi-conf deltas: 45 = -0x3000078
+  (v3.5 imported at base 0), 56 = +0x3000268, 67 = +0xc0.
+- 314 v3.4 funcs chained to named v3.7 targets; **153 offset-ok** (all 3 hops
+  same physical location); **114 combo ≥0.7; 39 applied with
+  `--threshold 0.7 --require-offset`** (e.g. `AudioControlTask_Enter`,
+  `AudioFileOpen`, `AudioFileMhSeek2`, `ReadFDTInfo`, `RecordStop`,
+  `DICTDECODER_InitStream`, `aac_aac_dec`, `aac_movfile_parser`, `OGGInfo_Parse`,
+  `mbedtls_havege_random`, `StartCASystem`, `pbuf_free`, `buffered_fseek`,
+  `find_option`, `hifi_busy_delay`, `wma_memcmp`, `FW_Ansi2UnicodeStr`,
+  `rkos_memory_malloc/free`, `printchar`, `modinv_u32`, `Unicode2Ascii`,
+  `event_set`, `ipc_post_cmd/arg`, `DmaConfig_for_LLP2`, `DmaReConfig2`,
+  `hifi_busy_delay_ovl_*`).
+- **v3.4.0 now has 104 named / 1,712 functions (6.1%)** — was 0 before.
+- UI key handlers (`MainUI_KeyHandler`, `BroMemSelKeyMenu_Handler`) do NOT
+  chain to v3.4: v3.7's Button C Mode rewrote them. The volume cluster is
+  anchored anyway via `dac_gain_curve_apply` @ 0x030096F4.
+
+**Ghidra program state (saved Aug 2026):** 5 programs in the project —
+
+| Program | Version | Funcs | Named | Notes |
+|---------|---------|------:|------:|-------|
+| `section_3_0x00081A14.bin` | v3.7.0 | 2,776 | **651** | primary program (decomp/export source) |
+| `sec3_3_6_0.bin` | v3.6.0 (Cortex) | 1,592–2,217 | ~25 | 9 renames |
+| `sec3_3_6_0.bin.0` | v3.6.0 (v8-m) | 0 | 0 | ORPHAN duplicate — close/ignore |
+| `sec3_3_5_0.bin` | v3.5.0 | 1,726–1,728 | **75** | 9 direct + 54 chained |
+| `sec3_3_4_0.bin` | v3.4.0 (v8-m, base 0x03000000) | 1,712 | **104** | 73 direct + 39 chain3 |
+
+Rename history: `build/cross_version_renames_log.json` (keys include
+`sec3_3_4_0.bin.chained`). Reopen with `tools/open_all_programs.py` after any
+Ghidra restart.
+
 ### ✅ 3.5.0→3.6.0 pair (done Aug 2026 session)
 
 **String diff 3.5.0→3.6.0 (`tools/string_diff_versions.py 3.5.0 3.6.0`):**
@@ -483,8 +550,9 @@ All saved to the Ghidra project. Rename history (re-apply after a restart):
 | `import_into_ghidra.py` | POST `/import_file` a sec3 bin with language + base |
 | `run_bulk_match.py` | Wrapper around `/bulk_fuzzy_match` (parses dict response, saves) |
 | `apply_cross_version_names.py` | Rename matches in the OLD program from NEW names (fixed `matches` key + per-program log) |
-| `chain_propagate_names.py` | v3.5→v3.6→v3.7 chain name propagation; auto-computes the src→tgt addr delta, filters on `min(direct,chain)` combo score, switches program first, `--require-offset` |
+| `chain3_propagate_names.py` | **NEW** 3-hop chain (v3.4→v3.5→v3.6→v3.7): auto-delta per hop, offset-ok = all 3 hops same physical location, combo = min of 3 link scores; 39 names applied to v3.4.0 |
 | `revert_weak_chain_names.py` | Undo chained names whose v3.6→v3.7 chain score < 0.6 (matcher floor is unreliable) |
+| `chain3_propagate_names.py` | **NEW** 3-hop chain (v3.4→v3.5→v3.6→v3.7): per-hop auto-delta, offset-ok = all 3 hops same physical location, combo = min of 3 link scores; 39 names applied to v3.4.0 (extend for 4+ hops for older versions) |
 | `open_all_programs.py` / `close_program.py` / `manage_programs.py` | Open/close/switch Ghidra programs |
 | `wait_analysis.py` | Poll `/analysis_status` until a program finishes analyzing |
 | `check_close_schema2.py` | Inspect close/switch/save params |
@@ -541,37 +609,35 @@ python tools/collect_new_names.py
 **Done so far:** 3.6.0 imported + matched vs 3.7.0 (118 matches, 38 ≥0.9, 9
 renames applied). 3.5.0 imported + matched vs 3.6.0 (1,141 matches, 406 ≥0.9;
 9 direct + 67 chained renames applied, **13 weak-chain reverted**;
-**75 named**). All programs saved to the Ghidra project.
+**75 named**). 3.4.0 imported + matched vs 3.5.0 (1,132 matches, 404 ≥0.9;
+73 direct + 39 chain3 renames applied; **104 named**). All programs saved to
+the Ghidra project.
 
-Note: the chain script's default filter now gates on `min(direct, chain)`
-(combo) — a re-run with `--threshold 0.7` would apply 53, not 67; the 13
-reverted names are the difference.
-
-1. **Continue backwards to 3.4.0.** Same recipe as 3.5.0:
-   - Extract: `python tools/extract_sec3_for_ghidra.py 3.4.0`
-   - Import: `python tools/import_into_ghidra.py build/sec3_3_4_0.bin --language
-     ARM:LE:32:v8-m --base 0x03000000` (v8-m matches v3.7 language)
-   - Wait: `python tools/wait_analysis.py 3_4_0` then `save_program`
-   - String diff: `python tools/string_diff_versions.py 3.4.0 3.5.0 --limit 30`
-   - Segment diff: `python tools/segment_table_diff.py 3.4.0 3.5.0`
-   - Match: `python tools/run_bulk_match.py sec3_3_4_0.bin sec3_3_5_0.bin
-     --filter FUN_ --threshold 0.5 --out fuzzy_match_v34_v35.json`
-   - Apply direct: `python tools/apply_cross_version_names.py sec3_3_4_0.bin
-     --matches build/fuzzy_match_v34_v35.json --threshold 0.9`
-   - Chain: `python tools/chain_propagate_names.py --old-match
-     build/fuzzy_match_v34_v35.json --new-match build/fuzzy_match_v35_v36.json
-     --program sec3_3_4_0.bin --require-offset --threshold 0.7` (auto-computes
-     the delta for that pair; verify the printed delta looks sane)
-   - Revert weak chain names: `python tools/revert_weak_chain_names.py
-     --old-match build/fuzzy_match_v34_v35.json --new-match
-     build/fuzzy_match_v35_v36.json --program sec3_3_4_0.bin --min-chain 0.6`
+1. **Continue backwards to 3.3.0.** Same recipe as 3.4.0, but the chain is
+   now FOUR hops: 3.3→3.4→3.5→3.6→3.7. Extend `chain3_propagate_names.py`
+   (or write `chain4`) with the extra match file; per-hop deltas auto-compute:
+   - Extract: `python tools/extract_sec3_for_ghidra.py 3.3.0`
+   - Import: `python tools/import_into_ghidra.py build/sec3_3_3_0.bin --language
+     ARM:LE:32:v8-m --base 0x03000000`
+   - Wait: `python tools/wait_analysis.py 3_3_0` then `save_program`
+   - String diff: `python tools/string_diff_versions.py 3.3.0 3.4.0 --limit 30`
+   - Segment diff: `python tools/segment_table_diff.py 3.3.0 3.4.0`
+   - Match: `python tools/run_bulk_match.py sec3_3_3_0.bin sec3_3_4_0.bin
+     --filter FUN_ --threshold 0.5 --out fuzzy_match_v33_v34.json`
+   - Apply direct: `python tools/apply_cross_version_names.py sec3_3_3_0.bin
+     --matches build/fuzzy_match_v33_v34.json --threshold 0.9`
+   - Chain 4: `python tools/chain3_propagate_names.py --m45
+     build/fuzzy_match_v33_v34.json --m56 build/fuzzy_match_v34_v35.json
+     --m67 build/fuzzy_match_v35_v36.json --program sec3_3_3_0.bin
+     --threshold 0.7 --require-offset` (NOTE: rename the args generically,
+     or add a 4th match; the v3.6→v3.7 names come from a separate final hop
+     — see how 3.4.0 needed v36→v37 as the 4th file).
    - **SAVE immediately after renames.**
-2. **Paso 3 — Changelog anchoring** for 3.5.0→3.6.0 (from the 3.6.0 changelog:
-   M4A album sort, Favorites freeze, TF media lib):
-   - The FLAC rewrite is the big one — `flac_bitstream_getbits_s` and friends
-     in v3.5.0 @ 0x000003e8+ region map to v3.7 `hifi_flac_dec` cluster.
-   - M4A album sort → `aac_movfile_parser` (v3.5.0 @ 0x000ae868) + album sort UI.
-   - Name matched-but-changed clusters; propagate via call graph.
+2. **Paso 3 — Changelog anchoring** for 3.3.0 (DSD ID3 display NOT DFF;
+   Favorites cleared by media-lib update; other):
+   - DSD ID3 → `DSD_IFF_Open` / `DSD_DecodeBlock` cluster (v3.7 @ 0x030FF2E8 /
+     0x030FFA3C); check if it chains down.
+   - Favorites clearing → media library / Favorites cluster.
 3. Repeat for every version back to 1.2.5. Each pair labels another cluster.
 4. Keep `docs/symbol-index.md` updated with every function named in Ghidra.
 5. When continuing, **re-open programs after a Ghidra restart** with
