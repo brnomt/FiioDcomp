@@ -1,0 +1,6 @@
+Ver:Rockusb Driver v2.0
+time:2012.02.03
+Content:
+1.增加RK30芯片支持
+2.Bulk端点单次传输大小增加到1MB
+3.驱动加载时自动获取设备的Bulk端点地址

@@ -1,9 +1,12 @@
 # Echo Mini Firmware — Module Reference
 
-## Labeled Functions (Ghidra custom-named grows each pass; ~2,258 total)
+## Labeled Functions (Ghidra custom-named grows each pass; 188/2,776 = 6.8%)
 
 Phase goal: convert the entire IMG to C. Progress is tracked by custom-named
 count vs total. New C files land under `firmware/` as symbols are named.
+
+**SDK matching pass (Aug 2026):** Auto-analysis +21, similarity matching +8,
+ROM API naming +7. See `docs/sdk-matching-progress.md` for details.
 
 **Boundary repair pending (do not trust oversized decomp bodies):**
 `hifi_busy_delay_ovl_09e3`, `_0fd1`, `_0e48` — Ghidra body starts ~0xb00 before entry.
@@ -16,6 +19,37 @@ Needs `delete_function` + `create_function` at the true entry when approved.
 | `MusicInit` | `0x0302b9d8` | audio, init |
 | `MusicService_Init` | `0x0302a3e0` | audio, init |
 | `FormatList_Init` | `0x03013c10` | media, init |
+
+### Boot ROM API (0x02FE0000–0x02FFFFFF)
+| Name | Address | Tags |
+|------|---------|------|
+| `rom_early_init` | `0x02fe860e` | rom, init |
+| `rom_hw_init` | `0x02feeebe` | rom, init |
+| `rom_hw_init2` | `0x02feee7c` | rom, init |
+| `rom_alloc` | `0x02feeedc` | rom, heap |
+| `rom_dac_mute` | `0x02ff44ce` | rom, audio |
+| `rom_dac_unmute` | `0x02ff4580` | rom, audio |
+| `rom_dsp_bypass_disable` | `0x02ff55ba` | rom, dsp |
+| `rom_dsp_start` | `0x02ff55c0` | rom, dsp |
+| `rom_i2s_master_config` | `0x02ff5752` | rom, audio |
+| `rom_audio_clock_off` | `0x02ff5c30` | rom, audio |
+| `rom_dma_or_copy` | `0x02ff63d2` | rom, dma |
+| `rom_dma_config` | `0x02ff6814` | rom, dma |
+| `rom_i2s_dma_start` | `0x02ff68f0` | rom, dma |
+| `rom_gui_check_area` | `0x02ff7e0a` | rom, ui |
+| `rom_get_input_event` | `0x02ff813a` | rom, input |
+| `rom_memcpy` | `0x02ff952e` | rom, memory |
+| `rom_memzero` | `0x02ff957c` | rom, memory |
+| `rom_buffer_ready` | `0x02ffa224` | rom, audio |
+| `rom_playback_start` | `0x02ffa410` | rom, audio |
+| `rom_audio_path_route` | `0x02ffa6f0` | rom, audio |
+| `rom_audio_path_disable` | `0x02ffa72a` | rom, audio |
+| `rom_usb_connect` | `0x02ffb2e0` | rom, usb |
+| `rom_usb_disconnect` | `0x02ffb3e6` | rom, usb |
+| `rom_post_event` | `0x02ffe648` | rom, event |
+| `rom_event_clear_id` | `0x02ffe68a` | rom, event |
+| `rom_event_pending` | `0x02ffe6a8` | rom, event |
+| `rom_ui_cmd` | `0x02ffe872` | rom, ui |
 
 ### Audio Services
 | Name | Address | Tags |
@@ -61,9 +95,13 @@ Needs `delete_function` + `create_function` at the true entry when approved.
 | `bitreader_peek` | `0x0301e724` | os, bitstream |
 | `bitreader_refill` | `0x0301e760` | os, bitstream |
 | `bitstream_getbits` | `0x030b15ca` | os, bitstream |
+| `bitstream_getbits_copy` | `0x030b1682` | os, bitstream (similarity match) |
 | `bitstream_getbits_be` | `0x03070b0c` | os, bitstream |
 | `bitstream_getbits_be_ovl_01c7` | `0x0301c7dc` | os, bitstream |
 | `bitreader_get_u32_be` | `0x030f068c` | os, bitstream |
+| `bitreader_get_u32_be_copy` | `0x030f05d8` | os, bitstream (similarity match) |
+| `bitreader_get_u32_be_copy` | `0x030f064c` | os, bitstream (similarity match) |
+| `bitreader_get_u32_be_copy_copy` | `0x030f061a` | os, bitstream (similarity match) |
 | `saturate_s16` | `0x030b38e0` | os, math |
 | `mp3_bitstream_getbits` | `0x0302837a` | os, bitstream, mp3 |
 | `MediaLib_GetTotalFiles` | `0x03000f94` | media, library |
@@ -101,6 +139,7 @@ Needs `delete_function` + `create_function` at the true entry when approved.
 |------|---------|------|
 | `mp3_dec_internal` | `0x0306e5de` | codec, mp3 |
 | `mp3_id3v2_handler` | `0x0306fec4` | codec, mp3 |
+| `mp3_bitstream_getbits_copy` | `0x03028338` | codec, mp3, bitstream (similarity match) |
 
 ### Codec — WMA
 | Name | Address | Tags |
@@ -112,6 +151,9 @@ Needs `delete_function` + `create_function` at the true entry when approved.
 | `wma_memclr` | `0x03082818` | codec, wma |
 | `wma_input_cache_read` | `0x03083d48` | codec, wma |
 | `wma_bitreader_getbits` | `0x03084970` | codec, wma |
+| `wma_bitreader_getbits_copy` | `0x0308482e` | codec, wma (similarity match) |
+| `wma_bitreader_getbits_copy` | `0x030848dc` | codec, wma (similarity match) |
+| `wma_bitreader_getbits_copy_copy` | `0x03088390` | codec, wma (similarity match) |
 | `wma_floor_log2` | `0x030842cc` | codec, wma |
 
 ### Codec — AAC/M4A

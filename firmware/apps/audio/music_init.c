@@ -8,6 +8,7 @@
  */
 
 #include "../../firmware.h"
+#include "../../rom_api.h"
 #include "../../firmware/os/os_api.h"
 #include "../../codecs/codec_api.h"
 #include "audio_service.h"
@@ -30,8 +31,9 @@
  */
 void MusicInit(void) {
     /* --- Stop all audio paths --- */
-    rom_audio_path_disable();  /* func_0x02ffa72a */
-    rom_dac_mute();            /* ref from MusicService_Init flow */
+    rom_audio_path_disable(2, 0);
+    rom_audio_path_disable(2, 0xe);
+    rom_dac_mute(1, 4);
     rom_audio_clock_off();     /* func_0x02ff5c30 */
 
     /* --- Set default sample rate: 48000 Hz --- */

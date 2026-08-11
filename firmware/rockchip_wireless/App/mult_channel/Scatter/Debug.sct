@@ -1,0 +1,142 @@
+/*
+********************************************************************************************
+*
+*        Copyright (c): Fuzhou Rockchip Electronics Co., Ltd
+*                             All rights reserved.
+*
+* FileName: Bsp\EVK_V2.0\Scatter\ScatterLoader.c
+* Owner: aaron.sun
+* Date: 2015.6.10
+* Time: 16:01:48
+* Version: 1.0
+* Desc:
+* History:
+*    <author>    <date>       <time>     <version>     <Desc>
+*    aaron.sun     2015.6.10     16:01:48   1.0
+********************************************************************************************
+*/
+
+
+#define BOOT_ROM_BASE       0x00000000
+
+#define HRAM_CODE_BASE      0x01000000
+#define HRAM_CODE_SIZE        0x00020000
+
+#define HRAM_DATA_BASE      0x01020000
+#define HRAM_DATA_SIZE      0x00040000
+
+
+#define LOADER_CODE_BASE    0x03048000
+#define LOADER_DATA_BASE    0x03084000
+
+
+#define SYS_CODE_BASE       0x03050000
+#define SYS_CODE_SIZE       0x00040000
+#define SYS_HEAP_BASE      0x03090000
+
+#define SYS_DATA_BASE       0x03000000
+#define SYS_DATA_SIZE       0x00050000
+
+
+#define PMU_DATA_BASE       0x03090000
+#define PMU_DATA_SIZE       0x00001000
+#define PMU_CODE_BASE       0x03091000
+#define PMU_CODE_SIZE       0x0000E000
+
+
+LOAD_PMU_DATA_REGION PMU_DATA_BASE
+{
+
+     PMU_DATA PMU_DATA_BASE
+    {
+       *.o(pmu_vect, +First)
+    }
+
+}
+
+LOAD_PMU_CODE_REGION PMU_CODE_BASE
+{
+     PMU_CODE PMU_CODE_BASE
+    {
+        *(pmucode)
+    }
+
+}
+
+
+
+LOAD_CODE_REGION SYS_CODE_BASE
+{
+    AP_SYS_CODE (SYS_CODE_BASE) OVERLAY
+   {
+        *.o(AP_START_VECT, +First)
+        *.o(AP_START_CODE)
+        *.o(+RO)
+    }
+
+    ScatterAssert(ImageLimit(AP_SYS_CODE) < (SYS_CODE_BASE + SYS_CODE_SIZE))
+
+
+    MODULE_INFO 0x21000000
+    {
+
+    }
+}
+
+LOAD_DATA_REGION SYS_DATA_BASE
+{
+    AP_MAIN_STACK (SYS_DATA_BASE)
+    {
+         *.o(ap_vect, +First)
+             *(APMainStack)
+    }
+
+    IDLE_STACK (ImageLimit(AP_MAIN_STACK))
+    {
+        *(IdleStack)
+    }
+
+    APP_HEAP_STACK(ImageLimit(IDLE_STACK)) OVERLAY
+    {
+        *(AppHeapStack)
+    }
+
+    AP_SYS_DATA (ImageLimit(APP_HEAP_STACK))
+    {
+        *.o(+RW)
+        *.o(+ZI)
+    }
+
+
+    ScatterAssert(ImageLimit(AP_SYS_DATA) < (SYS_DATA_BASE + SYS_DATA_SIZE))
+}
+
+LOAD_HRAM_CODE_REGION HRAM_CODE_BASE
+{
+
+    BB_SYS_CODE(HRAM_CODE_BASE)
+    {
+
+         *(BBSysCode)
+         *(innophace_wifi_fw)
+    }
+
+    ScatterAssert(ImageLimit(BB_SYS_CODE) < (HRAM_CODE_BASE + HRAM_CODE_SIZE))
+}
+
+
+LOAD_BBSYS_DATA_REGION HRAM_DATA_BASE
+{
+
+    BB_SYS_DATA (HRAM_DATA_BASE)
+    {
+
+        *(BBSysData)
+        *(BBSysBss)
+
+    }
+
+        ScatterAssert(ImageLimit(BB_SYS_DATA) < (HRAM_DATA_BASE + HRAM_DATA_SIZE))
+}
+
+;*******************************************************************************

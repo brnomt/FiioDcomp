@@ -7,7 +7,7 @@ import os, struct, sys
 import argparse
 
 parser = argparse.ArgumentParser(description='Extract and analyze Echo Mini firmware (HIFIEC37.IMG)')
-parser.add_argument('input', nargs='?', default='stock/ECHO MINI V3.7.0/HIFIEC37.IMG',
+parser.add_argument('input', nargs='?', default='stock/3.7.0/ECHO MINI V3.7.0/HIFIEC37.IMG',
                     help='Path to HIFIEC37.IMG (default: stock/ECHO MINI V3.7.0/HIFIEC37.IMG)')
 parser.add_argument('--output', '-o', default=None,
                     help='Output directory (default: <input_dir>/extracted)')

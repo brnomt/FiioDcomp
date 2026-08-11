@@ -1,0 +1,2 @@
+bin_generate.exe  HIFI_FLAC\RkNano.bin\BB_SYS_CODE    ..\..\..\Codecs\Audio\Decode\HIFI\flac\hifi_flac_code.bin
+bin_generate.exe  HIFI_FLAC\RkNano.bin\BB_MAIN_STACK  ..\..\..\Codecs\Audio\Decode\HIFI\flac\hifi_flac_data.bin

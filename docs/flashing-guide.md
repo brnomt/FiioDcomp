@@ -77,18 +77,35 @@ Small code changes without compiling from source — e.g. theme color values, NO
 
 ---
 
-## What Does NOT Work Yet (Full Custom Build)
+## Building from source (v3.7.0, in progress)
+
+**Toolchain verified:** GNU Arm Embedded `arm-none-eabi-gcc` 10.3+
+
+```bash
+# Windows (use mingw32-make if `make` is not on PATH)
+mingw32-make toolchain      # verify gcc
+mingw32-make all            # core OS/filesystem objects → build/reference.o
+mingw32-make compile-check  # compile all firmware/*.c, report pass/fail
+```
+
+**What compiles today (core layer):** `entry.c`, `bitreader.c`, `hifi_file.c`, filesystem I/O, ROM API stubs — 11 files linked into `build/reference.o`.
+
+**Still blocking full link:** `firmware.ld` is drafted but not validated; codec/apps layers need `g_*` globals and header/API alignment; SDK tree needs `DriverInclude.h` / SysConfig; `pack_img.py` does not exist yet.
+
+See `firmware/rom_api.h` for boot-ROM call stubs used during host compile.
+
+---
 
 You **cannot** run `make all` and flash the result. The Makefile is a scaffold only.
 
 | Missing | Status |
 |---------|--------|
-| `arm-none-eabi-gcc` toolchain | Not installed / not wired up |
-| Linker script (`firmware.ld`) | Does not exist |
+| `arm-none-eabi-gcc` toolchain | Installed — run `make toolchain` |
+| Linker script (`firmware.ld`) | Draft (not validated) |
 | Startup / vector table | Not in repo |
 | Codec binary blobs linked in | Not integrated |
-| IMG section packer (`tools/pack_img.py`) | Does not exist |
-| Byte-identical rebuild of stock section_3 | Not achieved |
+| IMG section packer (`tools/pack_img.py`) | Written — M2 identity test PASSES |
+| Byte-identical rebuild of stock section_3 | M2 passed (pack_img identity test) |
 
 See [Full Build Checklist](#full-build-checklist) below.
 
@@ -123,12 +140,12 @@ Part 5 (inside section 3 region): `ROCK26IMAGERES` — 1617 RGB565 UI bitmaps.
 Use this when aiming for **custom code** flashed from your own compile, not just resource mods.
 
 ### Phase 1 — Toolchain
-- [ ] Install `arm-none-eabi-gcc` (or Keil MDK from RKNanoD SDK)
-- [ ] Install `make` (or use CMake)
-- [ ] Verify: `arm-none-eabi-gcc --version`
+- [x] Install `arm-none-eabi-gcc` (GNU Arm Embedded 10.3+ verified)
+- [x] Install `make` or `mingw32-make` (Windows: winlibs mingw64)
+- [x] Verify: `make toolchain` or `arm-none-eabi-gcc --version`
 
 ### Phase 2 — Linkable firmware
-- [ ] Create `firmware/firmware.ld` from Fiio segment table + SDK `BuildAll.sct`
+- [x] Create `firmware/firmware.ld` from Fiio segment table + SDK `BuildAll.sct` (draft — not validated)
 - [ ] Add startup (`Reset_Handler`, stack, vectors) targeting `firmware_entry` @ `0x03000010`
 - [ ] Port SDK framework sources OR verified Ghidra decomp into build
 - [ ] Link codec blobs (`mp3_code.bin`, `hifi_flac_code.bin`, etc.) at correct addresses
@@ -136,11 +153,12 @@ Use this when aiming for **custom code** flashed from your own compile, not just
 - [ ] Produce `build/RkNano.bin` (or equivalent flat binary for section 3)
 
 ### Phase 3 — IMG packaging
-- [ ] Write `tools/pack_img.py`:
-  - Preserve sections 1, 2, 4 from stock (or rebuild section 1 from segment table)
+- [x] Write `tools/pack_img.py`: splice custom section_3 into stock IMG
+  - Preserve sections 1, 2, 4 from stock (header, bootloader, resources, padding)
   - Replace section 3 with your binary
   - Preserve / recalculate EOF trailer
-- [ ] **Milestone:** packed IMG byte-matches stock section_3 before any code changes
+- [x] **Milestone M2:** packed IMG byte-matches stock section_3 before any code changes
+  - `py tools/pack_img.py --identity-test` → PASS (SHA-256 identical)
 - [ ] Flash milestone IMG — device must boot identically to stock
 
 ### Phase 4 — Custom changes

@@ -18,11 +18,10 @@
  * they are reached later via FUN_0304d022 / event paths.
  */
 
-#include "../firmware.h"
+#include "firmware.h"
+#include <stddef.h>
 #include "os_api.h"
-#include "../../apps/audio/audio_service.h"
-#include "../../apps/ui/ui_theme.h"
-#include "../../codecs/codec_api.h"
+#include "../../rom_api.h"
 #include "../../drivers.h"
 
 /* Layout state written by boot_param_layout (DAT_03000164 / DAT_03000168) */
@@ -37,11 +36,6 @@ typedef struct {
 
 extern BootLayout *g_boot_layout;   /* DAT_03000164 */
 extern uint16_t   *g_boot_mode;     /* DAT_03000168 */
-
-extern void *rom_alloc(uint32_t size);
-extern void  rom_hw_init(uint32_t code);
-extern void  rom_hw_init2(uint32_t code);
-extern void  rom_early_init(void);
 extern void  boot_param_layout(uint16_t *param);
 
 /*
