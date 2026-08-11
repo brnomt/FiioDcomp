@@ -7,10 +7,12 @@
 > `docs/changelog-string-diff.md` before doing anything. This file exists so
 > the process is never lost.
 >
-> **Last updated:** Aug 2026 · v3.4.0 analysis complete (104 names); **next up: 3.3.0**.
-> v3.4.0 used a NEW 3-level chain (`tools/chain3_propagate_names.py`) since names
-> must travel v3.4→v3.5→v3.6→v3.7 (the old 2-level chain script only reaches
-> v3.6's ~29 names).
+> **Last updated:** Aug 2026 · v3.3.0 analysis complete (106 names); **next up: 3.2.0**.
+> v3.3.0 used the generic N-hop chain (`tools/chainN_propagate_names.py`),
+> 4 hops deep (3.3→3.4→3.5→3.6→3.7). ⚠️ 3.3.0→3.4.0 had a RELINK SHIFT
+> (31/32 segments MOVE +24): functions moved physically, so offset-ok
+> rejected perfect matches — use high threshold (0.9) WITHOUT require-offset
+> for shifted pairs.
 
 ---
 
@@ -257,7 +259,8 @@ no dedup possible.** There are no regional variants with identical section 3.
 | **3.6.0** | 🟨 | `sec3_3_6_0.bin` (Cortex) | 2,217 | **29** | fuzzy match vs 3.7.0 (9 renames); orphan `sec3_3_6_0.bin.0` to ignore |
 | **3.5.0** | ✅ | `sec3_3_5_0.bin` | 1,726 | **75** | 3.5→3.6→3.7 chain done (54 chained + 9 direct, 13 weak reverted) |
 | **3.4.0** | ✅ | `sec3_3_4_0.bin` | 1,712 | **104** | 73 direct (≥0.9) + 39 chain3 (combo ≥0.7, offset-ok); saved |
-| 3.3.0 | ▶ | — | — | — | **NEXT** — extract `sec3_3_3_0.bin`, chain 3.3→3.4→3.5→3.7 |
+| **3.3.0** | ✅ | `sec3_3_3_0.bin` | 1,727 | **106** | 71 direct (≥0.9) + 79 chainN 4-hop (combo ≥0.9, no offset — relink shift); saved |
+| 3.2.0 | ▶ | — | — | — | **NEXT** — extract `sec3_3_2_0.bin`, chain 3.2→…→3.7 (5 hops) |
 | 3.2.0 | ⬜ | — | — | — | — |
 | 3.1.0 | ⬜ | — | — | — | — |
 | 3.0.0 | ⬜ | — | — | — | — |
@@ -402,6 +405,56 @@ edited modules.
 - Main code 43.5% changed; 513,747 small diff regions (relink fixups).
 - Changelog symbols all show ~4KB changed windows → **addresses moved**, so
   never assume v3.7 Ghidra addresses apply to v3.8.
+
+### ✅ 3.3.0→3.4.0 pair (done Aug 2026 session)
+
+**⚠️ FIRST RELINK-SHIFT PAIR ENCOUNTERED.** Unlike 3.4→3.5 and 3.5→3.6
+(0/32 segments changed), **3.3.0→3.4.0 changed 31/32 segments — all MOVE
+(load +24, size +0)**. Every buffer moved +24 bytes: the linker inserted
+something between 3.3.0 and 3.4.0, so functions are NOT at the same physical
+locations. Consequences:
+
+- The 4-hop chain's offset-ok check (all hops same physical location)
+  rejected 43 PERFECT matches (score 1.0 on every hop) because the function
+  genuinely moved. For shifted pairs, prefer `--threshold 0.9` WITHOUT
+  `--require-offset`: a combo of 5 scores all ≥0.9 is trustworthy on its own.
+- Fuzzy match 3.3.0 vs 3.4.0: 1,163 matches; 410 ≥0.9; 94 named targets.
+  Dominant delta 0x350 but with spread (0x2f8, 0x274, 0x1b8…) — confirms
+  the shift is NOT uniform per function.
+
+**Direct renames (threshold 0.9): 71 applied** — same SDK families as
+3.4.0 (`event_set`, `ipc_post_cmd/arg`, `hifi_busy_delay`, `wma_memcmp`,
+`Unicode2Ascii`, `DmaConfig_for_LLP2`, `SDDecodeCSD`, `mbedtls_*`, etc.).
+
+**Chain propagation — NEW GENERIC N-HOP SCRIPT (`tools/chainN_propagate_names.py`):**
+- Generalizes chain3 to any hop count with `--match` (repeatable, oldest-pair
+  first) + `--program` + `--threshold` + `--require-offset`.
+- 4-hop chain 3.3→3.4→3.5→3.6→3.7: per-hop deltas auto-computed
+  (0x350 / -0x3000078 / +0x3000268 / +0xc0); 313 chained, 151 offset-ok,
+  115 combo ≥0.7.
+- Applied with `--threshold 0.9` (no offset — relink shift): **79 names**, e.g.
+  `AmrFunction`, `bitstream_getbits_be`, `pbuf_free`, `CodeResume`,
+  `my_bui_clz`, `USBGetRxFIFOIntType`, `cmd_wifi_tcp_server`, `udp_server`,
+  `RKDeviceUnRegister`, `hifi_memmove`, `event_set`, `ipc_post_cmd/arg`,
+  `FmFreqToChan`, `hifi_busy_delay`, `DSD_DecodeBlock` @ 0x030FE650
+  (v3.3 changelog: DSD ID3 display ✓), `flac_bitstream_getbits_s/u`,
+  `APE_Set_CFG`, `wma_floor_log2`, `DICTDECODER_InitStream`, etc.
+- **v3.3.0 now has 106 named / 1,727 functions (6.1%)** — was 0 before.
+
+**Ghidra program state (saved Aug 2026):** 6 programs in the project —
+
+| Program | Version | Funcs | Named | Notes |
+|---------|---------|------:|------:|-------|
+| `section_3_0x00081A14.bin` | v3.7.0 | 2,776 | **651** | primary program (decomp/export source) |
+| `sec3_3_6_0.bin` | v3.6.0 (Cortex) | 1,592–2,217 | ~25 | 9 renames |
+| `sec3_3_6_0.bin.0` | v3.6.0 (v8-m) | 0 | 0 | ORPHAN duplicate — close/ignore |
+| `sec3_3_5_0.bin` | v3.5.0 | 1,726–1,728 | **75** | 9 direct + 54 chained |
+| `sec3_3_4_0.bin` | v3.4.0 (v8-m, base 0x03000000) | 1,712 | **104** | 73 direct + 39 chain3 |
+| `sec3_3_3_0.bin` | v3.3.0 (v8-m, base 0x03000000) | 1,727 | **106** | 71 direct + 79 chainN (4-hop) |
+
+Rename history: `build/cross_version_renames_log.json` (keys include
+`sec3_3_3_0.bin.chainN`). Reopen with `tools/open_all_programs.py` after any
+Ghidra restart.
 
 ### ✅ 3.4.0→3.5.0 pair (done Aug 2026 session)
 
@@ -552,7 +605,8 @@ All saved to the Ghidra project. Rename history (re-apply after a restart):
 | `apply_cross_version_names.py` | Rename matches in the OLD program from NEW names (fixed `matches` key + per-program log) |
 | `chain3_propagate_names.py` | **NEW** 3-hop chain (v3.4→v3.5→v3.6→v3.7): auto-delta per hop, offset-ok = all 3 hops same physical location, combo = min of 3 link scores; 39 names applied to v3.4.0 |
 | `revert_weak_chain_names.py` | Undo chained names whose v3.6→v3.7 chain score < 0.6 (matcher floor is unreliable) |
-| `chain3_propagate_names.py` | **NEW** 3-hop chain (v3.4→v3.5→v3.6→v3.7): per-hop auto-delta, offset-ok = all 3 hops same physical location, combo = min of 3 link scores; 39 names applied to v3.4.0 (extend for 4+ hops for older versions) |
+| `chain3_propagate_names.py` | 3-hop chain (v3.4→v3.5→v3.6→v3.7): per-hop auto-delta, offset-ok = all 3 hops same physical location, combo = min of 3 link scores; 39 names applied to v3.4.0 |
+| `chainN_propagate_names.py` | **NEW generic N-hop chain** (`--match` repeatable, oldest-pair first): per-hop auto-delta, offset-ok optional; 79 names applied to v3.3.0 (4 hops, combo ≥0.9, no offset due to relink shift) |
 | `open_all_programs.py` / `close_program.py` / `manage_programs.py` | Open/close/switch Ghidra programs |
 | `wait_analysis.py` | Poll `/analysis_status` until a program finishes analyzing |
 | `check_close_schema2.py` | Inspect close/switch/save params |
@@ -613,31 +667,33 @@ renames applied). 3.5.0 imported + matched vs 3.6.0 (1,141 matches, 406 ≥0.9;
 73 direct + 39 chain3 renames applied; **104 named**). All programs saved to
 the Ghidra project.
 
-1. **Continue backwards to 3.3.0.** Same recipe as 3.4.0, but the chain is
-   now FOUR hops: 3.3→3.4→3.5→3.6→3.7. Extend `chain3_propagate_names.py`
-   (or write `chain4`) with the extra match file; per-hop deltas auto-compute:
-   - Extract: `python tools/extract_sec3_for_ghidra.py 3.3.0`
-   - Import: `python tools/import_into_ghidra.py build/sec3_3_3_0.bin --language
+1. **Continue backwards to 3.2.0.** Same recipe, now FIVE hops:
+   3.2→3.3→3.4→3.5→3.6→3.7. Use the generic `chainN_propagate_names.py`:
+   - Extract: `python tools/extract_sec3_for_ghidra.py 3.2.0`
+   - Import: `python tools/import_into_ghidra.py build/sec3_3_2_0.bin --language
      ARM:LE:32:v8-m --base 0x03000000`
-   - Wait: `python tools/wait_analysis.py 3_3_0` then `save_program`
-   - String diff: `python tools/string_diff_versions.py 3.3.0 3.4.0 --limit 30`
-   - Segment diff: `python tools/segment_table_diff.py 3.3.0 3.4.0`
-   - Match: `python tools/run_bulk_match.py sec3_3_3_0.bin sec3_3_4_0.bin
-     --filter FUN_ --threshold 0.5 --out fuzzy_match_v33_v34.json`
-   - Apply direct: `python tools/apply_cross_version_names.py sec3_3_3_0.bin
-     --matches build/fuzzy_match_v33_v34.json --threshold 0.9`
-   - Chain 4: `python tools/chain3_propagate_names.py --m45
-     build/fuzzy_match_v33_v34.json --m56 build/fuzzy_match_v34_v35.json
-     --m67 build/fuzzy_match_v35_v36.json --program sec3_3_3_0.bin
-     --threshold 0.7 --require-offset` (NOTE: rename the args generically,
-     or add a 4th match; the v3.6→v3.7 names come from a separate final hop
-     — see how 3.4.0 needed v36→v37 as the 4th file).
+   - Wait: `python tools/wait_analysis.py 3_2_0` then `save_program`
+   - String diff: `python tools/string_diff_versions.py 3.2.0 3.3.0 --limit 30`
+   - Segment diff: `python tools/segment_table_diff.py 3.2.0 3.3.0` — **if
+     segments MOVE (relink shift like 3.3→3.4), the chain offset check will
+     reject perfect matches; use `--threshold 0.9` WITHOUT `--require-offset`**
+   - Match: `python tools/run_bulk_match.py sec3_3_2_0.bin sec3_3_3_0.bin
+     --filter FUN_ --threshold 0.5 --out fuzzy_match_v32_v33.json`
+   - Apply direct: `python tools/apply_cross_version_names.py sec3_3_2_0.bin
+     --matches build/fuzzy_match_v32_v33.json --threshold 0.9`
+   - Chain 5: `python tools/chainN_propagate_names.py --match
+     build/fuzzy_match_v32_v33.json --match build/fuzzy_match_v33_v34.json
+     --match build/fuzzy_match_v34_v35.json --match
+     build/fuzzy_match_v35_v36.json --match build/fuzzy_match_v36_v8m_full.json
+     --program sec3_3_2_0.bin --threshold 0.9`
+     (no --require-offset; add it only if the 3.2→3.3 segment diff shows 0
+     segments moved)
    - **SAVE immediately after renames.**
-2. **Paso 3 — Changelog anchoring** for 3.3.0 (DSD ID3 display NOT DFF;
-   Favorites cleared by media-lib update; other):
-   - DSD ID3 → `DSD_IFF_Open` / `DSD_DecodeBlock` cluster (v3.7 @ 0x030FF2E8 /
-     0x030FFA3C); check if it chains down.
-   - Favorites clearing → media library / Favorites cluster.
+2. **Paso 3 — Changelog anchoring** for 3.2.0 (click-to-play track skip;
+   volume levels 4-5 smoothness; other):
+   - Track-skip fix → playback/clip logic cluster.
+   - Volume 4-5 smoothness → `dac_gain_curve_apply` region (already anchored
+     in every version).
 3. Repeat for every version back to 1.2.5. Each pair labels another cluster.
 4. Keep `docs/symbol-index.md` updated with every function named in Ghidra.
 5. When continuing, **re-open programs after a Ghidra restart** with

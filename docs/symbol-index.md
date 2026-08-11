@@ -326,3 +326,28 @@ v3.4.0 addresses (imported at base 0x03000000).
 | `event_set` | `0x03073590` (×8 sites) | os, event |
 | `ipc_post_cmd` / `ipc_post_arg` | `0x030739cc` / `0x030739f8` (×9 sites) | os, ipc |
 | `hifi_busy_delay_ovl_0817` / `_09e3` / `_0bff` | `0x030814ac` / `0x0309e084` / `0x030bfcd0` | util, delay |
+
+### v3.3.0 Cross-Version Names (Aug 2026, program `sec3_3_3_0.bin`)
+
+106 functions named via 3.3.0→3.4.0 fuzzy match (71 direct ≥0.9) + 4-hop
+chain 3.3→3.4→3.5→3.6→3.7 (79, combo ≥0.9; no offset check — 3.3→3.4 had a
+relink shift, 31/32 segments MOVE +24). Addresses are v3.3.0 addresses
+(imported at base 0x03000000).
+
+| Name | Address (v3.3.0) | Tags |
+|------|------------------|------|
+| `DSD_DecodeBlock` | `0x030fe650` | codec, dsd (v3.3 changelog: DSD ID3 ✓) |
+| `flac_bitstream_getbits_s` / `_u` | `0x030e437e` / `0x030e43be` | codec, flac |
+| `APE_Set_CFG` | `0x030edad2` | codec, ape |
+| `wma_floor_log2` | `0x03083ccc` | codec, wma |
+| `AmrFunction` | `0x0300d888` | codec, amr |
+| `bitstream_getbits_be` | `0x0301c2cc` (×2) | codec, bitreader |
+| `pbuf_free` | `0x03021162` | network, pbuf |
+| `CodeResume` | `0x0301f7a4` | codec, state |
+| `my_bui_clz` | `0x03026238` | util, bit |
+| `USBGetRxFIFOIntType` | `0x03027130` | usb, dma |
+| `cmd_wifi_tcp_server` | `0x0302870a` | network, wifi |
+| `udp_server` | `0x0302ac66` | network, udp |
+| `RKDeviceUnRegister` | `0x03009a8c` | system, device |
+| `DICTDECODER_InitStream` | (chained) | codec, dict |
+| `event_set` / `ipc_post_cmd` / `ipc_post_arg` | (×8 sites) | os, event/ipc |
