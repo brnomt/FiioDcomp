@@ -11,9 +11,11 @@
 > **changelog-anchored naming phase in progress** (see §5c).
 >
 > **CURRENT STATE (this session):**
-> - v3.7.0 primary: **688 / 2,776 named (24.8%)** — 37 new names this session
-> - **37 new .c files** exported to `firmware/` (FLAC decoder internals,
->   media library service, OGG/WMA helpers, audio state, LCD, config, GPIO)
+> - v3.7.0 primary: **746 / 2,776 named (26.9%)** — +71 this session
+>   (+37 changelog-anchored lineage + 34 structural matcher v2)
+> - **71 new .c files** exported to `firmware/` (FLAC decoder internals,
+>   media library service, OGG/WMA helpers, audio state, LCD, config, GPIO,
+>   GUI, recorder, SDIO, wifi, crypto, USB)
 > - New tool: `tools/version_lineage.py` — traces every v3.7.0 function
 >   backwards through all 21 adjacent version pairs → `first_seen` version
 >   (functions introduced in vX = changelog features of vX)
@@ -151,7 +153,7 @@ threshold, filter), `/find_similar_functions_fuzzy`, `/diff_functions`
 |--------|------:|
 | Total functions in binary | 2,776 (count endpoint: 2,777) |
 | **Decompiled (raw pseudocode in `build/all_decompilations.json`)** | **2,764** |
-| **Named in Ghidra** | **688 (24.8%)** |
+| **Named in Ghidra** | **746 (26.9%)** |
 | Named thunks | 16 |
 | Named non-thunk | 672 |
 | Unnamed (`FUN_*`) | 2,088 |
@@ -263,7 +265,7 @@ no dedup possible.** There are no regional variants with identical section 3.
 | Version | Status | Ghidra program | Funcs | Named | Last step done |
 |---------|--------|----------------|------:|------:|----------------|
 | 3.8.0 | ⬜ | — | — | — | — (needs its own layout check — big diff vs 3.7) |
-| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **688** | primary: decompiled + exported; +37 changelog-anchored names (FLAC/media/OGG/WMA/audio/LCD) |
+| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **746** | primary: decompiled + exported; +71 (lineage + structural v2) |
 | **3.6.0** | 🟨 | `sec3_3_6_0.bin` (Cortex) | 2,217 | **29** | fuzzy match vs 3.7.0 (9 renames); orphan `sec3_3_6_0.bin.0` to ignore |
 | **3.5.0** | ✅ | `sec3_3_5_0.bin` | 1,726 | **75** | 3.5→3.6→3.7 chain done (54 chained + 9 direct, 13 weak reverted) |
 | **3.4.0** | ✅ | `sec3_3_4_0.bin` | 1,712 | **104** | 73 direct (≥0.9) + 39 chain3 (combo ≥0.7, offset-ok); saved |
@@ -381,6 +383,50 @@ Output: `build/function_lineage.json` → `{versions: [...], functions: {addr: {
    - **strings** it references (`s_*` symbols, e.g. `s_PICTURE_OGG_03023ad8` → OGG picture)
    - **callers** (`/get_xrefs_to` — e.g. called by `AudioStop`/`MusicService` → audio state)
 4. Name it per the changelog feature + evidence; `save_program`; export.
+
+### Structural matcher v2 (NEW — `tools/match_structure_v2.py`) — the SDK path
+
+**Why v1 failed:** `match_structure.py` counts if/while/for in the C text, which
+differs wildly between Ghidra output style and SDK source style.
+
+**v2 signals (weighted):** signature (params+return type) · callee overlap vs
+SDK callee names (`sdk_callees.json`) · distinctive constants (≥0x100) ·
+code-size ratio · module prefix bonus (binary's calls to already-named
+functions sharing the SDK candidate's module prefix).
+
+**The validation that made it trustworthy (callee-overlap):** the SDK file
+`build/sdk_callees.json` says *which functions each SDK function calls*. If the
+binary function calls the same (already-named) functions that the SDK says its
+candidate calls, the match is near-certain. This beat the raw score alone.
+
+**Results (Aug 2026): +34 names validated, e.g.:**
+`mbedtls_mpi_div_mpi` (calls mbedtls_mpi_grow) · `wwd_bus_init` (calls
+wwd_bus_sdio_set_oob_interrupt) · `MscTestUnitReady` (calls MscSendCSW) ·
+`SNOR_Write` (calls SNOR_Erase) · `RecordWriteFile` (calls
+RecordCopyEncDataToBuf) · `GetFreeMemory` (calls rkos_memory_malloc) ·
+`DeviceListRemoveFs` (calls RKDev_Open) · `RecodTask_GuiInit` (calls
+GUITask_CreateWidget) · `MusicPlay_DeleteGuiHandle` (calls
+GuiTask_DeleteWidget) · `LunShellTest` (calls LunDev_GetSize) ·
+`phybusif_input` (calls pbuf_free) · `Mp3GenreParse` (calls
+mp3_bitstream_getbits) · `GUI_TextDisplayID/Buff`, `rkos_semaphore_create`,
+`ape_test`, `DisplayDev_ScreenUpdate`, `host_buffer_get`, `wwd_wifi_*`,
+`freertos_init_timer`, `BroadMessage_Parse`, `SystemSetTask_Enter`,
+`GUI_SpectrumDisplay`, `USBResetPhy`, `MusicPlay_AudioCallBack`,
+`cistpl_vers_1`, `sfc_request`, `mbedtls_rsa_check_privkey`,
+`rk_wifi_smartconfig`, `main2_entry`.
+
+**Pitfalls learned:**
+- The v1 `functionality_matches.json` (516 entries) is FULL of false
+  positives — everything scores high as `WavEncodeHeaderInit` (shared generic
+  constants). Do NOT trust it.
+- `/rename_function_by_address` enforces a name-quality gate (PascalCase,
+  ≥8 chars) AND rejects token-subset collisions (`AudioPause` vs
+  `AudioFFPause`). `/rename_function` (by old name) bypasses the gate.
+- After 2 sweeps the marginal yield dropped to 0 — the callee-overlap
+  validation is the binding constraint: once a module's anchors are all
+  applied, no new validated matches appear until MORE of its callees get
+  named. Next lever: name more FUN_* callees via the lineage clusters (the
+  callee-overlap validation then unlocks the remaining SDK candidates).
 
 ### Names applied this session (37 total → v3.7.0 now 688 named)
 
@@ -1042,6 +1088,8 @@ All saved to the Ghidra project. Rename history (re-apply after a restart):
 | `chainN_propagate_names.py` | **NEW generic N-hop chain** (`--match` repeatable, oldest-pair first): per-hop auto-delta, offset-ok optional; 79 names applied to v3.3.0 (4 hops, combo ≥0.9, no offset due to relink shift) |
 | `version_lineage.py` | **NEW (CURRENT PHASE)** builds `build/function_lineage.json`: walks every v3.7.0 function back through all 21 adjacent pairs → `first_seen` (introduced-in) version + edit clusters (`--min-score 0.9`). The core driver of changelog-anchored naming. |
 | `export_named_flac.py` | **NEW example** of live-decompile + export pattern: writes `firmware/codecs/flac/*.c` from Ghidra with provenance headers |
+| `match_structure_v2.py` | **NEW structural matcher v2** vs 5,333 SDK functions: signature + callee-overlap + constants + size + module-prefix bonus; **+34 names validated by SDK-callee overlap** (the strongest signal); output `build/structural_matches_v2.json` |
+| `callgraph_propagate_names2.py` | **NEW call-graph neighbor sweep**: for each named func, lists in-region FUN_* callees/callers → 641 candidates saved to `build/callgraph_neighbor_candidates.json` |
 | `open_all_programs.py` / `close_program.py` / `manage_programs.py` | Open/close/switch Ghidra programs |
 | `wait_analysis.py` | Poll `/analysis_status` until a program finishes analyzing |
 | `check_close_schema2.py` | Inspect close/switch/save params |
@@ -1095,7 +1143,7 @@ python tools/collect_new_names.py
 
 ## 9. NEXT STEPS (CURRENT PHASE — changelog-anchored naming)
 
-**Done so far (all versions):** v3.7.0 primary (688 named) + 21 older versions
+**Done so far (all versions):** v3.7.0 primary (746 named) + 21 older versions
 all imported, matched, chain-propagated and saved (87–106 names each).
 `build/function_lineage.json` maps every traceable v3.7.0 function to its
 `first_seen` version. See §5c for the full cluster table.
@@ -1239,5 +1287,5 @@ lineage tool gives the introduction clusters; the string diff tool
     `AudioStop`/`MusicService` → `AudioStateHandler`) + address region. Names
     from caller evidence are conservative; that's fine.
 23. **Always re-verify counts after a session:** `list_functions_enhanced` on
-    v3.7.0 = 688 named (24.8%) as of this handoff. The `.0` orphan program
+    v3.7.0 = 746 named (26.9%) as of this handoff. The `.0` orphan program
     (`sec3_3_6_0.bin.0`, 0 funcs) is still open — ignore it.

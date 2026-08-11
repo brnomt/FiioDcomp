@@ -30,7 +30,7 @@ Reverse engineering notes, documentation, tooling, patches, and clean-room imple
 
 ## RE Progress (Aug 2026)
 
-Function naming status in Ghidra (v3.7.0, live): **688 / 2,776 functions named (24.8%)**
+Function naming status in Ghidra (v3.7.0, live): **746 / 2,776 functions named (26.9%)**
 Decompiled to pseudocode: **2,764 / 2,776** (see `build/all_decompilations.json`)
 Exported to C: **3,320 files under `firmware/`**
 
@@ -46,6 +46,7 @@ Run `python tools/check_decompilation_status.py` for a live status from Ghidra.
 | ROM API naming + similarity matching | +15 |
 | Additional matching pass (Aug 2026) | +27 |
 | **Changelog-anchored lineage naming (Aug 2026)** | **+37** |
+| **Structural matcher v2 (SDK callee-overlap validation)** | **+34** |
 
 All matching uses leaked Rockchip SDK source (`RKNanoD_MP3_V1.3` + `RKNanoD_Wireless_Audio_SDK_V1.5`)
 as reference. See `docs/sdk-matching-progress.md` for full details.
