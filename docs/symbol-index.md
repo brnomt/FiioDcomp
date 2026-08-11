@@ -193,6 +193,17 @@ Needs `delete_function` + `create_function` at the true entry when approved.
 | `OGG_Picture_Parser` | `0x030241f8` | codec, ogg, tags |
 | `wma_input_read` | `0x0308c9a4` | codec, wma |
 | `wma_debug_helper` | `0x0309fe6a` | codec, wma |
+| `config_parse_helper` | `0x0301ded2` | os, config |
+| `gpio_int_mode_helper` | `0x030202ce` | drivers, gpio |
+| `ogg_picture_parser_helper` | `0x03026ccc` | codec, ogg, tags |
+| `AudioStateHandler` | `0x0302a74e` | audio, state |
+| `audio_file_input_helper` / `audio_file_input_read` | `0x0300d090` / `0x0300cfd4` | audio, file |
+| `lcd_shell_helper` / `lcd_write_helper_a` / `lcd_write_helper_b` | `0x0302aaf0` / `0x03028c9e` / `0x03028628` | ui, lcd |
+| `hifi_file_close_helper` | `0x0306c6c4` | fs, hifi |
+
+*Named via changelog-anchored lineage (v3.4.0 button-modes/battery and v3.0.0
+long-press-Favorites / FF-RW-screen-off clusters). Exported to respective
+`firmware/` subsystems.*
 
 *Media-library service + OGG picture parser + WMA helpers above named via
 changelog-anchored lineage (introduced in v3.5.0 — album sorting / Favorites
