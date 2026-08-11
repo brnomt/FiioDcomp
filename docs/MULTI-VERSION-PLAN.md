@@ -7,8 +7,8 @@
 > `docs/changelog-string-diff.md` before doing anything. This file exists so
 > the process is never lost.
 >
-> **Last updated:** Aug 2026 · v2.6.0 analysis complete (94 names); **next up: 2.5.0**.
-> 2.6.0→2.7.0 had a relink shift (30/32 moved); 10-hop chain to v3.7 at
+> **Last updated:** Aug 2026 · v2.5.0 analysis complete (89 names); **next up: 2.4.0**.
+> 2.5.0→2.6.0 identical layout (0/32 moved); 11-hop chain to v3.7 at
 > threshold 0.9 without offset check.
 
 ---
@@ -263,7 +263,8 @@ no dedup possible.** There are no regional variants with identical section 3.
 | **2.8.0** | ✅ | `sec3_2_8_0.bin` | 1,653 | **95** | 75 direct (≥0.9) + 75 chainN 8-hop (combo ≥0.9, no offset); saved |
 | **2.7.0** | ✅ | `sec3_2_7_0.bin` | 1,689 | **92** | 75 direct (≥0.9) + 75 chainN 9-hop (combo ≥0.9, no offset); saved |
 | **2.6.0** | ✅ | `sec3_2_6_0.bin` | 1,633 | **94** | 75 direct (≥0.9) + 75 chainN 10-hop (combo ≥0.9, no offset); saved |
-| 2.5.0 | ▶ | — | — | — | **NEXT** — extract `sec3_2_5_0.bin`, chain 2.5→…→3.7 (11 hops) |
+| **2.5.0** | ✅ | `sec3_2_5_0.bin` | 1,671 | **89** | 73 direct (≥0.9) + 73 chainN 11-hop (combo ≥0.9, no offset); saved |
+| 2.4.0 | ▶ | — | — | — | **NEXT** — extract `sec3_2_4_0.bin`, chain 2.4→…→3.7 (12 hops) |
 | 3.2.0 | ⬜ | — | — | — | — |
 | 3.1.0 | ⬜ | — | — | — | — |
 | 3.0.0 | ⬜ | — | — | — | — |
@@ -408,6 +409,22 @@ edited modules.
 - Main code 43.5% changed; 513,747 small diff regions (relink fixups).
 - Changelog symbols all show ~4KB changed windows → **addresses moved**, so
   never assume v3.7 Ghidra addresses apply to v3.8.
+
+### ✅ 2.5.0→2.6.0 pair (done Aug 2026 session)
+
+**IDENTICAL LAYOUT (0/32 segments changed).**
+
+- Fuzzy match 2.5.0 vs 2.6.0: 1,168 matches; 424 ≥0.9; 78 named targets.
+- Direct renames (threshold 0.9): **73 applied**.
+- Chain 11 (chainN): **73 applied** (combo ≥0.9) — `RKDeviceUnRegister`,
+  `udp_server`, `event_set`, `ipc_post_cmd/arg`, `hifi_busy_delay`, etc.
+- **v2.5.0 now has 89 named / 1,671 functions (5.3%)** — was 0 before.
+
+**Ghidra program state (saved Aug 2026):** 13 programs — add `sec3_2_5_0.bin`
+(v2.5.0, 1,671 funcs, **89 named**) to the table above.
+
+Rename history: `build/cross_version_renames_log.json` (keys include
+`sec3_2_5_0.bin.chainN`).
 
 ### ✅ 2.6.0→2.7.0 pair (done Aug 2026 session)
 
