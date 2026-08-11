@@ -632,21 +632,25 @@ int Main2(void)
 
     while (1)
     {
-        /* ReChord debug: BB heartbeat - flip a red square in the UI
-         * framebuffer (0x03024868) so we can SEE that our Main2 loop runs.
+        /* ReChord debug: BB heartbeat - flip the whole framebuffer between
+         * red and black with a crude delay, so it is IMPOSSIBLE to miss.
+         * The old 20x20 square was invisible because Main2 entered
+         * __WFI2() (idle) right after drawing it once, and the AP side
+         * repainted over it. WFI is disabled here on purpose for debug.
          * Remove once the mailbox handshake works. */
         {
             static uint32 hb = 0;
             volatile uint16_t *fb = (volatile uint16_t *)0x03024868u;
             uint16_t col = (hb & 1) ? 0xF800u : 0x0000u;   /* red / black */
-            for (int k = 0; k < 400; k++)                  /* 20x20 px */
+            for (int k = 0; k < (320 * 170) / 2; k++)     /* whole fb */
                 fb[k] = col;
             hb++;
+            { volatile uint32 d; for (d = 0; d < 400000; d++); }  /* ~delay */
         }
 
         //system enter IDLE
         IntMasterDisable2();
-        if((pcb.audio_decode_status == AUDIO_DECODE_IDLE) && (gFileOpStatus == AUDIO_FILE_OPT_IDLE))
+        if(0) /* ReChord debug: no WFI so the heartbeat is visible */
         {
             __WFI2();
         }
