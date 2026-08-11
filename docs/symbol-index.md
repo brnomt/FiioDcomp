@@ -365,3 +365,17 @@ shift +512). Addresses are v3.2.0 addresses (base 0x03000000).
 | `event_set` / `ipc_post_cmd` / `ipc_post_arg` | (×8 sites) | os, event/ipc |
 | `hifi_busy_delay` / `hifi_memmove` / `wma_memcmp` | (multiple) | util / codec |
 | `Unicode2Ascii` / `FW_Ansi2UnicodeStr` | (chained) | encoding |
+
+### v3.1.0 Cross-Version Names (Aug 2026, program `sec3_3_1_0.bin`)
+
+94 functions named via 3.1.0→3.2.0 fuzzy match (78 direct ≥0.9) + 6-hop
+chain 3.1→3.2→3.3→3.4→3.5→3.6→3.7 (77, combo ≥0.9). Addresses are v3.1.0
+addresses (base 0x03000000).
+
+| Name | Address (v3.1.0) | Tags |
+|------|------------------|------|
+| `dac_gain_curve_apply` | (chained) | audio, dac, volume |
+| `udp_server` | `0x0302ab3e` | network, udp |
+| `event_set` / `ipc_post_cmd` / `ipc_post_arg` | (×8 sites) | os, event/ipc |
+| `hifi_busy_delay` / `hifi_memmove` / `wma_memcmp` | (multiple) | util / codec |
+| `Unicode2Ascii` / `FW_Ansi2UnicodeStr` | (chained) | encoding |

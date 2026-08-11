@@ -7,9 +7,9 @@
 > `docs/changelog-string-diff.md` before doing anything. This file exists so
 > the process is never lost.
 >
-> **Last updated:** Aug 2026 · v3.2.0 analysis complete (91 names); **next up: 3.1.0**.
-> v3.2.0→3.3.0 had ANOTHER relink shift (31/32 segments MOVE +512); used
-> the 5-hop chainN at threshold 0.9 without offset check.
+> **Last updated:** Aug 2026 · v3.1.0 analysis complete (94 names); **next up: 3.0.0**.
+> 3.1.0→3.2.0 was IDENTICAL layout (0/32 moved) but the 6-hop chain still
+> crossed the +512/+24 relink pairs, so threshold 0.9 without offset check.
 
 ---
 
@@ -258,7 +258,8 @@ no dedup possible.** There are no regional variants with identical section 3.
 | **3.4.0** | ✅ | `sec3_3_4_0.bin` | 1,712 | **104** | 73 direct (≥0.9) + 39 chain3 (combo ≥0.7, offset-ok); saved |
 | **3.3.0** | ✅ | `sec3_3_3_0.bin` | 1,727 | **106** | 71 direct (≥0.9) + 79 chainN 4-hop (combo ≥0.9, no offset — relink shift); saved |
 | **3.2.0** | ✅ | `sec3_3_2_0.bin` | 1,641 | **91** | 77 direct (≥0.9) + 76 chainN 5-hop (combo ≥0.9, no offset — relink shift +512); saved |
-| 3.1.0 | ▶ | — | — | — | **NEXT** — extract `sec3_3_1_0.bin`, chain 3.1→…→3.7 (6 hops) |
+| **3.1.0** | ✅ | `sec3_3_1_0.bin` | 1,706 | **94** | 78 direct (≥0.9) + 77 chainN 6-hop (combo ≥0.9, no offset); saved |
+| 3.0.0 | ▶ | — | — | — | **NEXT** — extract `sec3_3_0_0.bin`, chain 3.0→…→3.7 (7 hops) |
 | 3.2.0 | ⬜ | — | — | — | — |
 | 3.1.0 | ⬜ | — | — | — | — |
 | 3.0.0 | ⬜ | — | — | — | — |
@@ -403,6 +404,36 @@ edited modules.
 - Main code 43.5% changed; 513,747 small diff regions (relink fixups).
 - Changelog symbols all show ~4KB changed windows → **addresses moved**, so
   never assume v3.7 Ghidra addresses apply to v3.8.
+
+### ✅ 3.1.0→3.2.0 pair (done Aug 2026 session)
+
+**IDENTICAL LAYOUT (0/32 segments changed)** — first pair since 3.4→3.5
+with no relink shift. But the 6-hop chain to v3.7 still crosses the +512
+(3.2→3.3) and +24 (3.3→3.4) relink pairs, so offset-ok still fails globally;
+kept `--threshold 0.9` without `--require-offset`.
+
+- Fuzzy match 3.1.0 vs 3.2.0: 1,201 matches; 432 ≥0.9; 84 named targets.
+- Direct renames (threshold 0.9): **78 applied**.
+- Chain 6 (chainN): **77 applied** (combo ≥0.9) — `udp_server`,
+  `event_set`, `ipc_post_cmd/arg`, `hifi_busy_delay`, `dac_gain_curve_apply`,
+  `wma_memcmp`, `Unicode2Ascii`, etc.
+- **v3.1.0 now has 94 named / 1,706 functions (5.5%)** — was 0 before.
+
+**Ghidra program state (saved Aug 2026):** 8 programs in the project —
+
+| Program | Version | Funcs | Named | Notes |
+|---------|---------|------:|------:|-------|
+| `section_3_0x00081A14.bin` | v3.7.0 | 2,776 | **651** | primary program |
+| `sec3_3_6_0.bin` | v3.6.0 (Cortex) | 1,592–2,217 | ~25 | 9 renames |
+| `sec3_3_6_0.bin.0` | v3.6.0 (v8-m) | 0 | 0 | ORPHAN — ignore |
+| `sec3_3_5_0.bin` | v3.5.0 | 1,726–1,728 | **75** | 9 direct + 54 chained |
+| `sec3_3_4_0.bin` | v3.4.0 | 1,712 | **104** | 73 direct + 39 chain3 |
+| `sec3_3_3_0.bin` | v3.3.0 | 1,727 | **106** | 71 direct + 79 chainN (4-hop) |
+| `sec3_3_2_0.bin` | v3.2.0 | 1,641 | **91** | 77 direct + 76 chainN (5-hop) |
+| `sec3_3_1_0.bin` | v3.1.0 (v8-m, base 0x03000000) | 1,706 | **94** | 78 direct + 77 chainN (6-hop) |
+
+Rename history: `build/cross_version_renames_log.json` (keys include
+`sec3_3_1_0.bin.chainN`). Reopen with `tools/open_all_programs.py`.
 
 ### ✅ 3.2.0→3.3.0 pair (done Aug 2026 session)
 
