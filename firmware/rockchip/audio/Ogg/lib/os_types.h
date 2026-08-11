@@ -14,6 +14,10 @@
  function: #ifdef jail to whip a few platforms into the UNIX ideal.
 
  ********************************************************************/
+#ifndef __INT64_DEF
+#define __INT64_DEF
+typedef long long __int64;
+#endif
 #ifndef _OS_TYPES_H
 #define _OS_TYPES_H
 
