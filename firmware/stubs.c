@@ -83,7 +83,6 @@ uint32_t MailBoxReadB2ACmd __attribute__((used));
 uint32_t MailBoxReadB2AData __attribute__((used));
 uint32_t MailBoxWriteA2BCmd __attribute__((used));
 uint32_t MailBoxWriteA2BData __attribute__((used));
-uint32_t MainMenuWin __attribute__((used));
 uint32_t MaxShuffleAllCount __attribute__((used));
 uint32_t MdbBuildWin __attribute__((used));
 uint32_t MenuLogicAddress __attribute__((used));

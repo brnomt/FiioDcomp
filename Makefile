@@ -101,9 +101,9 @@ $(OBJ_DIR)/%.o: firmware/rockchip/%.c | $(OBJ_DIR)
 	$(CC) $(SDK_CFLAGS) -c $< -o $@
 
 # ---- link firmware ----
-link-firmware: $(OBJ_DIR) $(BUILD_DIR)/startup.o $(BUILD_DIR)/stubs.o $(BUILD_DIR)/fault.o
+link-firmware: $(OBJ_DIR) $(BUILD_DIR)/startup.o $(BUILD_DIR)/stubs.o $(BUILD_DIR)/fault.o $(BUILD_DIR)/rechord_win.o
 	$(CC) $(ARCH_FLAGS) -T $(LINKER) -nostartfiles -ffreestanding \
-		$(BUILD_DIR)/startup.o $(BUILD_DIR)/stubs.o $(BUILD_DIR)/fault.o $(SDK_OBJS) \
+		$(BUILD_DIR)/startup.o $(BUILD_DIR)/stubs.o $(BUILD_DIR)/fault.o $(BUILD_DIR)/rechord_win.o $(SDK_OBJS) \
 		-o $(BUILD_DIR)/rechord_full.elf
 	$(OBJCOPY) -O binary -j .fw_header -j .text $(BUILD_DIR)/rechord_full.elf $(BUILD_DIR)/section3_custom.bin
 	@echo "Built: $(BUILD_DIR)/section3_custom.bin (splice with pack-img)"
@@ -115,6 +115,9 @@ $(BUILD_DIR)/stubs.o: firmware/stubs.c | $(OBJ_DIR)
 	$(CC) $(SDK_CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/fault.o: firmware/fault.c | $(OBJ_DIR)
+	$(CC) $(SDK_CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/rechord_win.o: firmware/rechord_win.c | $(OBJ_DIR)
 	$(CC) $(SDK_CFLAGS) -c $< -o $@
 
 # ---- checks / packaging ----
