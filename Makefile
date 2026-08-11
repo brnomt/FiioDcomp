@@ -41,7 +41,23 @@ BUILD_DIR   = build
 ARCH_FLAGS  = -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
 INCLUDES    = -Ifirmware -Ifirmware/firmware \
               -Ifirmware/rockchip/include \
-              -Ifirmware/rockchip/audio/Include
+              -Ifirmware/rockchip/audio/Include \
+              -Ifirmware/rockchip/audio/RkEQ/Effect \
+              -Ifirmware/rockchip/audio/RkEQ \
+              -Ifirmware/rockchip/audio/AudioControl \
+              -Ifirmware/rockchip/audio/Common \
+              -Ifirmware/rockchip/audio/RecordControl \
+              -Ifirmware/rockchip/audio/ID3 \
+              -Ifirmware/rockchip/audio/Wav/WAV_LIB \
+              -Ifirmware/rockchip/audio/SSRC/resampler \
+              -Ifirmware/rockchip/audio/HIFI/flac \
+              -Ifirmware/rockchip/audio/HIFI/ape \
+              -Ifirmware/rockchip/audio/HIFI/alac \
+              -Ifirmware/rockchip/system/os \
+              -Ifirmware/rockchip/system/fileseek \
+              -Ifirmware/rockchip/system/module_overlay \
+              -Ifirmware/rockchip/system/sysservice \
+              -Ifirmware/rockchip/bbsystem
 CFLAGS      = $(ARCH_FLAGS) -O2 -Wall -Wno-unused-parameter -Wno-unused-variable \
               -ffunction-sections -fdata-sections \
               $(INCLUDES) -DFIIO_DECOMP_REFERENCE
