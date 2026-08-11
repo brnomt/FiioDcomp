@@ -21,7 +21,7 @@
 
 typedef unsigned int uint32;
 
-extern void Main2(void *boot_params);
+extern void rechord_app(void *boot_params);
 
 /* ---- 16-byte RKnanoFW header (byte-exact with stock v3.7.0) ---- */
 const uint8_t fw_image_header[16]
@@ -37,11 +37,12 @@ void firmware_entry(void *boot_params)
 
 void firmware_entry(void *boot_params)
 {
-    /* Mirror the stock prologue (push r4 / mov r4,r0) then jump to Main2 */
+    /* Mirror the stock prologue (push r4 / mov r4,r0) then jump to the
+     * ReChord app (V0.8: ROM-based display test; was Main2). */
     __asm__ volatile(
         "push {r4}\n"
         "mov r4, r0\n"
-        "b Main2\n");
+        "b rechord_app\n");
 }
 
 /* ---- Minimal Cortex-M3 vector table (first two entries) ---- */
