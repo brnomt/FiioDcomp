@@ -31,6 +31,8 @@
 #include "debug.h"
 #include "driverlib_def.h"
 #include "armcc_compat.h"
+#include "mailbox.h"
+#include "service_globals.h"
 
 #include "backlight.h"
 #include "LcdInclude.h"

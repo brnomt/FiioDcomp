@@ -117,138 +117,15 @@ int SysDebugHook(char ch);
 int USBDebugHook(char ch);
 
 _ATTR_INTRRUPT_CODE_
-__asm uint32 __MSR_XPSR(void)
+__attribute__((naked)) uint32 __MSR_XPSR(void)
 {
-    MRS     R0, XPSR
-    BX      R14
+    __asm__ volatile("mrs r0, xpsr; bx lr");
 }
 
 _ATTR_INTRRUPT_CODE_
-__asm __irq void IntDefaultHandler(void)
+__attribute__((interrupt("IRQ"), naked)) void IntDefaultHandler(void)
 {
-    MOV R0, #0X00C4 ;HFSR
-    MOV R1, #0X5001
-    LSL R1, #16
-    ORR R0, R1       ; Grf->GRF_INTER_CON0
-
-    MOV R2, #0X0 ;HFSR
-    MOV R3, #0X100
-    LSL R3, #16
-    ORR R2, R3       ;NOC_REMAP_MASK << 16 | NOC_REMAP_BOOT_ROM;
-
-    STR R2,[R0]         ;Grf->GRF_INTER_CON0 = NOC_REMAP_MASK << 16 | NOC_REMAP_BOOT_ROM;
-
-    MOV R0, #0x50
-    BL UART_SEND_BYTE
-    MOV R0, #0x43
-    BL UART_SEND_BYTE
-    MOV R0, #0x3A
-    BL UART_SEND_BYTE
-
-    LDR R4, [SP, #0x18]
-    BL PRINT_REG
-
-    MOV R0, #0x0D
-    BL UART_SEND_BYTE
-
-    MOV R0, #0x0A
-    BL UART_SEND_BYTE
-
-
-    MOV R0, #0x4c ;'L'
-    BL UART_SEND_BYTE
-    MOV R0, #0x52 ;'R'
-    BL UART_SEND_BYTE
-    MOV R0, #0x3A ;':'
-    BL UART_SEND_BYTE
-
-    LDR R4, [SP, #0x14]
-    BL PRINT_REG
-
-    MOV R0, #0x0D
-    BL UART_SEND_BYTE
-
-    MOV R0, #0x0A
-    BL UART_SEND_BYTE
-
-    MOV R0, #0x4d ;'M'
-    BL UART_SEND_BYTE
-    MOV R0, #0x53 ;'S'
-    BL UART_SEND_BYTE
-    MOV R0, #0x50 ;'P'
-    BL UART_SEND_BYTE
-    MOV R0, #0x3A ;':'
-    BL UART_SEND_BYTE
-
-    MRS R4, MSP
-    BL PRINT_REG
-
-    MOV R0, #0x0D
-    BL UART_SEND_BYTE
-
-    MOV R0, #0x0A
-    BL UART_SEND_BYTE
-
-
-    MOV R0, #0x50 ;'P'
-    BL UART_SEND_BYTE
-    MOV R0, #0x53 ;'S'
-    BL UART_SEND_BYTE
-    MOV R0, #0x50 ;'P'
-    BL UART_SEND_BYTE
-    MOV R0, #0x3A ;':'
-    BL UART_SEND_BYTE
-
-    MRS R4, PSP
-    BL PRINT_REG
-
-    MOV R0, #0x0D
-    BL UART_SEND_BYTE
-
-    MOV R0, #0x0A
-    BL UART_SEND_BYTE
-
-HERE
-    B       HERE
-
-
-
-
-PRINT_REG
-    PUSH {LR}
-    MOV R5, #0x08
-NEXT1
-    MOV R0, R4
-    LSR R0, #28
-    CMP R0, #0x09
-    BLS LSA
-    ADD R0, #0x37
-
-    B HIA
-LSA
-    ADD R0, #0x30
-HIA
-    BL UART_SEND_BYTE
-    LSL R4, #4
-    SUB R5, #1
-    CBZ R5, NEXT2
-    B NEXT1
-NEXT2
-    POP {LR}
-    BX LR
-
-
-UART_SEND_BYTE
-    LDR   R1, =0x400b0000 ;UART
-    LDR   R2, [R1, #0x7C] ;USR
-    MOV   R3, #0X02
-    AND     R2, R3
-    CBNZ   R2, UART_SEND_BYTE_END
-    B UART_SEND_BYTE
-UART_SEND_BYTE_END
-    STR  R0, [R1]  ;THR
-    BX LR
-
+    __asm__ volatile("b __CPU_IntDefaultHandler");
 }
 
 /*

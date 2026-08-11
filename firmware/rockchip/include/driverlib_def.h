@@ -117,6 +117,7 @@ typedef enum {
 typedef struct tagCHIP_FREQ {
     uint32 pll;             /* PLL frequency (Hz) */
     uint32 armFreq;         /* ARM core freq */
+    uint32 armclk;          /* ARM clock (Service.c) */
     uint32 hclk_sys_core;   /* HCLK sys core freq (Delay.c) */
     uint32 hclk_cal_core;   /* HCLK calibration count */
     uint32 stclk_cal_core;  /* SysTick calibration count */
@@ -308,6 +309,14 @@ typedef struct {
     volatile uint32_t GRF_SOC_STATUS[16];   /* +0x60 SoC status */
     volatile uint32_t GRF_SOC_USB_STATUS;    /* USB status (Hook.c) */
     volatile uint32_t GRF_IOFUNC_CON[16];   /* +0xA0 pin mux */
+    volatile uint32_t GPIO_IO0MUX[4];
+    volatile uint32_t GPIO_IO1MUX[4];
+    volatile uint32_t GPIO_IO2MUX[4];
+    volatile uint32_t GPIO_IO3MUX[4];
+    volatile uint32_t GPIO_IO0PULL[4];
+    volatile uint32_t GPIO_IO1PULL[4];
+    volatile uint32_t GPIO_IO2PULL[4];
+    volatile uint32_t GPIO_IO3PULL[4];
     volatile uint32_t GRF_IOFUNC_STATUS[16];/* +0xE0 */
 } RKNANO_GRF;
 
@@ -379,4 +388,52 @@ API void FREQ_EnterModule(uint32 mod);
 #define NVIC_INTCTRLSTA_PENDSTCLR     0x02000000
 #define NVIC_INTCTRLSTA_ISRPENDING    0x00400000
 #define NVIC_INTCTRLSTA_VECTACTIVE_MASK 0x000001FF
+#endif
+
+/* ================= SAR-ADC (battery.c) ================= */
+#ifndef DRIVERLIB_ADC
+#define DRIVERLIB_ADC
+#define RKNANO_ADC_BASE     0x400D0000UL
+
+typedef struct {
+    volatile uint32_t ADC_CTRL;   /* +0x00 control */
+    volatile uint32_t ADC_STAS;   /* +0x04 status */
+    volatile uint32_t ADC_DATA;   /* +0x08 data */
+} RKNANO_ADC;
+
+#define Adc  ((volatile RKNANO_ADC *)RKNANO_ADC_BASE)
+
+#define ADC_START       0x00000001
+#define ADC_POWERUP     0x00000002
+#define ADC_INT_ENBALE  0x00000004
+#define ADC_CH_MASK     0x000000F0
+
+extern uint32 AdcSamplingCh;
+#endif
+
+/* ================= I2S + PMU registers (Service.c) ================= */
+#ifndef DRIVERLIB_I2S_PMU
+#define DRIVERLIB_I2S_PMU
+#define RKNANO_I2S_BASE   0x400C1000UL
+#define RKNANO_PMU_BASE   0x400E0000UL
+
+typedef struct {
+    volatile uint32_t I2S_TXDR;    /* TX data register */
+} RKNANO_I2S;
+#define I2s_Reg  ((volatile RKNANO_I2S *)RKNANO_I2S_BASE)
+
+typedef struct {
+    volatile uint32_t PMU_SYS_REG3;
+} RKNANO_PMU;
+#define Pmu_Reg  ((volatile RKNANO_PMU *)RKNANO_PMU_BASE)
+
+/* DMA I2S0 TX channel config (Service.c) */
+#define DMA_CHN_MAX      8
+#define DMA_CTLL_I2S0_TX  0x00000018   /* 32-bit, inc src, fixed dst */
+#define DMA_CFGL_I2S0_TX  0x00000001
+#define DMA_CFGH_I2S0_TX  0x00000000
+
+/* Watchdog / misc */
+#define PCLK_WDT_GATE    0
+#define NOC_BOOT_ROM     0
 #endif

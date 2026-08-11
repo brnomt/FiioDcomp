@@ -101,6 +101,14 @@ typedef struct {
     uint32 moduleId;
     uint32 loadAddress;
     uint32 moduleSize;
+    uint32 CodeLoadBase;
+    uint32 CodeImageBase;
+    uint32 CodeImageLength;
+    uint32 DataLoadBase;
+    uint32 DataImageBase;
+    uint32 DataImageLength;
+    uint32 BssImageBase;
+    uint32 BssImageLength;
 } CODE_INFO_T;
 
 typedef struct {
@@ -155,3 +163,31 @@ extern uint32 SysProgRawDiskCapacity;
 #endif
 
 #define EVK_LANGUAGE_MAX_COUNT  1
+
+/* ---- Memory device info (ModuleOverlay.c) ---- */
+#ifndef SYSCONFIG_MEMDEV
+#define SYSCONFIG_MEMDEV
+typedef enum {
+    MEMDEV_FLASH = 0,
+    MEMDEV_SD,
+    MEMDEV_MAX
+} MEMDEV_ID;
+
+typedef struct {
+    uint32 DataImageBase;
+    uint32 DataImageLength;
+    uint32 DataLoadBase;
+    uint32 CodeImageBase;
+    uint32 CodeImageLength;
+    uint32 CodeLoadBase;
+    uint32 BssImageBase;
+    uint32 BssImageLength;
+    uint32 TotalSize;
+    uint32 BlockSize;
+    uint32 PageSize;
+    uint32 pagesie;
+} MEMDEV_INFO;
+
+extern MEMDEV_ID DataDiskID;
+API int MDGetInfo(MEMDEV_ID dev, MEMDEV_INFO *info);
+#endif

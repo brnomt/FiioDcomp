@@ -27,7 +27,6 @@ extern uint32 IsBackLightOn;
 #define BL_PWM_RATE_STEP     0x4000
 #define PWM_FREQ             20000
 
-extern uint32 AutoPowerOffDisableCounter;
 extern uint32 BacklightSystickCounterBack;
 extern uint8  gSysSetBLTimeArray[BL_LEVEL_MAX];
 #endif

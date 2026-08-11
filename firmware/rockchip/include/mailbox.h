@@ -16,13 +16,19 @@
 #define MAILBOX_INT_0       0
 #define MAILBOX_INT_1       1
 #define MAILBOX_INT_2       2
+#define MAILBOX_INT_3       3
 
 #define MAILBOX_CHANNEL_0   0
 #define MAILBOX_CHANNEL_1   1
 #define MAILBOX_CHANNEL_2   2
+#define MAILBOX_CHANNEL_3   3
 
 /* ---- Media mailbox commands (CPU -> DSP) ---- */
 #define MSGBOX_CMD_SYSTEM_START_OK          0x0001
+#define MSGBOX_CMD_SYSTEM_PRINT_LOG_OK     0x0002
+#define MSGBOX_CMD_BB_HOLD                 0x0003
+#define MSGBOX_CMD_BB_HOLD_ACK             0x0004
+#define MSGBOX_CMD_BB_HOLD_EXIT            0x0005
 
 #define MEDIA_MSGBOX_CMD_ENCODE             0x0100
 #define MEDIA_MSGBOX_CMD_ENCODE_INIT        0x0101

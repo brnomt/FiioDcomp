@@ -3,7 +3,7 @@
 *                   Copyright (C),2004-2015, Fuzhou Rockchip Electronics Co.,Ltd.
 *                         All rights reserved.
 *
-* File Name£º   SysService.h
+* File Nameï¿½ï¿½   SysService.h
 *
 * Description:
 *
@@ -91,3 +91,10 @@ extern uint8 ACodec_Get_Over_Current(void);
 ********************************************************************************
 */
 #endif
+
+/* ---- service globals (Service.c) ---- */
+extern void FMThread;
+extern void RecordThread;
+extern void LowPowerWin;
+extern uint32 gpRadioplayerRegKey;
+extern uint32 FileInfo;
