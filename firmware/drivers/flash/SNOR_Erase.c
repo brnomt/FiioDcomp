@@ -1,0 +1,33 @@
+/**
+ * SNOR_Erase @ 0x030264dc
+ * Tags: flash, storage
+ * Auto-exported from Ghidra decompilation
+ */
+
+
+undefined4 FUN_030264dc(int param_1,undefined4 param_2)
+
+{
+  int iVar1;
+  int unaff_r4;
+  int *unaff_r5;
+  
+  *(undefined4 *)(unaff_r4 + 0x24) = param_2;
+  if (param_1 * 0x10 == -1) {
+    return 0;
+  }
+  iVar1 = FUN_03026d80(DAT_03026560);
+  if (iVar1 == 0) {
+    FUN_03021cc4(unaff_r4 + 0xc,unaff_r4 + 0x10,*(undefined4 *)(unaff_r4 + 0x1c),
+                 *(undefined4 *)(unaff_r4 + 0x20));
+    if ((*(int *)(unaff_r4 + 0xc) < 0x141) && (iVar1 = FUN_030267fc(), iVar1 == 0)) {
+      iVar1 = *(int *)(unaff_r4 + 0x10) - *(int *)(unaff_r4 + 0x18) >> 1;
+      *(int *)(unaff_r4 + 0x2c) = iVar1;
+      *unaff_r5 = iVar1;
+      return 1;
+    }
+  }
+  return 0;
+}
+
+

@@ -3,7 +3,8 @@
 .commandcode/
 .git/
 
-# Stock firmware binaries (not distributed)
+# Stock firmware binaries (not distributed — copyrighted, per README policy)
+stock/
 stock/ECHO MINI V3.7.0/HIFIEC37.IMG
 stock/ECHO MINI V3.7.0/HIFIEC37.IMG.id0
 stock/ECHO MINI V3.7.0/HIFIEC37.IMG.id1

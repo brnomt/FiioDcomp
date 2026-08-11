@@ -1,0 +1,66 @@
+/**
+ * FUN_0301e1ce @ 0x0301e1ce
+ * Tags: unidentified
+ * Auto-exported from Ghidra decompilation
+ */
+
+
+undefined4 FUN_0301e1ce(void)
+
+{
+  longlong lVar1;
+  int iVar2;
+  uint uVar3;
+  undefined4 uVar4;
+  uint uVar5;
+  undefined4 *puVar6;
+  int iVar7;
+  int iVar8;
+  
+  iVar2 = DAT_0301e318;
+  iVar8 = 0;
+  puVar6 = (undefined4 *)(DAT_0301e318 + -0x848);
+  lVar1 = (ulonglong)*(uint *)(DAT_0301e318 + 4) * (ulonglong)*(uint *)(DAT_0301e318 + -0x410);
+  uVar3 = FUN_02ff6336((int)lVar1,(int)((ulonglong)lVar1 >> 0x20),0x660a,0);
+  if (*(uint *)(DAT_0301e314 + 4) < uVar3) {
+    uVar3 = *(uint *)(DAT_0301e314 + 4);
+  }
+  uVar5 = *(uint *)(iVar2 + -0x834);
+  if (uVar5 < uVar3) {
+    iVar7 = 0;
+    if (0 < (int)(uVar3 - uVar5)) {
+      do {
+        iVar8 = FUN_0301de88(puVar6);
+        iVar7 = iVar7 + 1;
+      } while (iVar7 < (int)(uVar3 - uVar5));
+    }
+    *(undefined4 *)(iVar2 + -0x838) = 0;
+    ape_rom_seek_thunk(*(undefined4 *)(iVar2 + -0x83c),1,*puVar6);
+  }
+  else {
+    if (uVar5 == uVar3) {
+      return 0;
+    }
+    iVar7 = 0;
+    if (0 < (int)(uVar5 - uVar3)) {
+      do {
+        iVar8 = FUN_0301df6c(puVar6);
+        iVar7 = iVar7 + 1;
+      } while (iVar7 < (int)(uVar5 - uVar3));
+    }
+    *(undefined4 *)(iVar2 + -0x838) = 0;
+    ape_rom_seek_thunk(-*(int *)(iVar2 + -0x83c),1,*puVar6);
+  }
+  if (iVar8 == 1) {
+    return 0;
+  }
+  if (iVar8 == 2) {
+    uVar4 = 1;
+  }
+  else {
+    uVar4 = 0xffffffff;
+  }
+  return uVar4;
+}
+
+

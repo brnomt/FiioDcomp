@@ -1,0 +1,29 @@
+/**
+ * FUN_0302336a @ 0x0302336a
+ * Tags: unidentified
+ * Auto-exported from Ghidra decompilation
+ */
+
+
+undefined4 FUN_0302336a(int param_1)
+
+{
+  int iVar1;
+  undefined4 uVar2;
+  int iVar3;
+  uint in_stack_00000004;
+  
+  iVar3 = param_1 + in_stack_00000004 * 0x1000000 +
+          (in_stack_00000004 >> 8 & 0xff) * 0x10000 + (in_stack_00000004 >> 0x10 & 0xff) * 0x100;
+  if (0x200 < iVar3) {
+    iVar3 = 0x200;
+  }
+  iVar1 = FUN_02ffc9d6(&stack0x0000000c,6);
+  if ((0 < iVar1) && (-1 < iVar3)) {
+    uVar2 = FUN_02ff89ce(&stack0x0000000c,s_image__03023674,6);
+    return uVar2;
+  }
+  return 0;
+}
+
+

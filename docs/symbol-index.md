@@ -1,13 +1,13 @@
 # Echo Mini Firmware — Module Reference
 
-## Labeled Functions (Ghidra custom-named grows each pass; 624/2,776 = 22.5%)
+## Labeled Functions (Ghidra custom-named grows each pass; 651/2,776 = 23.5%)
 
 Phase goal: convert the entire IMG to C. Progress is tracked by custom-named
 count vs total. New C files land under `firmware/` as symbols are named.
 
 **SDK matching pass (Aug 2026):** Auto-analysis +21, similarity matching +8,
 ROM API naming +7, functionality matching (constants) +85, structural matching
-+195, combined matching +67, call graph propagation +80. See `docs/sdk-matching-progress.md` for details.
++195, combined matching +67, call graph propagation +80, additional matching +27. See `docs/sdk-matching-progress.md` for details.
 
 **Boundary repair pending (do not trust oversized decomp bodies):**
 `hifi_busy_delay_ovl_09e3`, `_0fd1`, `_0e48` — Ghidra body starts ~0xb00 before entry.
@@ -56,6 +56,7 @@ Needs `delete_function` + `create_function` at the true entry when approved.
 | Name | Address | Tags |
 |------|---------|------|
 | `AudioPlayback_Start` | `0x0302a398` | audio |
+| `AudioPause` | `0x0302a69e` | audio, sdk match |
 | `audiocodec_open` | `0x03029d0e` | audio, hardware |
 
 ### OS Primitives
@@ -243,3 +244,31 @@ Container magic: `g_dwDictMagicVaT` @ `0x0304fd4c` ('VaT '), `g_dwDictMagicVAT` 
 | Name | Address | Tags |
 |------|---------|------|
 | `RecordWinSvc_Start` | `0x0300aabc` | recording, service |
+
+### SDK-Matched Functions (Aug 2026 pass)
+| Name | Address | Tags |
+|------|---------|------|
+| `rk_printf` | `0x03000e08` | os, logging |
+| `mbedtls_x509_dn_gets` | `0x03003df4` | crypto, tls |
+| `SDC_Init` | `0x03004612` | sd, init |
+| `mbedtls_timing_self_test` | `0x030093f4` | crypto, test |
+| `mbedtls_x509_crt_parse_path` | `0x0300d184` | crypto, tls |
+| `GUI_BmpFronDisplay` | `0x03012128` | ui, gui |
+| `SNAND_Write` | `0x03019246` | flash, storage |
+| `OGGInfo_Parse` | `0x0301930e` | codec, ogg |
+| `dhcpd_add_option` | `0x0301a30e` | network, dhcp |
+| `DisplayDev_ClrRect` | `0x0301c978` | ui, display |
+| `SNOR_Erase` | `0x030264dc` | flash, storage |
+| `ScuClockGateCtr` | `0x03029822` | system, clock |
+| `TransCodeFromUTF8ToUnicode` | `0x0302cab0` | codec, encoding |
+| `FatDev_FileSeek` | `0x0304ed3e` | fs, fat |
+| `UartDevShellBspSetStopB` | `0x030506b0` | uart, config |
+| `FATDelClusChain` | `0x030644c4` | fs, fat |
+| `SDC_UpdateFreq` | `0x03082bfa` | sd, config |
+| `besl_p2p_host_find_device` | `0x03085ce2` | network, p2p |
+| `GUI_Setfocus` | `0x0308cb4c` | ui, gui |
+| `SNOR_Init` | `0x0308eaf2` | flash, init |
+| `FSRealname` | `0x030b1328` | fs, utility |
+| `FW_Ansi2Unicode` | `0x030c4dec` | encoding, conversion |
+| `APEV1_Parse` | `0x030cb34a` | codec, ape, tags |
+| `SDC_WriteData` | `0x030f0384` | sd, storage |

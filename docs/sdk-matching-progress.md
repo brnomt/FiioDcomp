@@ -10,16 +10,18 @@ to automatically name functions in the Fiio Echo Mini firmware binary via Ghidra
 | Metric | Value |
 |--------|-------|
 | Total functions in binary | 2,776 |
-| **Named functions** | **624** (22.5%) |
-| Unnamed (`FUN_*`) | 2,152 |
+| **Named functions** | **651** (23.5%) |
+| Unnamed (`FUN_*`) | 2,125 |
 | SDK functions indexed | 5,333 |
 | SDK functions with callees indexed | 6,327 |
 | SDK functions with distinctive constants | 588 |
 | SDK functions with structural fingerprints | 5,028 |
-| Decompiled binary functions | 2,601 |
+| Decompiled binary functions | 2,764 |
 | Anchor functions (named in both binary + SDK) | 431 |
-| Functions named by functionality matching | +356 (188→544) |
-| Functions named by call graph propagation | +80 (544→624) |
+| Functions named by functionality matching | +357 (188→545) |
+| Functions named by structural matching | +14 (638→652) |
+| Functions named by combined matching | +2 (640→651) |
+| Functions named by call graph propagation | +11 (640→651) |
 
 ## Approaches Tried
 
@@ -197,7 +199,9 @@ All matching tools are in `tools/`:
 ## Build Artifacts
 
 - `build/sdk_features.json` — 5,333 SDK functions with constants + structure
-- `build/all_decompilations.json` — 2,601 decompiled binary functions
+- `build/all_decompilations.json` — 2,764 decompiled binary functions
 - `build/functionality_matches_v2.json` — Constant-based match results
 - `build/structural_matches.json` — Structure-based match results
 - `build/combined_matches.json` — Combined match results
+- `build/callgraph_propagation_matches.json` — Call graph propagation results
+- `build/new_function_names.json` — 25 new function names from this pass

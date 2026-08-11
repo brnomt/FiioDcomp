@@ -30,7 +30,10 @@ Reverse engineering notes, documentation, tooling, patches, and clean-room imple
 
 ## RE Progress (Aug 2026)
 
-Function naming status in Ghidra: **624 / 2,776 functions named (22.5%)**
+Function naming status in Ghidra (v3.7.0, live): **651 / 2,776 functions named (23.4%)**
+Decompiled to pseudocode: **2,764 / 2,776** (see `build/all_decompilations.json`)
+
+Run `python tools/check_decompilation_status.py` for a live status from Ghidra.
 
 | Approach | Functions named |
 |----------|---------------|
@@ -40,9 +43,29 @@ Function naming status in Ghidra: **624 / 2,776 functions named (22.5%)**
 | Combined constant + structural matching | +67 |
 | Call graph propagation (SDK callee index) | +80 |
 | ROM API naming + similarity matching | +15 |
+| Additional matching pass (Aug 2026) | +27 |
 
 All matching uses leaked Rockchip SDK source (`RKNanoD_MP3_V1.3` + `RKNanoD_Wireless_Audio_SDK_V1.5`)
 as reference. See `docs/sdk-matching-progress.md` for full details.
+
+## Multi-Version Differential Analysis (NEW)
+
+**All 23 firmware versions are in `stock/`** (v1.2.5 → v3.8.0), each with its
+official changelog in `Read me.txt`. We use **changelog-anchored version diffing**
+to name functions with certainty: each changelog entry maps to a cluster of
+changed functions between adjacent versions.
+
+Progress so far (backwards from v3.7.0, all saved in Ghidra):
+
+| Version | Program in Ghidra | Named funcs | Done via |
+|---------|-------------------|------------:|----------|
+| **v3.7.0** | `section_3_0x00081A14.bin` | **651** | primary program (decompiled + exported) |
+| **v3.6.0** | `sec3_3_6_0.bin` | ~25 | fuzzy match vs 3.7.0 (9 renames) |
+| **v3.5.0** | `sec3_3_5_0.bin` | **75** | 1,141 fuzzy matches + 3.5→3.6→3.7 chain propagation |
+
+**⚠️ READ `docs/MULTI-VERSION-PLAN.md` FIRST** — it is the complete handoff
+document for this workflow (corpus dedup, string diffs, Ghidra MCP API,
+segment-table diffs, tool inventory, pitfalls, and next steps).
 
 ## Repository Structure
 
@@ -67,6 +90,8 @@ firmware/                       # Rockbox-style modular C project (decompiled)
 └── resource/                   # ROCK26IMAGERES table, bitmaps, fonts
 
 docs/                           # Documentation
+├── MULTI-VERSION-PLAN.md       # ⚠️ HANDOFF: full multi-version diff workflow
+├── changelog-string-diff.md    # Changelog × string-diff correlation (auto-gen)
 ├── symbol-index.md             # Labeled function reference
 ├── memory-map.md               # Complete memory map + SoC pinout
 ├── fork-strategy.md            # SDK vs Ghidra source model
@@ -75,8 +100,7 @@ docs/                           # Documentation
 └── re-backlog.md               # Prioritized FUN_* RE work
 
 stock/                          # Reference firmware (not distributed)
-├── ECHO MINI V3.7.0/           # Firmware version 3.7.0
-└── ECHO MINI 512M/             # 512 MB variant
+├── 1.2.5 … 3.8.0/              # ALL 23 firmware versions, each with Read me.txt changelog
 
 tools/                          # Analysis and patching scripts
 Makefile                        # Build system (arm-none-eabi-gcc target)
