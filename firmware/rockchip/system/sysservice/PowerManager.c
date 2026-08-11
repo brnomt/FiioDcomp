@@ -14,6 +14,8 @@
 */
 #define _IN_POWER
 
+#include "SysInclude.h"
+#include "PowerManager.h"
 #include "DriverInclude.h"
 #include "interrupt.h"
 #include "msg.h"

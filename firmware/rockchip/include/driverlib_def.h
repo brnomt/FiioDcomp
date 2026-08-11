@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include "typedef.h"
+#include "freq_enums.h"
 #include "armcc_compat.h"
 
 /* ================= SoC peripheral bases ================= */
@@ -115,12 +116,17 @@ typedef enum {
 #ifndef DRIVERLIB_FREQ
 #define DRIVERLIB_FREQ
 typedef struct tagCHIP_FREQ {
-    uint32 pll;             /* PLL frequency (Hz) */
-    uint32 armFreq;         /* ARM core freq */
-    uint32 armclk;          /* ARM clock (Service.c) */
-    uint32 hclk_sys_core;   /* HCLK sys core freq (Delay.c) */
-    uint32 hclk_cal_core;   /* HCLK calibration count */
-    uint32 stclk_cal_core;  /* SysTick calibration count */
+    uint32 pll;              /* PLL frequency (Hz) */
+    uint32 armFreq;          /* ARM core freq */
+    uint32 armclk;           /* ARM clock */
+    uint32 armclk2;          /* ARM clock alt (PowerManager) */
+    uint32 hclk_sys_core;    /* HCLK sys core freq */
+    uint32 hclk_cal_core;    /* HCLK calibration count */
+    uint32 fclk_sys_core;    /* FCLK sys core (PowerManager) */
+    uint32 fclk_cal_core;
+    uint32 pclk_logic_pre;   /* PCLK logic pre-div */
+    uint32 stclk_sys_core;   /* SysTick sys core */
+    uint32 stclk_cal_core;   /* SysTick calibration count */
     uint32 sdramFreq;
 } chip_freq_t;
 extern chip_freq_t chip_freq2;
@@ -354,24 +360,9 @@ API void Gpio_DisableInt(uint32 ch, uint32 pin);
 API void Grf_GpioMuxSet(uint32 ch, uint32 pin, uint32 mode);
 #endif /* DRIVERLIB_GPIO */
 
-/* ================= FREQ module (OsHook.c) ================= */
-#ifndef DRIVERLIB_FREQMOD
-#define DRIVERLIB_FREQMOD
-#define FREQ_BLON   0
-API void FREQ_EnterModule(uint32 mod);
-#endif /* DRIVERLIB_FREQMOD */
 
-/* ---- more FREQ / SCU constants (OsHook.c) ---- */
-#ifndef DRIVERLIB_FREQ_EXTRA
-#define DRIVERLIB_FREQ_EXTRA
-#define FREQ_IDLE   1
-#define SCU_DCOUT_100  100000000
-#define SCU_DCOUT_120  120000000
-#endif
 
-#ifndef FREQ_MAX
-#define FREQ_MAX  32
-#endif
+
 
 /* NVIC constants (interrupt2.c) */
 #ifndef DRIVERLIB_NVIC_BITS
@@ -428,6 +419,14 @@ typedef struct {
 #define Pmu_Reg  ((volatile RKNANO_PMU *)RKNANO_PMU_BASE)
 
 /* DMA I2S0 TX channel config (Service.c) */
+#define DMA_CHN0  0
+#define DMA_CHN1  1
+#define DMA_CHN2  2
+#define DMA_CHN3  3
+#define DMA_CHN4  4
+#define DMA_CHN5  5
+#define DMA_CHN6  6
+#define DMA_CHN7  7
 #define DMA_CHN_MAX      8
 #define DMA_CTLL_I2S0_TX  0x00000018   /* 32-bit, inc src, fixed dst */
 #define DMA_CFGL_I2S0_TX  0x00000001
@@ -436,4 +435,32 @@ typedef struct {
 /* Watchdog / misc */
 #define PCLK_WDT_GATE    0
 #define NOC_BOOT_ROM     0
+#endif
+
+/* SCU output clock values (OsHook.c) */
+#ifndef DRIVERLIB_SCU
+#define DRIVERLIB_SCU
+#define SCU_DCOUT_100  100000000
+#define SCU_DCOUT_120  120000000
+#endif
+
+/* ---- PLL argument struct (PowerManager.c) ---- */
+#ifndef DRIVERLIB_PLLARG
+#define DRIVERLIB_PLLARG
+typedef struct {
+    uint32 VCO;
+    uint32 div_con_24m;
+    uint32 div_con;
+    uint32 fbdiv;
+    uint32 refdiv;
+    uint32 postdiv1;
+    uint32 postdiv2;
+    uint32 dsm;
+    uint32 sys_core_div;
+    uint32 sys_stclk_div;
+    uint32 cal_core_div;
+    uint32 cal_stclk_div;
+    uint32 pclk_logic_div;
+} PLL_ARG_t;
+extern PLL_ARG_t PllArg;
 #endif
