@@ -2,12 +2,18 @@
  * ReChord startup — Echo Mini (RKnanoC) boot entry.
  *
  * The RKnano bootloader loads section_3 to RAM, reads the 16-byte
- * RKnanoFW header, and jumps to firmware_entry @ 0x03000010 passing
- * boot parameters in r0.
+ * RKnanoFW header, configures the stack, and jumps to the code at
+ * 0x03000010 (firmware_entry), passing boot parameters in r0.
+ *
+ * Header format (byte-identical to stock v3.7.0):
+ *   [0:8]  "RKnanoFW"  magic
+ *   [8:12] 0x0301e794  initial SP (main stack base, segment table)
+ *   [12:16]0x00000052  count / flags (matches stock)
  *
  * This file:
- *   1. Provides the RKnanoFW header placeholder (pack_img fills magic).
- *   2. Defines firmware_entry -> calls the SDK's Main2.
+ *   1. Provides the RKnanoFW header (pack_img only splices, does not
+ *      rewrite the magic — it must be correct here).
+ *   2. Defines firmware_entry @ 0x03000010 -> calls the SDK's Main2.
  *   3. Provides a minimal vector table + Default_Handler for Cortex-M3.
  */
 #include <stdint.h>
@@ -17,15 +23,12 @@ typedef unsigned int uint32;
 
 extern void Main2(void *boot_params);
 
-/* ---- 16-byte RKnanoFW header (magic + load-addr + count) ----
- * pack_img.py rewrites the magic; load address 0x03000000 and the
- * count/flags 0x52 match the stock firmware. */
-const uint32_t fw_image_header[4]
+/* ---- 16-byte RKnanoFW header (byte-exact with stock v3.7.0) ---- */
+const uint8_t fw_image_header[16]
     __attribute__((section(".fw_header"), used, aligned(16))) = {
-    0x03000000,  /* load address (RKnanoFW field) */
-    0x00000052,  /* count / flags (matches stock) */
-    0x00000000,  /* reserved */
-    0x00000000,  /* reserved */
+    'R', 'K', 'n', 'a', 'n', 'o', 'F', 'W',  /* magic */
+    0x94, 0xE7, 0x01, 0x03,                  /* 0x0301E794 LE: initial SP */
+    0x52, 0x00, 0x00, 0x00,                  /* 0x52: count/flags */
 };
 
 /* ---- firmware_entry @ 0x03000010 (bootloader jumps here, r0 = params) ---- */
@@ -34,9 +37,11 @@ void firmware_entry(void *boot_params)
 
 void firmware_entry(void *boot_params)
 {
+    /* Mirror the stock prologue (push r4 / mov r4,r0) then jump to Main2 */
     __asm__ volatile(
-        "mov r0, r0\n"   /* keep boot_params (no-op, safe) */
-        "b Main2\n");    /* jump into the SDK entry */
+        "push {r4}\n"
+        "mov r4, r0\n"
+        "b Main2\n");
 }
 
 /* ---- Minimal Cortex-M3 vector table (first two entries) ---- */

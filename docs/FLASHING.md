@@ -1,6 +1,6 @@
 # ReChord — Flashing Guide (Echo Mini)
 
-How to get a modified firmware onto your device, what works today, and what is still missing for a full custom build.
+How to get a modified firmware onto your device, what works today, and what is still missing.
 
 ## How Fiio Upgrades Work (Official)
 
@@ -10,104 +10,84 @@ From the stock `Read me.txt`:
 2. **Remove the TF/micro-SD card** if one is inserted.
 3. **Reboot** the player — it upgrades automatically.
 
-No PC flashing tool is required for normal user upgrades. The player reads the IMG from internal flash and applies it on boot.
+No PC flashing tool is required. The player reads the IMG from internal flash and applies it on boot.
 
 > **Warning:** Some major upgrades (e.g. v2.4.0) **format internal storage**. Back up music and data before flashing anything custom.
 
 ---
 
-## What You Can Flash Today (Safe)
-
-### Option A — Resource mods (recommended first step)
-
-Change UI bitmaps (themes, icons, boot animation frames) **without touching code**.
-
-**Requirements:**
-- Python 3
-- Stock `HIFIEC37.IMG` in `stock/ECHO MINI V3.7.0/` (not distributed by this repo — obtain from official Fiio/Snowsky firmware)
-- This repo's `tools/`
-
-**Steps:**
+## Build pipeline (current status)
 
 ```bash
-# 1. Extract all ROCK26 UI resources (~1617 bitmaps)
-python tools/extract_resources.py "stock/ECHO MINI V3.7.0/HIFIEC37.IMG" -o build/resources
-
-# 2. Prepare replacements (match exact resource name + dimensions)
-#    Put files in build/replacements/ as either:
-#      POWERON0_(0,0).BMP.rgb565   (raw big-endian RGB565)
-#      POWERON0_(0,0).BMP.png      (auto-converted; must match w×h)
-
-# 3. Repack into a new IMG (preserves EOF trailer)
-python tools/repack_firmware.py "stock/ECHO MINI V3.7.0/HIFIEC37.IMG" \
-    -r build/replacements -o build/custom.IMG
-
-# 4. Verify trailer byte
-python tools/crc_util.py build/custom.IMG
-
-# 5. Copy to device
-#    - Connect Echo Mini via USB, enter storage mode
-#    - Copy build/custom.IMG to root as HIFIEC37.IMG (or matching version name)
-#    - Eject safely, remove TF card, reboot
+mingw32-make all            # build-sdk + link-firmware
+                            # → build/rechord_full.elf (998 KB)
+                            # → build/section3_custom.bin (50 KB, flat section_3)
+python tools/pack_img.py --pack build/section3_custom.bin -o build/custom.IMG
 ```
 
-**Risk:** Very low. Code sections are untouched. Worst case: wrong image dimensions → garbled UI, fixable by reflashing stock IMG.
+**Status:**
+- ✅ SDK compiles (44 objects) + links with stubs
+- ✅ `section3_custom.bin` has byte-correct RKnanoFW header:
+  `"RKnanoFW"` + SP `0x0301E794` + count `0x52` (matches stock v3.7.0)
+- ✅ `pack_img.py --identity-test` PASS (byte-identical repack)
+- ✅ packaged IMG preserves bootloader + resources + trailer
+- ⬜ **Drivers are stubs** — the linked firmware boots the SDK kernel (Main2)
+  but hardware init is stubbed (globals zero, functions return 0)
+
+> **What this first code flash validates:** the full pipeline — compile,
+> link, pack, bootloader acceptance of our section_3. The device may show
+> a black screen or not fully boot (stubs). Stock is always restorable.
 
 ---
 
-### Option B — Hex patches on stock IMG (advanced, moderate risk)
+## Flash procedure
 
-Small code changes without compiling from source — e.g. theme color values, NOP slides (Flame Ocean–style patches).
-
-**Requirements:**
-- Ghidra with `FIIO-3.7.0-Decomp` project
-- Hex editor or a patch script
-- Understanding of ARM Thumb-2 patch size limits
-
-**Workflow:**
-1. Find target address in Ghidra (e.g. theme color @ `0x0301d750`)
-2. Compute patched bytes (Thumb instructions are 2-byte aligned, often 2 or 4 bytes)
-3. Map Ghidra address → file offset in `section_3` (use segment table / `extract_fw.py`)
-4. Patch bytes in a **copy** of stock IMG
-5. Flash same as Option A
-
-**Risk:** Moderate. Wrong patch can brick boot or cause crashes. Always keep a stock IMG backup and test on a device you can recover.
-
-> A `tools/patch_img.py` helper does not exist yet — this is manual today.
-
----
-
-## Building from source (v3.7.0, in progress)
-
-**Toolchain verified:** GNU Arm Embedded `arm-none-eabi-gcc` 10.3+
+### Step 1 — Build + pack (done)
 
 ```bash
-# Windows (use mingw32-make if `make` is not on PATH)
-mingw32-make toolchain      # verify gcc
-mingw32-make all            # core OS/filesystem objects → build/reference.o
-mingw32-make compile-check  # compile all firmware/*.c, report pass/fail
+mingw32-make all
+python tools/pack_img.py --pack build/section3_custom.bin -o build/custom.IMG
 ```
 
-**What compiles today (core layer):** `entry.c`, `bitreader.c`, `hifi_file.c`, filesystem I/O, ROM API stubs — 11 files linked into `build/reference.o`.
+Backup of the stock IMG is saved as `build/stock_restore_HIFIEC37.IMG`.
 
-**Still blocking full link:** `firmware.ld` is drafted but not validated; codec/apps layers need `g_*` globals and header/API alignment; SDK tree needs `DriverInclude.h` / SysConfig; `pack_img.py` does not exist yet.
+### Step 2 — Copy to device
 
-See `firmware/rom_api.h` for boot-ROM call stubs used during host compile.
+1. Connect Echo Mini via USB → enters storage mode.
+2. Copy `build/custom.IMG` to the **root** of internal storage as
+   `HIFIEC37.IMG` (overwrite the existing one if present).
+3. Eject safely.
+4. **Remove the TF/micro-SD card**.
+5. Reboot the player — it applies the upgrade automatically.
+
+### Step 3 — Verify
+
+- **If it boots:** device powers on. (With stubs, expect at most a
+  boot screen or black screen — this milestone is about pipeline
+  validation, not function.)
+- **If it does not boot / loops:** wait ~10s, then restore stock (below).
 
 ---
 
-You **cannot** run `make all` and flash the result. The Makefile is a scaffold only.
+## Recovery (if something goes wrong)
 
-| Missing | Status |
-|---------|--------|
-| `arm-none-eabi-gcc` toolchain | Installed — run `make toolchain` |
-| Linker script (`firmware.ld`) | Draft (not validated) |
-| Startup / vector table | Not in repo |
-| Codec binary blobs linked in | Not integrated |
-| IMG section packer (`tools/pack_img.py`) | Written — M2 identity test PASSES |
-| Byte-identical rebuild of stock section_3 | M2 passed (pack_img identity test) |
+1. Keep `build/stock_restore_HIFIEC37.IMG` (or the stock download).
+2. Connect device → storage mode. If the device won't enter storage mode,
+   power off and retry; the bootloader A/B fallback may also auto-restore.
+3. Copy the **stock** IMG to root as `HIFIEC37.IMG`, remove TF card, reboot.
+4. If the device won't boot at all: check Fiio/Snowsky forums for
+   maskrom / factory-tool recovery (Rockusb driver ships with the
+   RKNanoD SDK).
 
-See [Full Build Checklist](#full-build-checklist) below.
+---
+
+## What was verified on hardware so far
+
+| Test | Result |
+|------|--------|
+| Resource mod (boot animation colors) | ✅ Flashed, device booted, reversible |
+| `pack_img.py --identity-test` | ✅ Byte-identical IMG |
+| First code flash (stub kernel) | ⬜ Next step |
 
 ---
 
@@ -118,64 +98,28 @@ HIFIEC37.IMG (~32 MB)
 ├── Outer header          @ 0x000000
 ├── Section 1             @ 0x0001F8   Relocation / segment table
 ├── Section 2             @ 0x057820   Bootloader (~173 KB)
-├── Section 3             @ 0x081A14   Main firmware (ARM Thumb-2)  ← Ghidra target
+├── Section 3             @ 0x081A14   Main firmware (ARM Thumb-2)  ← REPLACED
 ├── Section 4             @ 0x1FC41F8  Padding
 └── EOF trailer           last 4 bytes  0x1EA1C309 (LE)
 ```
 
 Part 5 (inside section 3 region): `ROCK26IMAGERES` — 1617 RGB565 UI bitmaps.
 
----
+### RKnanoFW section_3 header (16 bytes @ 0x03000000)
 
-## Recovery If Something Goes Wrong
+```
+[0:8]  "RKnanoFW"  magic
+[8:12] 0x0301E794  initial SP (main stack base)
+[12:16]0x00000052  count/flags
+```
 
-1. **Keep stock `HIFIEC37.IMG`** backed up on your PC.
-2. Copy stock IMG to device root, remove TF card, reboot — same upgrade path restores factory firmware.
-3. If the device won't boot into USB storage: check Fiio/Snowsky forums for maskrom / factory-tool recovery (Rockusb driver ships with RKNanoD SDK under `Development/firmware_upgrade/`).
-
----
-
-## Full Build Checklist
-
-Use this when aiming for **custom code** flashed from your own compile, not just resource mods.
-
-### Phase 1 — Toolchain
-- [x] Install `arm-none-eabi-gcc` (GNU Arm Embedded 10.3+ verified)
-- [x] Install `make` or `mingw32-make` (Windows: winlibs mingw64)
-- [x] Verify: `make toolchain` or `arm-none-eabi-gcc --version`
-
-### Phase 2 — Linkable firmware
-- [x] Create `firmware/firmware.ld` from Fiio segment table + SDK `BuildAll.sct` (draft — not validated)
-- [ ] Add startup (`Reset_Handler`, stack, vectors) targeting `firmware_entry` @ `0x03000010`
-- [ ] Port SDK framework sources OR verified Ghidra decomp into build
-- [ ] Link codec blobs (`mp3_code.bin`, `hifi_flac_code.bin`, etc.) at correct addresses
-- [ ] Stub ROM API calls @ `0x02FE0000` (boot ROM — not compiled in)
-- [ ] Produce `build/RkNano.bin` (or equivalent flat binary for section 3)
-
-### Phase 3 — IMG packaging
-- [x] Write `tools/pack_img.py`: splice custom section_3 into stock IMG
-  - Preserve sections 1, 2, 4 from stock (header, bootloader, resources, padding)
-  - Replace section 3 with your binary
-  - Preserve / recalculate EOF trailer
-- [x] **Milestone M2:** packed IMG byte-matches stock section_3 before any code changes
-  - `py tools/pack_img.py --identity-test` → PASS (SHA-256 identical)
-- [ ] Flash milestone IMG — device must boot identically to stock
-
-### Phase 4 — Custom changes
-- [ ] Change one function (e.g. debug string, theme color)
-- [ ] Rebuild, repack, flash, verify on hardware
-- [ ] Document UART debug pin if available (PB5/PB6 per memory map)
-
-### Phase 5 — Fork-friendly repo
-- [ ] `docs/sdk-porting.md` — which files came from RKNanoD SDK vs Ghidra
-- [ ] CI or script: `python tools/repack_firmware.py` + smoke test on extracted section_3 hash
+`firmware_entry` is at 0x03000010 (bootloader jumps here, r0 = boot params).
 
 ---
 
 ## Related Docs
 
-- [fork-strategy.md](fork-strategy.md) — SDK vs Ghidra source model
-- [sdk-porting.md](sdk-porting.md) — what to copy from leaked SDK, what not to
-- [re-backlog.md](re-backlog.md) — prioritized Ghidra RE work after SDK port
-- [decompilation-plan.md](decompilation-plan.md) — Ghidra progress and addresses
-- [memory-map.md](memory-map.md) — address space and segments
+- [STATUS.md](STATUS.md) — build status and roadmap
+- [HARDWARE.md](HARDWARE.md) — memory map, registers, segment table
+- [RE-HISTORY.md](RE-HISTORY.md) — decompilation → SDK pivot history
+- [re/](re/) — archived RE docs + decompiled spec (`re/decomp/`)
