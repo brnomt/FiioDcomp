@@ -1,7 +1,10 @@
-# Custom Firmware — Build Status (Aug 2026)
+# ReChord — Build Status (Aug 2026)
 
-> **Goal:** a compile-from-source firmware for the FiiO Echo Mini (RKnanoC),
+> **Goal:** a free, compile-from-source firmware for the FiiO Echo Mini (RKnanoC),
 > so DSP effects / features can be modified in C and flashed via pack_img.py.
+>
+> **ReChord** = re-harmonize: rebuild the Echo Mini firmware from the Rockchip
+> SDK source + our own app layer, starting with DSP effects.
 >
 > **Current:** **ALL 53 Rockchip SDK source files compile** (kernel + audio +
 > codecs) with `arm-none-eabi-gcc`. The DSP-effects mod target (`Effect.c`)

@@ -1,4 +1,4 @@
-# Flashing Guide — Echo Mini (HIFIEC37.IMG)
+# ReChord — Flashing Guide (Echo Mini)
 
 How to get a modified firmware onto your device, what works today, and what is still missing for a full custom build.
 

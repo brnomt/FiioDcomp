@@ -1,6 +1,6 @@
 /*
- * echo-mini-firmware
- * Rockbox-style modular C project for Fiio Echo Mini firmware
+ * ReChord — free firmware for the Fiio Echo Mini (RKnanoC)
+ * Built from the Rockchip RKnanoD SDK source + our app layer.
  *
  * Architecture: RKnano ARM Cortex-M (Thumb-2), little-endian
  * Firmware base: ram:0x03000000

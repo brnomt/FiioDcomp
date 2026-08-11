@@ -1,4 +1,4 @@
-# Echo Mini Firmware — Memory Map
+# ReChord — Echo Mini Hardware Map
 
 ## SoC: Rockchip RKnanoC (from datasheet)
 - **Package:** LQFP64 (likely — matches Echo Mini form factor)

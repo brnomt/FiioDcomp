@@ -1,8 +1,10 @@
-# Echo Mini Firmware — Build System (v3.7.0)
+# ReChord — Echo Mini custom firmware build system
 #
 # Target: ARM Cortex-M3 (Thumb-2), Rockchip RKnanoC
 # Toolchain: arm-none-eabi-gcc (GNU Arm Embedded)
 #
+# Goal: compile the Rockchip RKnanoD SDK + FiiO layer from source,
+# produce a flashable section_3 via tools/pack_img.py.
 # Windows: use mingw32-make (e.g. C:\winlibs\mingw64\bin\mingw32-make.exe)
 #
 # Usage:
