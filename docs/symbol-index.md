@@ -351,3 +351,17 @@ relink shift, 31/32 segments MOVE +24). Addresses are v3.3.0 addresses
 | `RKDeviceUnRegister` | `0x03009a8c` | system, device |
 | `DICTDECODER_InitStream` | (chained) | codec, dict |
 | `event_set` / `ipc_post_cmd` / `ipc_post_arg` | (×8 sites) | os, event/ipc |
+
+### v3.2.0 Cross-Version Names (Aug 2026, program `sec3_3_2_0.bin`)
+
+91 functions named via 3.2.0→3.3.0 fuzzy match (77 direct ≥0.9) + 5-hop
+chain 3.2→3.3→3.4→3.5→3.6→3.7 (76, combo ≥0.9; no offset check — relink
+shift +512). Addresses are v3.2.0 addresses (base 0x03000000).
+
+| Name | Address (v3.2.0) | Tags |
+|------|------------------|------|
+| `dac_gain_curve_apply` | `0x03009418` | audio, dac, volume (v3.2 changelog: vol 4-5 smoothness ✓) |
+| `udp_server` | `0x0302ab92` | network, udp |
+| `event_set` / `ipc_post_cmd` / `ipc_post_arg` | (×8 sites) | os, event/ipc |
+| `hifi_busy_delay` / `hifi_memmove` / `wma_memcmp` | (multiple) | util / codec |
+| `Unicode2Ascii` / `FW_Ansi2UnicodeStr` | (chained) | encoding |
