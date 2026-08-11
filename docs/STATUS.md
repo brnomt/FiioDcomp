@@ -6,9 +6,14 @@
 > **ReChord** = re-harmonize: rebuild the Echo Mini firmware from the Rockchip
 > SDK source + our own app layer, starting with DSP effects.
 >
-> **Current:** **ALL 53 Rockchip SDK source files compile** (kernel + audio +
-> codecs) with `arm-none-eabi-gcc`. The DSP-effects mod target (`Effect.c`)
-> is ready to modify. The linker step is the remaining blocker.
+> **Current:** **SDK compiles, links, and BOOTS on hardware** (flashed V0.1 + V0.2).
+> The device shows the FiiO cassette UI and navigation works, but every menu
+> item press freezes then powers off. The likely cause is a **mailbox deadlock**
+> between the stock UI (AP side) and our audio service (BB side) — see
+> [HANDOVER.md](HANDOVER.md) §7 for the debug plan.
+>
+> **⚠️ AI agents: read `docs/HANDOVER.md` first** — it contains the architecture
+> findings, header format, stubs traps, and the current mystery to solve.
 
 ---
 
@@ -65,10 +70,14 @@ Created to make the armcc-written SDK build with GCC:
 
 ### What the current build is
 
-The linked firmware boots the SDK kernel (Main2) but **drivers are stubs**
-(globals zero, functions return 0). It validates the toolchain + linker
-pipeline end-to-end. Real drivers (LCD, I2S, codec, buttons) are the next
-work item, then the FiiO app/UI layer, then DSP mods.
+The linked firmware boots the SDK kernel (Main2 = the BB/audio side) on real
+hardware, but the FiiO UI layer is not ours — the stock AP side draws the
+cassette UI. Pressing a menu item makes the AP send a mailbox command to our
+BB, which (being stubs) never answers → freeze + power-off.
+
+**The next milestone is the mailbox handshake** (§7 in HANDOVER.md): if we
+reply to the AP's commands, menus stop freezing and we get a working
+navigation → then real drivers + DSP.
 
 ### Makefile targets
 

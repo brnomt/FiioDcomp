@@ -632,6 +632,17 @@ int Main2(void)
 
     while (1)
     {
+        /* ReChord debug: BB heartbeat - flip a red square in the UI
+         * framebuffer (0x03024868) so we can SEE that our Main2 loop runs.
+         * Remove once the mailbox handshake works. */
+        {
+            static uint32 hb = 0;
+            volatile uint16_t *fb = (volatile uint16_t *)0x03024868u;
+            uint16_t col = (hb & 1) ? 0xF800u : 0x0000u;   /* red / black */
+            for (int k = 0; k < 400; k++)                  /* 20x20 px */
+                fb[k] = col;
+            hb++;
+        }
 
         //system enter IDLE
         IntMasterDisable2();
