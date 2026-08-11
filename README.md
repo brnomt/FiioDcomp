@@ -35,6 +35,13 @@ Decompiled to pseudocode: **2,764 / 2,776** (see `build/all_decompilations.json`
 Exported to C: **3,477 files under `firmware/`** (394 named + 2,597 unidentified + SDK reference)
 Compilable (named tree): **327 / 394 (83%)** — see `docs/c-cleanup-status.md` for the deep-cleanup backlog
 
+**Custom firmware build (NEW — see `docs/custom-firmware-status.md`):**
+**ALL 53 Rockchip SDK source files compile** with `arm-none-eabi-gcc`
+(kernel 29 + audio 8 incl. the DSP **Effect.c** + codec wrappers 16),
+and 22 codec `.lib` binaries are ready to link. The DSP-effects mod
+target (`EffectProcess()` in `Effect.c`) is ready to modify. Missing:
+the linker script + link step (next).
+
 Run `python tools/check_decompilation_status.py` for a live status from Ghidra.
 
 | Approach | Functions named |

@@ -66,3 +66,14 @@ Per-file errors: `build/compile_report.json`. Patterns by count:
 - The SDK reference trees (`firmware/rockchip*`) are SOURCE, not output —
   they compile separately via `tools/compile_check.py` (SDK objects).
 - Real goal: byte-identical section_3 link → `docs/flashing-guide.md`.
+
+---
+
+## Update (Aug 2026): SDK build phase
+
+While the decompiled-tree cleanup reached 327/394 (83%), the **Rockchip SDK
+source tree** (`firmware/rockchip/`) now compiles **100% (53/53 files)** with
+the integration headers — see `docs/custom-firmware-status.md`. That is the
+path to a compile-from-source custom firmware (kernel + audio + codecs),
+with the DSP-effects mod target (`Effect.c`) ready. The decompiled-tree
+cleanup remains relevant for the FiiO app/UI layer.

@@ -1253,6 +1253,36 @@ lineage tool gives the introduction clusters; the string diff tool
 
 ---
 
+## 11b. SDK BUILD PHASE (NEW — Aug 2026) — the custom-firmware path
+
+**All 53 Rockchip SDK source files compile** with arm-none-eabi-gcc (kernel
+29 + audio 8 + codec wrappers 16). This unlocks a compile-from-source
+firmware so DSP effects can be added in C (the user's goal).
+
+Key facts for continuing:
+- **Full status:** `docs/custom-firmware-status.md` (layers, headers, next steps)
+- **Compile command:** see that doc (18 include paths + `-include armcc_compat.h`)
+- **armcc compat:** the SDK is Keil-written; `armcc_compat.h` maps `__packed`,
+  `__irq` (empty — armcc puts it post-declarator), `_ATTR_*` section macros,
+  `__asm` (rewritten manually in Delay/Delay2/interrupt/interrupt2 as GCC naked asm)
+- **Include-order traps:** PowerManager.h / Service.h redefine `EXT` — do NOT
+  include them from SysInclude; include directly in their .c. Shared enums
+  (eFREQ_APP) live in `freq_enums.h`.
+- **mailbox commands:** DECODE enum in `audio_main.h`; ENCODE/REC in
+  `main2_msgbox.h` (macros for Main2.c) + RecordControl.h enum — keep them
+  separate, they clash.
+- **RKFIO_FOpen:** old-style `()` declaration satisfies both .c variants.
+- **Registers derived from Ghidra + SDK:** CRU 0x20000000, DMA 0x40010000
+  (DW ahb), INTC 0x400B0000, GRF 0x400C0000, ADC 0x400D0000, I2S/PMU,
+  SysTick/NVIC 0xE000E010 (RKnano layout with Irq.Enable/SetPend arrays).
+- **DSP mod target:** `firmware/rockchip/audio/RkEQ/Effect/Effect.c`
+  compiles — `EffectProcess(pBuffer, PcmLen)` is the per-frame hook.
+- **Next:** linker script (place 22 codec .lib + kernel at segment
+  addresses from `docs/memory-map.md`), link test, then the FiiO app layer
+  (Ghidra-decompiled UI) on top.
+
+---
+
 ## 11. LESSONS / RULES FOR ANY CONTINUING AI
 
 1. **Always read this file + the other docs first.** Do not rediscover what's
