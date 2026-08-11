@@ -7,9 +7,9 @@
 > `docs/changelog-string-diff.md` before doing anything. This file exists so
 > the process is never lost.
 >
-> **Last updated:** Aug 2026 · v3.1.0 analysis complete (94 names); **next up: 3.0.0**.
-> 3.1.0→3.2.0 was IDENTICAL layout (0/32 moved) but the 6-hop chain still
-> crossed the +512/+24 relink pairs, so threshold 0.9 without offset check.
+> **Last updated:** Aug 2026 · v3.0.0 analysis complete (94 names); **next up: 2.8.0**.
+> 3.0.0→3.1.0 identical layout (0/32 moved); 7-hop chain to v3.7 at threshold
+> 0.9 without offset check.
 
 ---
 
@@ -259,7 +259,8 @@ no dedup possible.** There are no regional variants with identical section 3.
 | **3.3.0** | ✅ | `sec3_3_3_0.bin` | 1,727 | **106** | 71 direct (≥0.9) + 79 chainN 4-hop (combo ≥0.9, no offset — relink shift); saved |
 | **3.2.0** | ✅ | `sec3_3_2_0.bin` | 1,641 | **91** | 77 direct (≥0.9) + 76 chainN 5-hop (combo ≥0.9, no offset — relink shift +512); saved |
 | **3.1.0** | ✅ | `sec3_3_1_0.bin` | 1,706 | **94** | 78 direct (≥0.9) + 77 chainN 6-hop (combo ≥0.9, no offset); saved |
-| 3.0.0 | ▶ | — | — | — | **NEXT** — extract `sec3_3_0_0.bin`, chain 3.0→…→3.7 (7 hops) |
+| **3.0.0** | ✅ | `sec3_3_0_0.bin` | 1,713 | **94** | 77 direct (≥0.9) + 77 chainN 7-hop (combo ≥0.9, no offset); saved |
+| 2.8.0 | ▶ | — | — | — | **NEXT** — extract `sec3_2_8_0.bin`, chain 2.8→…→3.7 (8 hops) |
 | 3.2.0 | ⬜ | — | — | — | — |
 | 3.1.0 | ⬜ | — | — | — | — |
 | 3.0.0 | ⬜ | — | — | — | — |
@@ -404,6 +405,23 @@ edited modules.
 - Main code 43.5% changed; 513,747 small diff regions (relink fixups).
 - Changelog symbols all show ~4KB changed windows → **addresses moved**, so
   never assume v3.7 Ghidra addresses apply to v3.8.
+
+### ✅ 3.0.0→3.1.0 pair (done Aug 2026 session)
+
+**IDENTICAL LAYOUT (0/32 segments changed).**
+
+- Fuzzy match 3.0.0 vs 3.1.0: 1,203 matches; 418 ≥0.9; 79 named targets.
+- Direct renames (threshold 0.9): **77 applied**.
+- Chain 7 (chainN): **77 applied** (combo ≥0.9) — `udp_server`,
+  `event_set`, `ipc_post_cmd/arg`, `hifi_busy_delay`, `dac_gain_curve_apply`,
+  etc.
+- **v3.0.0 now has 94 named / 1,713 functions (5.5%)** — was 0 before.
+
+**Ghidra program state (saved Aug 2026):** 9 programs — add `sec3_3_0_0.bin`
+(v3.0.0, 1,713 funcs, **94 named**) to the table above.
+
+Rename history: `build/cross_version_renames_log.json` (keys include
+`sec3_3_0_0.bin.chainN`).
 
 ### ✅ 3.1.0→3.2.0 pair (done Aug 2026 session)
 
