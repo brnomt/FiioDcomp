@@ -7,9 +7,10 @@
 > `docs/changelog-string-diff.md` before doing anything. This file exists so
 > the process is never lost.
 >
-> **Last updated:** Aug 2026 · v1.2.7 analysis complete (91 names); **next up: 1.2.5** (last!).
-> 1.2.7→1.3.0 nearly identical layout (1/32 moved); 20-hop chain to v3.7 at
-> threshold 0.9 without offset check.
+> **Last updated:** Aug 2026 · **ALL 22 versions analyzed** (v3.7.0 → v1.2.5).
+> v1.2.5 was the final pair: 87 names. Every version now has a Ghidra program
+> with cross-version names. Remaining work: 3.8.0 (forward diff) + deeper
+> changelog anchoring per version.
 
 ---
 
@@ -273,7 +274,8 @@ no dedup possible.** There are no regional variants with identical section 3.
 | **1.4.0** | ✅ | `sec3_1_4_0.bin` | 1,612 | **92** | 76 direct (≥0.9) + 76 chainN 18-hop (combo ≥0.9, no offset); saved |
 | **1.3.0** | ✅ | `sec3_1_3_0.bin` | 1,606 | **87** | 71 direct (≥0.9) + 71 chainN 19-hop (combo ≥0.9, no offset); saved |
 | **1.2.7** | ✅ | `sec3_1_2_7.bin` | 1,622 | **91** | 71 direct (≥0.9) + 71 chainN 20-hop (combo ≥0.9, no offset); saved |
-| 1.2.5 | ▶ | — | — | — | **NEXT (LAST)** — extract `sec3_1_2_5.bin`, chain 1.2.5→…→3.7 (21 hops) |
+| **1.2.5** | ✅ | `sec3_1_2_5.bin` | 1,566 | **87** | 71 direct (≥0.9) + 71 chainN 21-hop (combo ≥0.9, no offset); saved |
+| **✅ DONE** | — | — | — | — | **ALL 22 versions (3.7→1.2.5) analyzed + saved in Ghidra** |
 | 3.2.0 | ⬜ | — | — | — | — |
 | 3.1.0 | ⬜ | — | — | — | — |
 | 3.0.0 | ⬜ | — | — | — | — |
@@ -418,6 +420,27 @@ edited modules.
 - Main code 43.5% changed; 513,747 small diff regions (relink fixups).
 - Changelog symbols all show ~4KB changed windows → **addresses moved**, so
   never assume v3.7 Ghidra addresses apply to v3.8.
+
+### ✅ 1.2.5→1.2.7 pair (done Aug 2026 session) — FINAL VERSION
+
+**Relink shift (31/32 segments changed).**
+
+- Fuzzy match 1.2.5 vs 1.2.7: 1,136 matches; 422 ≥0.9; 76 named targets.
+- Direct renames (threshold 0.9): **71 applied**.
+- Chain 21 (chainN): **71 applied** (combo ≥0.9) — `wma_floor_log2`,
+  `event_set`, `ipc_post_cmd/arg`, etc.
+- **v1.2.5 now has 87 named / 1,566 functions (5.6%)** — was 0 before.
+
+**🏁 MILESTONE: ALL 22 VERSIONS ANALYZED.** Every version v3.7.0 → v1.2.5
+now has a Ghidra program with cross-version names (87–651 named each). The
+21-hop chainN pipeline is proven at scale. Remaining work: 3.8.0 forward
+diff, deeper changelog anchoring per version, boundary repair.
+
+**Ghidra program state (saved Aug 2026):** 23 programs (v3.7.0 primary + 22
+older versions). Reopen with `tools/open_all_programs.py` after restart.
+
+Rename history: `build/cross_version_renames_log.json` (per-program keys
+`<name>.chainN` / `.chained`).
 
 ### ✅ 1.2.7→1.3.0 pair (done Aug 2026 session)
 
