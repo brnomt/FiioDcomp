@@ -7,7 +7,8 @@
 > `docs/changelog-string-diff.md` before doing anything. This file exists so
 > the process is never lost.
 >
-> **Last updated:** Aug 2026 · 3.5.0→3.6.0 analysis complete (88 names propagated to v3.5).
+> **Last updated:** Aug 2026 · 3.5.0→3.6.0 analysis complete (75 names in v3.5.0);
+> per-version checklist added — **next up: 3.4.0**.
 
 ---
 
@@ -234,6 +235,76 @@ no dedup possible.** There are no regional variants with identical section 3.
 - Volume → `MusicPlay_VolumeDisplay` @ 0x0300AD50, `dac_gain_curve_apply` @ 0x030098E4
 - Media library → `MediaLib_GetTotalFiles` @ 0x03000F94, `MediaLib_thunk_GetFiles` @ 0x03012838
 - UI/menu → `MainUI_KeyHandler` @ 0x0301020C, `BroMemSelKeyMenu_Handler` @ 0x03013280
+
+---
+
+## 5b. VERSION PROGRESS CHECKLIST (TRACKING — update as you go)
+
+> **How to use:** tick boxes as you complete each step for a version. One row
+> per version, processed **backwards** from v3.7.0. After each version:
+> save programs + commit. When starting a session, re-open programs with
+> `tools/open_all_programs.py` first.
+
+### Legend
+- ✅ = fully done · 🟨 = partially done · ⬜ = not started · ▶ = NEXT
+
+| Version | Status | Ghidra program | Funcs | Named | Last step done |
+|---------|--------|----------------|------:|------:|----------------|
+| 3.8.0 | ⬜ | — | — | — | — (needs its own layout check — big diff vs 3.7) |
+| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **651** | primary: decompiled + exported to C |
+| **3.6.0** | 🟨 | `sec3_3_6_0.bin` (Cortex) | 2,217 | **29** | fuzzy match vs 3.7.0 (9 renames); orphan `sec3_3_6_0.bin.0` to ignore |
+| **3.5.0** | ✅ | `sec3_3_5_0.bin` | 1,726 | **75** | 3.5→3.6→3.7 chain done (54 chained + 9 direct, 13 weak reverted) |
+| **3.4.0** | ▶ | `sec3_3_4_0.bin` (TODO) | — | — | **NEXT** — start here tomorrow |
+| 3.3.0 | ⬜ | — | — | — | — |
+| 3.2.0 | ⬜ | — | — | — | — |
+| 3.1.0 | ⬜ | — | — | — | — |
+| 3.0.0 | ⬜ | — | — | — | — |
+| 2.8.0 | ⬜ | — | — | — | — |
+| 2.7.0 | ⬜ | — | — | — | — |
+| 2.6.0 | ⬜ | — | — | — | — |
+| 2.5.0 | ⬜ | — | — | — | — |
+| 2.4.0 | ⬜ | — | — | — | — |
+| 1.8.0 | ⬜ | — | — | — | — |
+| 1.7.0 | ⬜ | — | — | — | — |
+| 1.6.2 | ⬜ | — | — | — | — |
+| 1.5.0 | ⬜ | — | — | — | — |
+| 1.4.6 | ⬜ | — | — | — | — |
+| 1.4.0 | ⬜ | — | — | — | — |
+| 1.3.0 | ⬜ | — | — | — | — |
+| 1.2.7 | ⬜ | — | — | — | — |
+| 1.2.5 | ⬜ | — | — | — | — |
+
+### Per-version recipe checklist (copy for each version)
+
+For **X.Y.Z** (target: the NEXT version back, e.g. 3.4.0 when 3.5.0 is done):
+
+**Setup**
+- [ ] `python tools/open_all_programs.py` (if Ghidra restarted)
+- [ ] `python tools/extract_sec3_for_ghidra.py X.Y.Z`
+- [ ] `python tools/import_into_ghidra.py build/sec3_X_Y_Z.bin --language ARM:LE:32:v8-m --base 0x03000000`
+- [ ] `python tools/wait_analysis.py X_Y_Z` then `save_program`
+
+**Diff + match (no Ghidra needed for the first two)**
+- [ ] `python tools/string_diff_versions.py X.Y.Z <newer> --limit 30`
+- [ ] `python tools/segment_table_diff.py X.Y.Z <newer>`
+- [ ] `python tools/run_bulk_match.py sec3_X_Y_Z.bin sec3_<newer>.bin --filter FUN_ --threshold 0.5 --out fuzzy_match_vXY_vXZ.json`
+
+**Apply names (Ghidra running)**
+- [ ] `python tools/apply_cross_version_names.py sec3_X_Y_Z.bin --matches build/fuzzy_match_vXY_vXZ.json --threshold 0.9`
+- [ ] `python tools/chain_propagate_names.py --old-match build/fuzzy_match_vXY_vXZ.json --new-match build/fuzzy_match_v<newer>_<newest>.json --program sec3_X_Y_Z.bin --require-offset --threshold 0.7` (verify the printed auto-delta is sane)
+- [ ] `python tools/revert_weak_chain_names.py --old-match build/fuzzy_match_vXY_vXZ.json --new-match build/fuzzy_match_v<newer>_<newest>.json --program sec3_X_Y_Z.bin --min-chain 0.6`
+- [ ] **`save_program` immediately**
+
+**Changelog anchoring (Paso 3 — the profit step)**
+- [ ] Read the version's `Read me.txt` changelog entries
+- [ ] For each changelog line, find the changed function cluster (string diff + segment diff + unmatched functions) and name it
+- [ ] **Unmatched-function trick:** find v3.7.0 functions that are ABSENT in older versions → those are feature-introduction functions → name per changelog
+- [ ] `python tools/check_decompilation_status.py` to confirm counts
+
+**Wrap-up**
+- [ ] Update this checklist table (status, named count)
+- [ ] Update `docs/symbol-index.md` with new names
+- [ ] Save all programs + `git add` + commit
 
 ---
 
