@@ -78,6 +78,7 @@ Progress so far (backwards from v3.7.0, all saved in Ghidra):
 | **v1.5.0** | `sec3_1_5_0.bin` | **94** | 1,086 fuzzy matches + 16-hop chain to v3.7 (78 direct + 78 chained) |
 | **v1.4.6** | `sec3_1_4_6.bin` | **94** | 1,109 fuzzy matches + 17-hop chain to v3.7 (78 direct + 78 chained) |
 | **v1.4.0** | `sec3_1_4_0.bin` | **92** | 1,092 fuzzy matches + 18-hop chain to v3.7 (76 direct + 76 chained) |
+| **v1.3.0** | `sec3_1_3_0.bin` | **87** | 1,064 fuzzy matches + 19-hop chain to v3.7 (71 direct + 71 chained) |
 
 **⚠️ READ `docs/MULTI-VERSION-PLAN.md` FIRST** — it is the complete handoff
 document for this workflow (corpus dedup, string diffs, Ghidra MCP API,
