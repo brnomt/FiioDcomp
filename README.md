@@ -19,6 +19,30 @@ modifiable C — a "Rockbox for the Echo Mini".
 > (2026) produced the knowledge and SDK integration that power ReChord. See
 > `docs/RE-HISTORY.md` for the reverse-engineering notes that remain useful.
 
+## Project history
+
+ReChord started as a **reverse-engineering project**: decompiling the stock
+FiiO Echo Mini firmware (all 23 versions, v1.2.5 → v3.8.0) with Ghidra,
+correlating each version's changes with its official changelog, and naming
+852 functions (30.7%) to understand how the device works.
+
+That phase revealed the key insight that **changed the project's identity**:
+the Echo Mini firmware is ~90% Rockchip RKnanoD SDK — the chip vendor's own
+source code — plus a thin ~10% FiiO app layer (UI, menus, services).
+Reconstructing the firmware from Ghidra's decompiled output would have been
+impractical (unreadable `param_1`/`undefined4` C). Instead, ReChord:
+
+1. **Compiles the real Rockchip SDK from source** (53 files: kernel, audio,
+   codecs) — the foundation.
+2. **Rebuilds the FiiO app layer** as clean, modifiable C, using the
+   decompilation as the specification.
+3. **Focuses on DSP**: the goal is to add custom effects (bass boost,
+   reverb, EQ presets) to `Effect.c` and flash a modified firmware.
+
+The reverse-engineering work is archived in `docs/RE-HISTORY.md` and
+`docs/re/` — it remains the reference for the hardware map and the FiiO
+layer.
+
 ## Status (Aug 2026)
 
 **ALL 53 Rockchip SDK source files compile** with `arm-none-eabi-gcc`:
