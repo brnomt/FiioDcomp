@@ -11,7 +11,7 @@
 > **changelog-anchored naming phase in progress** (see §5c).
 >
 > **CURRENT STATE (this session):**
-> - v3.7.0 primary: **828 / 2,776 named (29.8%)** — +82 this session
+> - v3.7.0 primary: **844 / 2,776 named (30.4%)** — +82 this session
 >   (changelog-cluster lineage push; cumulative campaign +177: +37 lineage
 >   + 34 structural v2 + 82 cluster push + 24 callgraph/SDK)
 >   (+37 lineage + 34 structural v2 + 82 cluster push)
@@ -155,7 +155,7 @@ threshold, filter), `/find_similar_functions_fuzzy`, `/diff_functions`
 |--------|------:|
 | Total functions in binary | 2,776 (count endpoint: 2,777) |
 | **Decompiled (raw pseudocode in `build/all_decompilations.json`)** | **2,764** |
-| **Named in Ghidra** | **828 (29.8%)** |
+| **Named in Ghidra** | **844 (30.4%)** |
 | Named thunks | 16 |
 | Named non-thunk | 672 |
 | Unnamed (`FUN_*`) | 2,088 |
@@ -267,7 +267,7 @@ no dedup possible.** There are no regional variants with identical section 3.
 | Version | Status | Ghidra program | Funcs | Named | Last step done |
 |---------|--------|----------------|------:|------:|----------------|
 | 3.8.0 | ⬜ | — | — | — | — (needs its own layout check — big diff vs 3.7) |
-| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **828** | primary: decompiled + exported; +177 this campaign |
+| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **844** | primary: decompiled + exported; +193 this campaign |
 | **3.6.0** | 🟨 | `sec3_3_6_0.bin` (Cortex) | 2,217 | **29** | fuzzy match vs 3.7.0 (9 renames); orphan `sec3_3_6_0.bin.0` to ignore |
 | **3.5.0** | ✅ | `sec3_3_5_0.bin` | 1,726 | **75** | 3.5→3.6→3.7 chain done (54 chained + 9 direct, 13 weak reverted) |
 | **3.4.0** | ✅ | `sec3_3_4_0.bin` | 1,712 | **104** | 73 direct (≥0.9) + 39 chain3 (combo ≥0.7, offset-ok); saved |
@@ -457,6 +457,26 @@ mp3_bitstream_getbits) · `GUI_TextDisplayID/Buff`, `rkos_semaphore_create`,
 (called by `AudioFileInput2`) · `lcd_shell_helper` 0302aaf0 · `lcd_write_helper_a` 03028c9e +
 `lcd_write_helper_b` 03028628 (called by `LcdShell`/`Lcd_Write`) · `hifi_file_close_helper` 0306c6c4
 (called by `HifiFileClose`) → `firmware/apps/{audio,ui}/`, `firmware/firmware/filesystem/`
+
+### Baseline 1.2.5 match (NEW — `tools/match_baseline_v2.py`) — conservative SDK path
+
+The 1.2.5 baseline (462 funcs, the stable SDK core) is the OLDEST code.
+Cautions applied:
+- Only SDK-callee-overlap validation is accepted (SDK says candidate calls
+  X; binary calls the already-named X). Never the raw score alone.
+- **Weak/same-name overlaps REJECTED:** when the overlap = the candidate
+  name itself (e.g. overlap `['FW_GetSegmentInfo']` for candidate
+  `FW_GetSegmentInfo`), the binary is a CALLER of the already-named function
+  — naming it the same would be wrong. All 36 such cases were rejected.
+- 16 STRONG matches applied (overlap with a DIFFERENT callee, verified by
+  decompile): `FATGetPrevClus` (calls FATGetNextClus), `FREQStopAPP(2)`
+  (calls FREQSetFreq), `RecordWriteFile2` (calls RecordCopyEncDataToBuf),
+  `FW_GetSegmentInfo`, `sdio_read_fbr`, `SdioDev_SetBlockSize`,
+  `MscPreventAllowMediumRemoval`, `FatDev_FileSeek`, `sdio_read_cis`,
+  `FileDev_FileSeek(2)`, `FM5807_Tuner_Disable(2/3)` (duplicate copies),
+  `GUI_TextBoxTimer`.
+- 267 baseline FUN_* remain — mostly callers/orphans. Best attacked as
+  more anchors accumulate (each new named callee unlocks new overlaps).
 
 ### Remaining introduction clusters (the next names — by version)
 
@@ -1100,6 +1120,7 @@ All saved to the Ghidra project. Rename history (re-apply after a restart):
 | `version_lineage.py` | **NEW (CURRENT PHASE)** builds `build/function_lineage.json`: walks every v3.7.0 function back through all 21 adjacent pairs → `first_seen` (introduced-in) version + edit clusters (`--min-score 0.9`). The core driver of changelog-anchored naming. |
 | `export_named_flac.py` | **NEW example** of live-decompile + export pattern: writes `firmware/codecs/flac/*.c` from Ghidra with provenance headers |
 | `match_structure_v2.py` | **NEW structural matcher v2** vs 5,333 SDK functions: signature + callee-overlap + constants + size + module-prefix bonus; **+34 names validated by SDK-callee overlap** (the strongest signal); output `build/structural_matches_v2.json` |
+| `match_baseline_v2.py` | **NEW conservative baseline matcher**: matches only the 1.2.5-baseline FUN_*; accepts ONLY SDK-callee-overlap; **+16 applied** (36 weak same-name overlaps rejected as callers); output `build/baseline_matches_v2.json` |
 | `callgraph_propagate_names2.py` | **NEW call-graph neighbor sweep**: for each named func, lists in-region FUN_* callees/callers → 641 candidates saved to `build/callgraph_neighbor_candidates.json` |
 | `open_all_programs.py` / `close_program.py` / `manage_programs.py` | Open/close/switch Ghidra programs |
 | `wait_analysis.py` | Poll `/analysis_status` until a program finishes analyzing |
@@ -1154,7 +1175,7 @@ python tools/collect_new_names.py
 
 ## 9. NEXT STEPS (CURRENT PHASE — changelog-anchored naming)
 
-**Done so far (all versions):** v3.7.0 primary (828 named) + 21 older versions
+**Done so far (all versions):** v3.7.0 primary (844 named) + 21 older versions
 all imported, matched, chain-propagated and saved (87–106 names each).
 `build/function_lineage.json` maps every traceable v3.7.0 function to its
 `first_seen` version. See §5c for the full cluster table.
@@ -1298,5 +1319,5 @@ lineage tool gives the introduction clusters; the string diff tool
     `AudioStop`/`MusicService` → `AudioStateHandler`) + address region. Names
     from caller evidence are conservative; that's fine.
 23. **Always re-verify counts after a session:** `list_functions_enhanced` on
-    v3.7.0 = 828 named (29.8%) as of this handoff. The `.0` orphan program
+    v3.7.0 = 844 named (30.4%) as of this handoff. The `.0` orphan program
     (`sec3_3_6_0.bin.0`, 0 funcs) is still open — ignore it.
