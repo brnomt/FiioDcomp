@@ -13,9 +13,11 @@
 #define __packed __attribute__((packed))
 #endif
 
-/* __irq — interrupt handler (GCC: __attribute__((interrupt("IRQ")))) */
+/* __irq — interrupt handler marker. armcc puts it after the declarator
+   (e.g. typedef void(*f)(void) __irq), which is invalid for GCC attributes.
+   Map to empty; ISR definitions in the SDK carry their own attributes. */
 #ifndef __irq
-#define __irq __attribute__((interrupt("IRQ")))
+#define __irq
 #endif
 
 /* __align(n) — align to n bytes (GCC: __attribute__((aligned(n)))) */

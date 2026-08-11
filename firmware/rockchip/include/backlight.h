@@ -17,3 +17,17 @@ API uint8 Backlight_GetLevel(void);
 
 /* OsHook.c reads this global */
 extern uint32 IsBackLightOn;
+
+/* ---- Backlight PWM + globals (Backlight.c) ---- */
+#ifndef BACKLIGHT_DEFS
+#define BACKLIGHT_DEFS
+#define BL_LEVEL_MAX         5
+#define BL_PWM_CH            0
+#define BL_PWM_RATE_MIN      0xFFFF
+#define BL_PWM_RATE_STEP     0x4000
+#define PWM_FREQ             20000
+
+extern uint32 AutoPowerOffDisableCounter;
+extern uint32 BacklightSystickCounterBack;
+extern uint8  gSysSetBLTimeArray[BL_LEVEL_MAX];
+#endif

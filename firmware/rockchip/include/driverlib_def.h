@@ -232,29 +232,25 @@ typedef struct {
 } RKNANO_SYSTICK;
 
 typedef struct {
-    volatile uint32_t CPUID;       /* +0x00 */
-    volatile uint32_t ICSR;        /* +0x04 */
-    volatile uint32_t VTOR;        /* +0x08 */
-    volatile uint32_t AIRCR;       /* +0x0C */
-    volatile uint32_t SCR;         /* +0x10 */
-    volatile uint32_t CCR;         /* +0x14 */
-    volatile uint32_t SHPR[3];     /* +0x18 */
-    volatile uint32_t SHCSR;       /* +0x24 */
-    volatile uint32_t CFSR;        /* +0x28 */
-    volatile uint32_t HFSR;        /* +0x2C */
-    volatile uint32_t DFSR;        /* +0x30 */
-    volatile uint32_t MMFAR;       /* +0x34 */
-    volatile uint32_t BFAR;        /* +0x38 */
-    volatile uint32_t AFSR;        /* +0x3C */
-    RKNANO_SYSTICK SysTick;        /* +0x40 (0xE000E010) */
-    volatile uint32_t RESERVED[52];
-    volatile uint32_t NVIC_ISER[8];   /* +0x100 */
-    volatile uint32_t NVIC_ICER[8];   /* +0x180 */
-    volatile uint32_t NVIC_ISPR[8];   /* +0x200 */
-    volatile uint32_t NVIC_ICPR[8];   /* +0x280 */
-    volatile uint32_t NVIC_IABR[8];   /* +0x300 */
-    volatile uint32_t RESERVED2[56];
-    volatile uint32_t NVIC_IPR[60];   /* +0x400 */
+    volatile uint32_t IrqEnable;        /* ISER */
+    volatile uint32_t IrqDisable;       /* ICER */
+    volatile uint32_t IrqPending;       /* ISPR */
+    volatile uint32_t IrqUnpend;        /* ICPR */
+    volatile uint32_t IrqActive;        /* IABR */
+    struct {
+        volatile uint32_t Enable[8];
+        volatile uint32_t Disable[8];
+        volatile uint32_t SetPend[8];
+        volatile uint32_t ClearPend[8];
+        volatile uint32_t Pending[8];
+        volatile uint32_t Priority[60];
+    } Irq;
+    volatile uint32_t INTcontrolState;  /* ICSR */
+    volatile uint32_t VectorTableOffset;/* VTOR */
+    volatile uint32_t APIntRst;         /* AIRCR */
+    volatile uint32_t SystemHandlerCtrlAndState; /* SHCSR */
+    volatile uint32_t SystemPriority[3];/* SHPR */
+    RKNANO_SYSTICK SysTick;             /* 0xE000E010 */
 } RKNANO_NVIC;
 
 #define nvic  ((volatile RKNANO_NVIC *)RKNANO_SCB_BASE)
@@ -366,4 +362,21 @@ API void FREQ_EnterModule(uint32 mod);
 
 #ifndef FREQ_MAX
 #define FREQ_MAX  32
+#endif
+
+/* NVIC constants (interrupt2.c) */
+#ifndef DRIVERLIB_NVIC_BITS
+#define DRIVERLIB_NVIC_BITS
+#define NVIC_APINTRST_VECTKEY         0x05FA0000
+#define NVIC_APINTRST_PRIGROUP_MASK   0x00000700
+#define NVIC_SYSHANDCTRL_MEMFAULTENA  0x00010000
+#define NVIC_SYSHANDCTRL_BUSFAULTENA  0x00020000
+#define NVIC_SYSHANDCTRL_USGFAULTENA  0x00040000
+#define NVIC_INTCTRLSTA_NMIPENDSET    0x80000000
+#define NVIC_INTCTRLSTA_PENDSVSET     0x10000000
+#define NVIC_INTCTRLSTA_PENDSTSET     0x04000000
+#define NVIC_INTCTRLSTA_PENDSVCLR     0x08000000
+#define NVIC_INTCTRLSTA_PENDSTCLR     0x02000000
+#define NVIC_INTCTRLSTA_ISRPENDING    0x00400000
+#define NVIC_INTCTRLSTA_VECTACTIVE_MASK 0x000001FF
 #endif
