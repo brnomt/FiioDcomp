@@ -16,6 +16,8 @@
 #ifndef SYSCONFIG_H
 #define SYSCONFIG_H
 
+#include "typedef.h"
+
 /* ---- Module selection (matches the stock firmware build) ---- */
 #define _MUSIC_         1
 #define _RADIO_         1
@@ -84,3 +86,72 @@
 #define MODULE_ID_USB           12
 #define MODULE_ID_CHARGE_WIN    13
 #endif
+
+/* ---- System reserved-op types (SysReservedOperation.c) ---- */
+#ifndef SYSCONFIG_RESERVED
+#define SYSCONFIG_RESERVED
+#define IMAGE_ID_MAX    4
+#define FLASH0          0
+#define FLASH1          1
+#define TOTAL_LANAUAGE_NUM  1
+#define MODULE_ID_FLASH_PROG  14
+
+typedef struct {
+    uint32 loadStartBase;
+    uint32 moduleId;
+    uint32 loadAddress;
+    uint32 moduleSize;
+} CODE_INFO_T;
+
+typedef struct {
+    uint32 LoadStartBase;   /* SysReservedOperation.c */
+    struct {
+        uint32 ModuleNum;
+    } ModuleInfo;
+    uint32 firmwareFlag;
+    uint16 year, date;
+    uint16 masterVer, slaveVer, smallVer;
+    CODE_INFO_T Module[IMAGE_ID_MAX];
+} FIRMWARE_INFO_T;
+
+typedef struct {
+    uint32 dwTotalMem;
+    uint32 dwFreeMem;
+    uint8  sysLanguage;
+    uint8  gLanguage;
+    uint8  outputVolume;
+    uint8  Volume;
+    uint8  blMode;
+    uint8  BLMode;
+    uint8  bLevel;
+    uint8  BLevel;
+    uint8  blTime;
+    uint8  BLtime;
+    uint8  shutTime;
+    uint8  SettingPowerOffTime;
+    uint8  SDEnable;
+    uint8  FMEnable;
+    uint8  FMArea;
+    uint8  FMStereo;
+    uint8  FMScanSensitivity;
+    uint8  KeyNumIndex;
+    uint8  ImageIndex;
+    uint8  MusicEqSel;
+    uint8  MusicPlayOrder;
+    uint8  MusicRepMode;
+    uint8  PicAutoPlayTime;
+    uint8  TextAutoPlayTime;
+    uint8  eqEnable;
+    uint8  LanguagesEnableTbl[TOTAL_LANAUAGE_NUM];
+    uint8  BTDevName[16];
+} SYSTEM_DEFAULT_PARA_T;
+
+#define CARD   1   /* storage media: 0=flash, 1=card */
+
+
+extern uint32 SysDiskID;
+extern uint32 ValidSysDisk;
+extern uint32 SysProgRawDiskCapacity;
+#endif
+
+#define EVK_LANGUAGE_MAX_COUNT  1
