@@ -81,12 +81,9 @@ void Delay100cyc(UINT32 count)
 --------------------------------------------------------------------------------
 */
 _ATTR_SYS_CODE_
-__asm void ASMDelay(uint32 i)
+void ASMDelay(uint32 i)
 {
-ASMDelayxx
-	SUBS    R0, R0, #1
-	BHI     ASMDelayxx
-	BX      LR
+    __asm__ volatile("subs r0, r0, #1; bhi .-4; bx lr");
 }
 _ATTR_SYS_CODE_
 void DelayUs(UINT32 us)

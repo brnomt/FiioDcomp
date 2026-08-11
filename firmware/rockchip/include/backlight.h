@@ -14,3 +14,6 @@ API void Backlight_Off(void);
 API uint8 Backlight_GetLevel(void);
 
 #endif /* BACKLIGHT_H */
+
+/* OsHook.c reads this global */
+extern uint32 IsBackLightOn;

@@ -1,5 +1,8 @@
-/* ChargeWin.h — auto-stub build. */
+/* ChargeWin.h — window externs. */
 #ifndef CHARGEWIN_H
 #define CHARGEWIN_H
 #include "typedef.h"
-#endif
+
+extern void ChargeWin;
+
+#endif /* CHARGEWIN_H */

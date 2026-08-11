@@ -1,5 +1,8 @@
-/* TextWin.h — auto-stub build. */
+/* TextWin.h — window externs. */
 #ifndef TEXTWIN_H
 #define TEXTWIN_H
 #include "typedef.h"
-#endif
+
+extern void TextWin;
+
+#endif /* TEXTWIN_H */

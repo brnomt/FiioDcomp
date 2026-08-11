@@ -1,5 +1,8 @@
-/* RadioWin.h — auto-stub build. */
+/* RadioWin.h — window externs. */
 #ifndef RADIOWIN_H
 #define RADIOWIN_H
 #include "typedef.h"
-#endif
+
+extern void RadioWin;
+
+#endif /* RADIOWIN_H */

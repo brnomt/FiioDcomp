@@ -30,6 +30,7 @@ typedef struct _FIND_DATA {
     FDT     Fdt;
     uint8   bOpened;
     uint32  dwDirCluster;
+    uint32  Clus;           /* current cluster (SysFindFile.c) */
 } FIND_DATA;
 #endif
 
@@ -49,3 +50,33 @@ typedef struct _FIND_DATA {
 #define MAX_FILENAME_LEN   256
 #define MAX_PATH_LEN       512
 #endif
+
+/* ---- File-system DB / sort types (SysFindFile.c) ---- */
+#ifndef FSINCLUDE_DBTYPES
+#define FSINCLUDE_DBTYPES
+typedef enum {
+    FS_TYPE_AUDIO = 0,
+    FS_TYPE_VIDEO,
+    FS_TYPE_PICTURE,
+    FS_TYPE_TEXT,
+    FS_TYPE_RECORD,
+    FS_TYPE_MAX
+} FS_TYPE;
+
+#define MUSIC_DB        0
+#define VIDEO_DB        1
+#define PICTURE_DB      2
+#define RECORD_DB       3
+#define TEXT_DB         4
+
+#define SORT_TYPE_SEL_FOLDER     0
+#define MUSIC_TYPE_SEL_FMFILE    0
+#define SORT_TYPE_SEL_SONGFILE   1
+#endif
+
+#define FS_FAT  0
+#define SORT_TYPE_SEL_BROWSER  2
+
+#define MUSIC_TYPE_SEL_RECORDFILE  2
+#define NOT_FIND_FILE              0xFFFFFFFF
+#define SORT_TYPE_SEL_NOW_PLAY     3

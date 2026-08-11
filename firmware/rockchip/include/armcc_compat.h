@@ -70,5 +70,90 @@
 #ifndef __MSR
 #define __MSR(reg, val) __asm__ volatile("msr " reg ", %0" :: "r"(val))
 #endif
+/* ---- SDK section attributes (linker scatter files) ----
+   The RKnanoD SDK places functions/data in named sections via _ATTR_*_CODE_
+   /_ATTR_*_DATA_/_ATTR_*_BSS_ macros. For GCC build we map them to the
+   matching named section so the linker script can place them later. */
+#ifndef _ATTR_OS_CODE_
+#define _ATTR_OS_CODE_       __attribute__((section("os_code")))
+#endif
+#ifndef _ATTR_OS_DATA_
+#define _ATTR_OS_DATA_       __attribute__((section("os_data")))
+#endif
+#ifndef _ATTR_OS_BSS_
+#define _ATTR_OS_BSS_        __attribute__((section("os_bss")))
+#endif
+#ifndef _ATTR_SYS_CODE_
+#define _ATTR_SYS_CODE_      __attribute__((section("sys_code")))
+#endif
+#ifndef _ATTR_SYS_DATA_
+#define _ATTR_SYS_DATA_      __attribute__((section("sys_data")))
+#endif
+#ifndef _ATTR_SYS_BSS_
+#define _ATTR_SYS_BSS_       __attribute__((section("sys_bss")))
+#endif
+#ifndef _ATTR_SYS_INIT_CODE_
+#define _ATTR_SYS_INIT_CODE_ __attribute__((section("sys_init")))
+#endif
+#ifndef _ATTR_DRIVERLIB_CODE_
+#define _ATTR_DRIVERLIB_CODE_ __attribute__((section("driver_code")))
+#endif
+#ifndef _ATTR_DRIVER_CODE_
+#define _ATTR_DRIVER_CODE_   __attribute__((section("driver_code")))
+#endif
+#ifndef _ATTR_DRIVER_DATA_
+#define _ATTR_DRIVER_DATA_   __attribute__((section("driver_data")))
+#endif
+#ifndef _ATTR_DRIVER_BSS_
+#define _ATTR_DRIVER_BSS_    __attribute__((section("driver_bss")))
+#endif
+#ifndef _ATTR_BB_SYS_DATA_
+#define _ATTR_BB_SYS_DATA_   __attribute__((section("bb_data")))
+#endif
+#ifndef _ATTR_AUDIO_BSS_
+#define _ATTR_AUDIO_BSS_     __attribute__((section("audio_bss")))
+#endif
+#ifndef _ATTR_AUDIO_TEXT_
+#define _ATTR_AUDIO_TEXT_    __attribute__((section("audio_code")))
+#endif
+#ifndef _ATTR_FLACDEC_TEXT_
+#define _ATTR_FLACDEC_TEXT_  __attribute__((section("flac_code")))
+#endif
+#ifndef _ATTR_VECTTAB_BB_
+#define _ATTR_VECTTAB_BB_    __attribute__((section("vecttab")))
+#endif
+#ifndef _ATTR_VECTTAB_
+#define _ATTR_VECTTAB_       __attribute__((section("vecttab")))
+#endif
+#ifndef _ATTR_INTRRUPT_CODE_
+#define _ATTR_INTRRUPT_CODE_ __attribute__((section("intr_code")))
+#endif
+#ifndef _ATTR_INTRRUPT_DATA_
+#define _ATTR_INTRRUPT_DATA_ __attribute__((section("intr_data")))
+#endif
+#ifndef _ATTR_OVERLAY_CODE_
+#define _ATTR_OVERLAY_CODE_  __attribute__((section("overlay_code")))
+#endif
+/* codec binary blob sections (bb_core.c) — placeholder names */
+#define _ATTR_AACDEC_BIN_TEXT_   __attribute__((section("aac_code")))
+#define _ATTR_AACDEC_BIN_DATA_   __attribute__((section("aac_data")))
+#define _ATTR_FLACDEC_BIN_TEXT_  __attribute__((section("flac_code")))
+#define _ATTR_FLACDEC_BIN_DATA_  __attribute__((section("flac_data")))
+#define _ATTR_APEDEC_BIN_TEXT_   __attribute__((section("ape_code")))
+#define _ATTR_APEDEC_BIN_DATA_   __attribute__((section("ape_data")))
+#define _ATTR_OGGDEC_BIN_TEXT_   __attribute__((section("ogg_code")))
+#define _ATTR_OGGDEC_BIN_DATA_   __attribute__((section("ogg_data")))
+#define _ATTR_WAVDEC_BIN_TEXT_   __attribute__((section("wav_code")))
+#define _ATTR_WAVDEC_BIN_DATA_   __attribute__((section("wav_data")))
+#define _ATTR_DSFDEC_BIN_TEXT_   __attribute__((section("dsf_code")))
+#define _ATTR_DSFDEC_BIN_DATA_   __attribute__((section("dsf_data")))
+#define _ATTR_DSDIFFDEC_BIN_TEXT_ __attribute__((section("dsdiff_code")))
+#define _ATTR_DSDIFFDEC_BIN_DATA_ __attribute__((section("dsdiff_data")))
+#define _ATTR_HIFI_ALACDEC_BIN_TEXT_ __attribute__((section("alac_code")))
+#define _ATTR_HIFI_ALACDEC_BIN_DATA_ __attribute__((section("alac_data")))
+#define _ATTR_HIFI_APEDEC_BIN_TEXT_  __attribute__((section("hifi_ape_code")))
+#define _ATTR_HIFI_APEDEC_BIN_DATA_  __attribute__((section("hifi_ape_data")))
+#define _ATTR_HIFI_FLACDEC_BIN_TEXT_ __attribute__((section("hifi_flac_code")))
+#define _ATTR_HIFI_FLACDEC_BIN_DATA_ __attribute__((section("hifi_flac_data")))
 
 #endif /* ARMCC_COMPAT_H */

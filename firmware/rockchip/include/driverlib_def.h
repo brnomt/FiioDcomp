@@ -12,6 +12,7 @@
 #define DRIVERLIB_DEF_H
 
 #include <stdint.h>
+#include "typedef.h"
 #include "armcc_compat.h"
 
 /* ================= SoC peripheral bases ================= */
@@ -116,11 +117,13 @@ typedef enum {
 typedef struct tagCHIP_FREQ {
     uint32 pll;             /* PLL frequency (Hz) */
     uint32 armFreq;         /* ARM core freq */
+    uint32 hclk_sys_core;   /* HCLK sys core freq (Delay.c) */
     uint32 hclk_cal_core;   /* HCLK calibration count */
     uint32 stclk_cal_core;  /* SysTick calibration count */
     uint32 sdramFreq;
 } chip_freq_t;
 extern chip_freq_t chip_freq2;
+extern chip_freq_t chip_freq;   /* alias used by Delay.c */
 #endif
 
 /* ================= DMA (DesignWare DW_ahb_dma) ================= */
@@ -315,3 +318,52 @@ typedef struct {
 #define Grf  ((volatile RKNANO_GRF *)RKNANO_GRF_BASE)
 
 #endif /* DRIVERLIB_GRF */
+
+/* ================= GPIO (OsHook.c) ================= */
+#ifndef DRIVERLIB_GPIO
+#define DRIVERLIB_GPIO
+#define GPIO_CH0  0
+#define GPIO_CH1  1
+#define GPIO_CH2  2
+#define GPIO_CH3  3
+#define GPIO_CH4  4
+
+#define GPIOPortA_Pin0  0
+#define GPIOPortA_Pin1  1
+#define GPIOPortA_Pin2  2
+#define GPIOPortA_Pin3  3
+#define GPIOPortA_Pin4  4
+#define GPIOPortA_Pin5  5
+#define GPIOPortA_Pin6  6
+#define GPIOPortA_Pin7  7
+
+typedef enum { IntrTypeLowLevel, IntrTypeHighLevel,
+               IntrTypeRisingEdge, IntrTypeFallingEdge } IntrType;
+
+#define IOMUX_GPIO2A7_PMU_IDEL  0
+
+API void GpioIsrRegister(uint32 ch, uint32 pin, void (*isr)(void));
+API void Gpio_SetIntMode(uint32 ch, uint32 pin, IntrType type);
+API void Gpio_EnableInt(uint32 ch, uint32 pin);
+API void Gpio_DisableInt(uint32 ch, uint32 pin);
+API void Grf_GpioMuxSet(uint32 ch, uint32 pin, uint32 mode);
+#endif /* DRIVERLIB_GPIO */
+
+/* ================= FREQ module (OsHook.c) ================= */
+#ifndef DRIVERLIB_FREQMOD
+#define DRIVERLIB_FREQMOD
+#define FREQ_BLON   0
+API void FREQ_EnterModule(uint32 mod);
+#endif /* DRIVERLIB_FREQMOD */
+
+/* ---- more FREQ / SCU constants (OsHook.c) ---- */
+#ifndef DRIVERLIB_FREQ_EXTRA
+#define DRIVERLIB_FREQ_EXTRA
+#define FREQ_IDLE   1
+#define SCU_DCOUT_100  100000000
+#define SCU_DCOUT_120  120000000
+#endif
+
+#ifndef FREQ_MAX
+#define FREQ_MAX  32
+#endif

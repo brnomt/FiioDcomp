@@ -65,3 +65,22 @@
 #define CODEC_WAV_DEC   7
 #define CODEC_DSD_DEC   8
 #endif
+
+/* ---- UI module IDs (Task.c) ---- */
+#ifndef SYSCONFIG_MODULE_ID
+#define SYSCONFIG_MODULE_ID
+#define MODULE_ID_MAINMENU      0
+#define MODULE_ID_MUSIC         1
+#define MODULE_ID_BROWSER       2
+#define MODULE_ID_MEDIABRO      3
+#define MODULE_ID_MEDIALIBWIN   4
+#define MODULE_ID_MDB_WIN       5
+#define MODULE_ID_PICTURE       6
+#define MODULE_ID_VIDEO         7
+#define MODULE_ID_RECORDWIN     8
+#define MODULE_ID_RADIOWIN      9
+#define MODULE_ID_TEXTWIN       10
+#define MODULE_ID_SETMENU       11
+#define MODULE_ID_USB           12
+#define MODULE_ID_CHARGE_WIN    13
+#endif
