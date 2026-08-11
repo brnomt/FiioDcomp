@@ -3,15 +3,16 @@
 # Target: ARM Cortex-M3 (Thumb-2), Rockchip RKnanoC
 # Toolchain: arm-none-eabi-gcc (GNU Arm Embedded)
 #
-# Goal: compile the Rockchip RKnanoD SDK + FiiO layer from source,
+# Goal: compile the Rockchip RKnanoD SDK + ReChord layer from source,
 # produce a flashable section_3 via tools/pack_img.py.
 # Windows: use mingw32-make (e.g. C:\winlibs\mingw64\bin\mingw32-make.exe)
 #
 # Usage:
 #   make toolchain     — verify arm-none-eabi-gcc
-#   make compile-check — compile all firmware/*.c, report status
-#   make all           — compile reference objects (partial link)
-#   make extract-img   — extract HIFIEC37.IMG sections
+#   make build-sdk     — compile all SDK .c files to build/objs/*.o
+#   make link-firmware — link objects into build/rechord_full.elf + section3_custom.bin
+#   make all           — build-sdk + link-firmware
+#   make pack-img      — splice section_3 into HIFIEC37.IMG (identity test)
 #   make clean
 
 ifeq ($(OS),Windows_NT)
@@ -26,9 +27,6 @@ else
     PYTHON ?= python3
 endif
 
-# Prefer mingw32-make on Windows when `make` is missing
-MAKE ?= make
-
 CROSS_COMPILE = arm-none-eabi-
 CC      = $(CROSS_COMPILE)gcc
 LD      = $(CROSS_COMPILE)ld
@@ -37,125 +35,94 @@ SIZE    = $(CROSS_COMPILE)size
 
 STOCK_DIR   = stock/3.7.0/ECHO MINI V3.7.0
 IMG_FILE    = $(STOCK_DIR)/HIFIEC37.IMG
-EXTRACT_DIR = $(STOCK_DIR)/extracted
 BUILD_DIR   = build
+OBJ_DIR     = $(BUILD_DIR)/objs
+LINKER      = firmware/firmware.ld
 
 ARCH_FLAGS  = -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
-INCLUDES    = -Ifirmware -Ifirmware/firmware \
-              -Ifirmware/rockchip/include \
-              -Ifirmware/rockchip/audio/Include \
-              -Ifirmware/rockchip/audio/RkEQ/Effect \
-              -Ifirmware/rockchip/audio/RkEQ \
-              -Ifirmware/rockchip/audio/AudioControl \
-              -Ifirmware/rockchip/audio/Common \
-              -Ifirmware/rockchip/audio/RecordControl \
-              -Ifirmware/rockchip/audio/ID3 \
-              -Ifirmware/rockchip/audio/Wav/WAV_LIB \
-              -Ifirmware/rockchip/audio/SSRC/resampler \
-              -Ifirmware/rockchip/audio/HIFI/flac \
-              -Ifirmware/rockchip/audio/HIFI/ape \
-              -Ifirmware/rockchip/audio/HIFI/alac \
-              -Ifirmware/rockchip/system/os \
-              -Ifirmware/rockchip/system/fileseek \
-              -Ifirmware/rockchip/system/module_overlay \
-              -Ifirmware/rockchip/system/sysservice \
-              -Ifirmware/rockchip/bbsystem
-CFLAGS      = $(ARCH_FLAGS) -O2 -Wall -Wno-unused-parameter -Wno-unused-variable \
-              -ffunction-sections -fdata-sections \
-              $(INCLUDES) -DFIIO_DECOMP_REFERENCE
-LDFLAGS     = $(ARCH_FLAGS) -Wl,--gc-sections -nostartfiles
+SDK_INCLUDES = -include firmware/rockchip/include/armcc_compat.h \
+               -Ifirmware/rockchip/include \
+               -Ifirmware/rockchip \
+               -Ifirmware/rockchip/audio/Include \
+               -Ifirmware/rockchip/audio/AudioControl \
+               -Ifirmware/rockchip/audio/Common \
+               -Ifirmware/rockchip/audio/RkEQ/Effect \
+               -Ifirmware/rockchip/audio/RecordControl \
+               -Ifirmware/rockchip/audio/ID3 \
+               -Ifirmware/rockchip/audio/Wav/WAV_LIB \
+               -Ifirmware/rockchip/audio/SSRC/resampler \
+               -Ifirmware/rockchip/system/os \
+               -Ifirmware/rockchip/system/fileseek \
+               -Ifirmware/rockchip/system/module_overlay \
+               -Ifirmware/rockchip/system/sysservice \
+               -Ifirmware/rockchip/bbsystem
+SDK_CFLAGS = $(ARCH_FLAGS) -Os -Wall -Wno-unused-parameter -Wno-unused-variable \
+             -ffunction-sections -fdata-sections $(SDK_INCLUDES)
 
-# Core decomp + stubs (expand as headers/globals are filled in)
-CORE_SRCS = \
-    firmware/firmware/os/bitreader.c \
-    firmware/firmware/os/softfloat.c \
-    firmware/firmware/os/event_bitmap.c \
-    firmware/firmware/os/entry.c \
-    firmware/firmware/os/hifi_runtime.c \
-    firmware/firmware/filesystem/buffered_io.c \
-    firmware/firmware/filesystem/audio_file_buf.c \
-    firmware/firmware/filesystem/hifi_file.c \
-    firmware/stubs/rom_api_stubs.c \
-    firmware/stubs/fiio_globals.c \
-    firmware/startup/startup.c
+# SDK sources (all .c under firmware/rockchip)
+SDK_SRCS := $(shell find firmware/rockchip -name '*.c' 2>/dev/null)
 
-# Full tree (compile-check tests everything)
-ALL_SRCS := $(shell find firmware -name '*.c' 2>/dev/null)
-ifeq ($(ALL_SRCS),)
-ALL_SRCS := $(wildcard firmware/**/*.c)
-endif
+# Exclude duplicate non-*2 variants — the SDK ships both audio_file_access.c
+# and audio_file_access2.c etc.; only the *2 (RKnano 2) versions link.
+NON2_EXCLUDE = Delay.c SysTickHandler.c audio_file_access.c pAAC.c pDSDIFF.c \
+               pDSF.c pMP3.c pOGG.c p_hifi_Ape.c p_hifi_alac.c p_hifi_flac.c \
+               interrupt.c
 
-OBJS = $(addprefix $(BUILD_DIR)/,$(notdir $(CORE_SRCS:.c=.o)))
+# Files that need special compile recipes (section conflicts / asm dupes) —
+# see docs/STATUS.md. They are linked from the prebuilt .o set.
+SPECIAL_EXCLUDE = systick2.c pCODECS2.c RecordControl.c PowerManager.c \
+                 AsicToUnicode.c cue.c ID3.c AsicToUnicodeTable.c
 
-# Map flat build/*.o back to source paths
-$(BUILD_DIR)/bitreader.o: firmware/firmware/os/bitreader.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-$(BUILD_DIR)/softfloat.o: firmware/firmware/os/softfloat.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-$(BUILD_DIR)/event_bitmap.o: firmware/firmware/os/event_bitmap.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-$(BUILD_DIR)/entry.o: firmware/firmware/os/entry.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-$(BUILD_DIR)/hifi_runtime.o: firmware/firmware/os/hifi_runtime.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-$(BUILD_DIR)/buffered_io.o: firmware/firmware/filesystem/buffered_io.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-$(BUILD_DIR)/audio_file_buf.o: firmware/firmware/filesystem/audio_file_buf.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-$(BUILD_DIR)/hifi_file.o: firmware/firmware/filesystem/hifi_file.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-$(BUILD_DIR)/rom_api_stubs.o: firmware/stubs/rom_api_stubs.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-$(BUILD_DIR)/fiio_globals.o: firmware/stubs/fiio_globals.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-$(BUILD_DIR)/startup.o: firmware/startup/startup.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+SDK_SRCS := $(filter-out $(addprefix %/,$(NON2_EXCLUDE) $(SPECIAL_EXCLUDE)),$(SDK_SRCS))
 
-.PHONY: all clean toolchain compile-check extract-img crc link-test pack-img extract-section3
+# objects mirror source subdirs so the pattern rule matches
+SDK_OBJS = $(patsubst firmware/rockchip/%.c,$(OBJ_DIR)/%.o,$(SDK_SRCS))
 
-all: toolchain $(BUILD_DIR)/reference.o
+.PHONY: all clean toolchain build-sdk link-firmware compile-check pack-img extract-section3
+
+all: build-sdk link-firmware
 	@echo ""
-	@echo "Reference objects built under $(BUILD_DIR)/"
-	@echo "Full IMG link still needs pack_img + byte-identical section_3 milestone."
-	@echo "Run: make compile-check  (all sources)"
-	@echo "See docs/flashing-guide.md"
+	@echo "ReChord firmware built:"
+	@$(SIZE) $(BUILD_DIR)/rechord_full.elf
 
 toolchain:
-	@$(CC) --version
+	@$(CC) --version | head -1
 	@echo "Toolchain OK."
 
+$(OBJ_DIR):
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path 'build/objs' | Out-Null"
+
+# ---- compile SDK ----
+build-sdk: toolchain $(OBJ_DIR) $(SDK_OBJS)
+	@echo "SDK compiled: $(words $(SDK_OBJS)) objects"
+
+$(OBJ_DIR)/%.o: firmware/rockchip/%.c | $(OBJ_DIR)
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
+	$(CC) $(SDK_CFLAGS) -c $< -o $@
+
+# ---- link firmware ----
+link-firmware: $(OBJ_DIR) $(BUILD_DIR)/startup.o $(BUILD_DIR)/stubs.o
+	$(CC) $(ARCH_FLAGS) -T $(LINKER) -nostartfiles -ffreestanding \
+		$(BUILD_DIR)/startup.o $(BUILD_DIR)/stubs.o $(SDK_OBJS) \
+		-o $(BUILD_DIR)/rechord_full.elf
+	$(OBJCOPY) -O binary -j .fw_header -j .text $(BUILD_DIR)/rechord_full.elf $(BUILD_DIR)/section3_custom.bin
+	@echo "Built: $(BUILD_DIR)/section3_custom.bin (splice with pack-img)"
+
+$(BUILD_DIR)/startup.o: firmware/startup/startup.c | $(OBJ_DIR)
+	$(CC) $(SDK_CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/stubs.o: firmware/stubs.c | $(OBJ_DIR)
+	$(CC) $(SDK_CFLAGS) -c $< -o $@
+
+# ---- checks / packaging ----
 compile-check: toolchain
 	$(PYTHON) tools/compile_check.py
-
-$(BUILD_DIR)/reference.o: $(OBJS) | $(BUILD_DIR)
-	$(LD) -r $(OBJS) -o $@
-
-$(BUILD_DIR):
-	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path 'build' | Out-Null"
-
-link-test: $(BUILD_DIR)/reference.o
-	@echo "Linker script: firmware/firmware.ld (not wired to full image yet)"
-	$(CC) $(CFLAGS) -T firmware/firmware.ld -nostdlib $(OBJS) -o $(BUILD_DIR)/section3_test.elf || true
-
-# ReChord: link the compiled SDK objects into section_3 binary
-# (run tools/build_sdk.py first to produce build/objs/*.o)
-SDK_OBJS := $(wildcard build/objs/*.o)
-link-firmware:
-	$(CC) -mcpu=cortex-m3 -mthumb -T firmware/firmware.ld -nostartfiles 		-ffreestanding build/objs/startup.o build/objs/stubs.o 		$(filter-out build/objs/startup.o build/objs/stubs.o,$(SDK_OBJS)) 		-o build/rechord_full.elf
-	arm-none-eabi-objcopy -O binary -j .fw_header -j .text build/rechord_full.elf build/section3_custom.bin
-	@echo "Built: build/section3_custom.bin (splice with pack_img.py)"
-
-extract-img:
-	$(PYTHON) tools/extract_fw.py "$(IMG_FILE)" -o "$(EXTRACT_DIR)"
-
-crc:
-	$(PYTHON) tools/crc_util.py "$(IMG_FILE)"
 
 pack-img:
 	$(PYTHON) tools/pack_img.py --identity-test
 
 extract-section3:
-	$(PYTHON) tools/pack_img.py --extract -o build/section3_stock.bin
+	$(PYTHON) tools/pack_img.py --extract -o $(BUILD_DIR)/section3_stock.bin
 
 clean:
 	@powershell -NoProfile -Command "if (Test-Path 'build') { Remove-Item -Recurse -Force 'build' }"

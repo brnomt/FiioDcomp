@@ -1,1 +1,0 @@
-copy  I6000_LIB\I6000_LIB.lib    ..\..\..\Driver\wifi\RK_I6000_20150818.lib

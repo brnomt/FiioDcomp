@@ -1,1 +1,0 @@
-copy  DLNA_LIB\DLNA_LIB.lib    ..\..\..\Web\dlna\RK_DLNA_20150818.lib

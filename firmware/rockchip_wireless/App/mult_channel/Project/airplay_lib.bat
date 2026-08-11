@@ -1,1 +1,0 @@
-copy  AIRPLAY_LIB\AIRPLAY_LIB.lib    ..\..\..\Web\Airplay\RK_AIRPLAY_20150818.lib

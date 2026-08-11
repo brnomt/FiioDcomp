@@ -1,1 +1,0 @@
-copy  BT_LIB\BT_LIB.lib    ..\..\..\Web\bluetooth\RK_BT_20150818.lib

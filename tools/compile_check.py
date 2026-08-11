@@ -27,8 +27,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SDK_ROOTS = [
-    ROOT / "firmware" / "rockchip",        # MP3 V1.3 SDK
-    ROOT / "firmware" / "rockchip_wireless", # Wireless V1.5 SDK
+    ROOT / "firmware" / "rockchip",        # RKnanoD SDK (Echo Mini)
 ]
 OUTPUT_DIR = ROOT / "build" / "sdk_objects"
 OUTPUT = ROOT / "build" / "sdk_compiled_functions.json"
@@ -50,7 +49,6 @@ CFLAGS = [
     "-nostartfiles",
     "-I", str(ROOT / "firmware"),
     "-I", str(ROOT / "firmware" / "rockchip"),
-    "-I", str(ROOT / "firmware" / "rockchip_wireless"),
 ]
 
 # Include paths from SDK
@@ -58,8 +56,6 @@ SDK_INCLUDES = [
     "-I", str(ROOT / "firmware" / "rockchip" / "include"),
     "-I", str(ROOT / "firmware" / "rockchip" / "audio" / "Common"),
     "-I", str(ROOT / "firmware" / "rockchip" / "system" / "os"),
-    "-I", str(ROOT / "firmware" / "rockchip_wireless" / "Wireless"),
-    "-I", str(ROOT / "firmware" / "rockchip_wireless" / "include"),
 ]
 
 

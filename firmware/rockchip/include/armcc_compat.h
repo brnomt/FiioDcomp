@@ -158,4 +158,21 @@
 #define _ATTR_HIFI_FLACDEC_BIN_TEXT_ __attribute__((section("hifi_flac_code")))
 #define _ATTR_HIFI_FLACDEC_BIN_DATA_ __attribute__((section("hifi_flac_data")))
 
+/* Windows code-page constants used by the ID3/Font layer (project-level) */
+#ifndef FONT_CODEPAGE_CP1252
+#define FONT_CODEPAGE_CP1252  1252
+#endif
+#ifndef FONT_CODEPAGE_CP1251
+#define FONT_CODEPAGE_CP1251  1251
+#endif
+#ifndef FONT_CODEPAGE_CP936
+#define FONT_CODEPAGE_CP936   936
+#endif
+#ifndef FONT_CODEPAGE_CP949
+#define FONT_CODEPAGE_CP949   949
+#endif
+#ifndef FONT_CODEPAGE_CP950
+#define FONT_CODEPAGE_CP950   950
+#endif
+
 #endif /* ARMCC_COMPAT_H */

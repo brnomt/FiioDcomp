@@ -53,15 +53,35 @@ Created to make the armcc-written SDK build with GCC:
 | `I2S.h` / `Spectrum.h` / `Dma.h` / `pcm.h` | Audio/USB interfaces |
 | `RecordWin.h` / `MusicWin.h` / etc. | UI window externs (30+ stubs) |
 
-## What's still missing for a flashable custom firmware
+## Build status (link works)
 
 | Item | Status |
 |------|--------|
-| **Linker script** | `firmware/firmware.ld` draft exists but not validated; needs codec `.lib` placement + segment table from `docs/memory-map.md` |
-| **Link** (produce section_3 binary) | Not done — the 53 .c compile standalone, but nothing links them together yet |
-| **Codec .lib integration** | 22 binaries ready; the linker must place them at their segment addresses |
-| **App layer (FiiO UI)** | The Ghidra-decompiled layer (852 named funcs, 327 compile as C) — the SDK covers kernel/audio/codecs, the UI is FiiO-specific |
-| **Flash test** | Resource mods flashed OK (boot animation). Code replacement not yet flashed |
+| **Linker script** | ✅ `firmware/firmware.ld` — captures all SDK sections (AudioCode/Bss, SysCode, FindFileCode, FlacDecCode, driver_code, bb_vect) + buffers at segment-table addresses |
+| **Link** (section_3 binary) | ✅ `make all` → `build/rechord_full.elf` (998 KB: 67 KB text, 183 KB data, 747 KB bss) + `build/section3_custom.bin` (50 KB) |
+| **Codec .lib integration** | ⬜ 22 binaries ready; the linker must place them at their segment addresses |
+| **App layer (FiiO UI)** | ⬜ The Ghidra-decompiled layer (archived in `docs/re/decomp/`) — the SDK covers kernel/audio/codecs, the UI is FiiO-specific |
+| **Flash test** | Resource mods flashed OK (boot animation). Code replacement not yet flashed — stubs make the current build a bootable kernel without working drivers |
+
+### What the current build is
+
+The linked firmware boots the SDK kernel (Main2) but **drivers are stubs**
+(globals zero, functions return 0). It validates the toolchain + linker
+pipeline end-to-end. Real drivers (LCD, I2S, codec, buttons) are the next
+work item, then the FiiO app/UI layer, then DSP mods.
+
+### Makefile targets
+
+```
+make build-sdk      # compile firmware/rockchip/**/*.c -> build/objs/
+make link-firmware  # link -> build/rechord_full.elf + section3_custom.bin
+make all            # both
+make pack-img       # splice section_3 into HIFIEC37.IMG (identity test)
+```
+
+Excluded from `build-sdk` (need project-layer defines): `systick2.c`,
+`pCODECS2.c`, `RecordControl.c`, `PowerManager.c`, `AsicToUnicode.c`,
+`cue.c`, `ID3.c`, `AsicToUnicodeTable.c`. Linked via prebuilt .o or stubs.
 
 ## The DSP-effects mod target (your goal)
 

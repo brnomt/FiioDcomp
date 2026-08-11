@@ -217,3 +217,13 @@ int _kill(int pid, int sig) { (void)pid; (void)sig; return -1; }
 void _exit(int status) { (void)status; for (;;); }
 void _sbrk(void) { }  /* heap grows via _sbrk_r wrapper; no-op for now */
 void *__dso_handle;
+
+/* ---- ARM interrupt-master control (real impl — PRIMASK) ---- */
+void IntMasterDisable(void)
+{
+    __asm volatile("cpsid i" ::: "memory");
+}
+void IntMasterEnable(void)
+{
+    __asm volatile("cpsie i" ::: "memory");
+}

@@ -1,1 +1,0 @@
-copy  EQ_LIB\EQ_LIB.lib    ..\..\..\Codecs\Audio\Effect\EQ\RK_EQ_20150818.lib
