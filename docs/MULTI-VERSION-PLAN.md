@@ -11,9 +11,11 @@
 > **changelog-anchored naming phase in progress** (see §5c).
 >
 > **CURRENT STATE (this session):**
-> - v3.7.0 primary: **746 / 2,776 named (26.9%)** — +71 this session
->   (+37 changelog-anchored lineage + 34 structural matcher v2)
-> - **71 new .c files** exported to `firmware/` (FLAC decoder internals,
+> - v3.7.0 primary: **828 / 2,776 named (29.8%)** — +82 this session
+>   (changelog-cluster lineage push; cumulative campaign +177: +37 lineage
+>   + 34 structural v2 + 82 cluster push + 24 callgraph/SDK)
+>   (+37 lineage + 34 structural v2 + 82 cluster push)
+> - **150+ new .c files** exported to `firmware/` (FLAC decoder internals,
 >   media library service, OGG/WMA helpers, audio state, LCD, config, GPIO,
 >   GUI, recorder, SDIO, wifi, crypto, USB)
 > - New tool: `tools/version_lineage.py` — traces every v3.7.0 function
@@ -153,7 +155,7 @@ threshold, filter), `/find_similar_functions_fuzzy`, `/diff_functions`
 |--------|------:|
 | Total functions in binary | 2,776 (count endpoint: 2,777) |
 | **Decompiled (raw pseudocode in `build/all_decompilations.json`)** | **2,764** |
-| **Named in Ghidra** | **746 (26.9%)** |
+| **Named in Ghidra** | **828 (29.8%)** |
 | Named thunks | 16 |
 | Named non-thunk | 672 |
 | Unnamed (`FUN_*`) | 2,088 |
@@ -265,7 +267,7 @@ no dedup possible.** There are no regional variants with identical section 3.
 | Version | Status | Ghidra program | Funcs | Named | Last step done |
 |---------|--------|----------------|------:|------:|----------------|
 | 3.8.0 | ⬜ | — | — | — | — (needs its own layout check — big diff vs 3.7) |
-| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **746** | primary: decompiled + exported; +71 (lineage + structural v2) |
+| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **828** | primary: decompiled + exported; +177 this campaign |
 | **3.6.0** | 🟨 | `sec3_3_6_0.bin` (Cortex) | 2,217 | **29** | fuzzy match vs 3.7.0 (9 renames); orphan `sec3_3_6_0.bin.0` to ignore |
 | **3.5.0** | ✅ | `sec3_3_5_0.bin` | 1,726 | **75** | 3.5→3.6→3.7 chain done (54 chained + 9 direct, 13 weak reverted) |
 | **3.4.0** | ✅ | `sec3_3_4_0.bin` | 1,712 | **104** | 73 direct (≥0.9) + 39 chain3 (combo ≥0.7, offset-ok); saved |
@@ -457,6 +459,15 @@ mp3_bitstream_getbits) · `GUI_TextDisplayID/Buff`, `rkos_semaphore_create`,
 (called by `HifiFileClose`) → `firmware/apps/{audio,ui}/`, `firmware/firmware/filesystem/`
 
 ### Remaining introduction clusters (the next names — by version)
+
+**UPDATE (Aug 2026, cluster push done):** only **28 FUN_* remain** across
+all introduction clusters. They are the hard cases: broken boundaries
+(`030208B8` = "bad instruction data" — needs `delete_function` +
+`create_function` at true entry), or orphans with no callers/strings
+(`03001E04`, `0304E6A4`, `0304F550`, `030E7500`, `030F0782`, `030F7A94`,
+`03100C78`, …). The 1.2.5 baseline (462 functions, the stable SDK core)
+is the remaining large pool — best attacked via the SDK structural matcher
+(callee-overlap validation) as more anchors accumulate.
 
 | Version | Cluster size (FUN_*) | Hints for the next AI |
 |---------|---------------------:|-----------------------|
@@ -1143,7 +1154,7 @@ python tools/collect_new_names.py
 
 ## 9. NEXT STEPS (CURRENT PHASE — changelog-anchored naming)
 
-**Done so far (all versions):** v3.7.0 primary (746 named) + 21 older versions
+**Done so far (all versions):** v3.7.0 primary (828 named) + 21 older versions
 all imported, matched, chain-propagated and saved (87–106 names each).
 `build/function_lineage.json` maps every traceable v3.7.0 function to its
 `first_seen` version. See §5c for the full cluster table.
@@ -1287,5 +1298,5 @@ lineage tool gives the introduction clusters; the string diff tool
     `AudioStop`/`MusicService` → `AudioStateHandler`) + address region. Names
     from caller evidence are conservative; that's fine.
 23. **Always re-verify counts after a session:** `list_functions_enhanced` on
-    v3.7.0 = 746 named (26.9%) as of this handoff. The `.0` orphan program
+    v3.7.0 = 828 named (29.8%) as of this handoff. The `.0` orphan program
     (`sec3_3_6_0.bin.0`, 0 funcs) is still open — ignore it.
