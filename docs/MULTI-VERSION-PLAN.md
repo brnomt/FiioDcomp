@@ -11,7 +11,7 @@
 > **changelog-anchored naming phase in progress** (see §5c).
 >
 > **CURRENT STATE (this session):**
-> - v3.7.0 primary: **844 / 2,776 named (30.4%)** — +82 this session
+> - v3.7.0 primary: **852 / 2,776 named (30.7%)** — +82 this session
 >   (changelog-cluster lineage push; cumulative campaign +177: +37 lineage
 >   + 34 structural v2 + 82 cluster push + 24 callgraph/SDK)
 >   (+37 lineage + 34 structural v2 + 82 cluster push)
@@ -155,7 +155,7 @@ threshold, filter), `/find_similar_functions_fuzzy`, `/diff_functions`
 |--------|------:|
 | Total functions in binary | 2,776 (count endpoint: 2,777) |
 | **Decompiled (raw pseudocode in `build/all_decompilations.json`)** | **2,764** |
-| **Named in Ghidra** | **844 (30.4%)** |
+| **Named in Ghidra** | **852 (30.7%)** |
 | Named thunks | 16 |
 | Named non-thunk | 672 |
 | Unnamed (`FUN_*`) | 2,088 |
@@ -267,7 +267,7 @@ no dedup possible.** There are no regional variants with identical section 3.
 | Version | Status | Ghidra program | Funcs | Named | Last step done |
 |---------|--------|----------------|------:|------:|----------------|
 | 3.8.0 | ⬜ | — | — | — | — (needs its own layout check — big diff vs 3.7) |
-| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **844** | primary: decompiled + exported; +193 this campaign |
+| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **852** | primary: decompiled + exported; +201 this campaign |
 | **3.6.0** | 🟨 | `sec3_3_6_0.bin` (Cortex) | 2,217 | **29** | fuzzy match vs 3.7.0 (9 renames); orphan `sec3_3_6_0.bin.0` to ignore |
 | **3.5.0** | ✅ | `sec3_3_5_0.bin` | 1,726 | **75** | 3.5→3.6→3.7 chain done (54 chained + 9 direct, 13 weak reverted) |
 | **3.4.0** | ✅ | `sec3_3_4_0.bin` | 1,712 | **104** | 73 direct (≥0.9) + 39 chain3 (combo ≥0.7, offset-ok); saved |
@@ -1175,7 +1175,7 @@ python tools/collect_new_names.py
 
 ## 9. NEXT STEPS (CURRENT PHASE — changelog-anchored naming)
 
-**Done so far (all versions):** v3.7.0 primary (844 named) + 21 older versions
+**Done so far (all versions):** v3.7.0 primary (852 named) + 21 older versions
 all imported, matched, chain-propagated and saved (87–106 names each).
 `build/function_lineage.json` maps every traceable v3.7.0 function to its
 `first_seen` version. See §5c for the full cluster table.
@@ -1319,5 +1319,5 @@ lineage tool gives the introduction clusters; the string diff tool
     `AudioStop`/`MusicService` → `AudioStateHandler`) + address region. Names
     from caller evidence are conservative; that's fine.
 23. **Always re-verify counts after a session:** `list_functions_enhanced` on
-    v3.7.0 = 844 named (30.4%) as of this handoff. The `.0` orphan program
+    v3.7.0 = 852 named (30.7%) as of this handoff. The `.0` orphan program
     (`sec3_3_6_0.bin.0`, 0 funcs) is still open — ignore it.
