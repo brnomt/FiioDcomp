@@ -30,8 +30,9 @@ Reverse engineering notes, documentation, tooling, patches, and clean-room imple
 
 ## RE Progress (Aug 2026)
 
-Function naming status in Ghidra (v3.7.0, live): **651 / 2,776 functions named (23.4%)**
+Function naming status in Ghidra (v3.7.0, live): **688 / 2,776 functions named (24.8%)**
 Decompiled to pseudocode: **2,764 / 2,776** (see `build/all_decompilations.json`)
+Exported to C: **3,320 files under `firmware/`**
 
 Run `python tools/check_decompilation_status.py` for a live status from Ghidra.
 
@@ -44,6 +45,7 @@ Run `python tools/check_decompilation_status.py` for a live status from Ghidra.
 | Call graph propagation (SDK callee index) | +80 |
 | ROM API naming + similarity matching | +15 |
 | Additional matching pass (Aug 2026) | +27 |
+| **Changelog-anchored lineage naming (Aug 2026)** | **+37** |
 
 All matching uses leaked Rockchip SDK source (`RKNanoD_MP3_V1.3` + `RKNanoD_Wireless_Audio_SDK_V1.5`)
 as reference. See `docs/sdk-matching-progress.md` for full details.
@@ -59,7 +61,7 @@ Progress so far (backwards from v3.7.0, all saved in Ghidra):
 
 | Version | Program in Ghidra | Named funcs | Done via |
 |---------|-------------------|------------:|----------|
-| **v3.7.0** | `section_3_0x00081A14.bin` | **651** | primary program (decompiled + exported) |
+| **v3.7.0** | `section_3_0x00081A14.bin` | **688** | primary program (decompiled + exported) |
 | **v3.6.0** | `sec3_3_6_0.bin` | ~25 | fuzzy match vs 3.7.0 (9 renames) |
 | **v3.5.0** | `sec3_3_5_0.bin` | **75** | 1,141 fuzzy matches + 3.5→3.6→3.7 chain propagation |
 | **v3.4.0** | `sec3_3_4_0.bin` | **104** | 1,132 fuzzy matches + 3.4→3.5→3.6→3.7 chain (73 direct + 39 chained) |
@@ -81,6 +83,12 @@ Progress so far (backwards from v3.7.0, all saved in Ghidra):
 | **v1.3.0** | `sec3_1_3_0.bin` | **87** | 1,064 fuzzy matches + 19-hop chain to v3.7 (71 direct + 71 chained) |
 | **v1.2.7** | `sec3_1_2_7.bin` | **91** | 1,163 fuzzy matches + 20-hop chain to v3.7 (71 direct + 71 chained) |
 | **v1.2.5** | `sec3_1_2_5.bin` | **87** | 1,136 fuzzy matches + 21-hop chain to v3.7 (71 direct + 71 chained) |
+
+> **Phase 2 in progress (changelog-anchored naming):** `tools/version_lineage.py`
+> maps every v3.7.0 function to the version that introduced it; clusters are
+> named per the official changelog and exported to `firmware/`. 37 names +
+> 37 `.c` files landed this way so far (FLAC decoder, media library service,
+> OGG/WMA helpers, audio state, LCD, config). Full details: `docs/MULTI-VERSION-PLAN.md` §5c.
 
 **⚠️ READ `docs/MULTI-VERSION-PLAN.md` FIRST** — it is the complete handoff
 document for this workflow (corpus dedup, string diffs, Ghidra MCP API,

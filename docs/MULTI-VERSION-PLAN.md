@@ -7,10 +7,20 @@
 > `docs/changelog-string-diff.md` before doing anything. This file exists so
 > the process is never lost.
 >
-> **Last updated:** Aug 2026 · **ALL 22 versions analyzed** (v3.7.0 → v1.2.5).
-> v1.2.5 was the final pair: 87 names. Every version now has a Ghidra program
-> with cross-version names. Remaining work: 3.8.0 (forward diff) + deeper
-> changelog anchoring per version.
+> **Last updated:** Aug 2026 · **ALL 22 versions analyzed** (v3.7.0 → v1.2.5) +
+> **changelog-anchored naming phase in progress** (see §5c).
+>
+> **CURRENT STATE (this session):**
+> - v3.7.0 primary: **688 / 2,776 named (24.8%)** — 37 new names this session
+> - **37 new .c files** exported to `firmware/` (FLAC decoder internals,
+>   media library service, OGG/WMA helpers, audio state, LCD, config, GPIO)
+> - New tool: `tools/version_lineage.py` — traces every v3.7.0 function
+>   backwards through all 21 adjacent version pairs → `first_seen` version
+>   (functions introduced in vX = changelog features of vX)
+> - `build/function_lineage.json` — the lineage database (2,776 funcs)
+> - **NEXT UP:** continue naming the remaining introduction clusters
+>   (v3.1.0 genre/sleep, v1.7.0 Custom EQ/OGG, v1.4.6 lyrics, v1.4.0, 1.6.2, 1.8.0…)
+>   then export each to `firmware/`.
 
 ---
 
@@ -141,12 +151,12 @@ threshold, filter), `/find_similar_functions_fuzzy`, `/diff_functions`
 |--------|------:|
 | Total functions in binary | 2,776 (count endpoint: 2,777) |
 | **Decompiled (raw pseudocode in `build/all_decompilations.json`)** | **2,764** |
-| **Named in Ghidra** | **651 (23.4%)** |
+| **Named in Ghidra** | **688 (24.8%)** |
 | Named thunks | 16 |
-| Named non-thunk | 635 |
-| Unnamed (`FUN_*`) | 2,125–2,126 |
+| Named non-thunk | 672 |
+| Unnamed (`FUN_*`) | 2,088 |
 | SDK functions indexed | 5,333 |
-| Decompiled-to-C exported | 2,764 files under `firmware/` (see `firmware/INDEX.md`) |
+| Decompiled-to-C exported | 3,320 files under `firmware/` (see `firmware/INDEX.md`) |
 
 Top name prefixes: mbedtls (30), rom (27), FLAC (21), hifi (19), thunk (13),
 wma (11), parse (9), FW (8), rkos (6), rk (6), FatDev (6), GUI (6),
@@ -253,7 +263,7 @@ no dedup possible.** There are no regional variants with identical section 3.
 | Version | Status | Ghidra program | Funcs | Named | Last step done |
 |---------|--------|----------------|------:|------:|----------------|
 | 3.8.0 | ⬜ | — | — | — | — (needs its own layout check — big diff vs 3.7) |
-| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **651** | primary: decompiled + exported to C |
+| **3.7.0** | ✅ | `section_3_0x00081A14.bin` | 2,776 | **688** | primary: decompiled + exported; +37 changelog-anchored names (FLAC/media/OGG/WMA/audio/LCD) |
 | **3.6.0** | 🟨 | `sec3_3_6_0.bin` (Cortex) | 2,217 | **29** | fuzzy match vs 3.7.0 (9 renames); orphan `sec3_3_6_0.bin.0` to ignore |
 | **3.5.0** | ✅ | `sec3_3_5_0.bin` | 1,726 | **75** | 3.5→3.6→3.7 chain done (54 chained + 9 direct, 13 weak reverted) |
 | **3.4.0** | ✅ | `sec3_3_4_0.bin` | 1,712 | **104** | 73 direct (≥0.9) + 39 chain3 (combo ≥0.7, offset-ok); saved |
@@ -276,22 +286,6 @@ no dedup possible.** There are no regional variants with identical section 3.
 | **1.2.7** | ✅ | `sec3_1_2_7.bin` | 1,622 | **91** | 71 direct (≥0.9) + 71 chainN 20-hop (combo ≥0.9, no offset); saved |
 | **1.2.5** | ✅ | `sec3_1_2_5.bin` | 1,566 | **87** | 71 direct (≥0.9) + 71 chainN 21-hop (combo ≥0.9, no offset); saved |
 | **✅ DONE** | — | — | — | — | **ALL 22 versions (3.7→1.2.5) analyzed + saved in Ghidra** |
-| 3.2.0 | ⬜ | — | — | — | — |
-| 3.1.0 | ⬜ | — | — | — | — |
-| 3.0.0 | ⬜ | — | — | — | — |
-| 2.8.0 | ⬜ | — | — | — | — |
-| 2.7.0 | ⬜ | — | — | — | — |
-| 2.6.0 | ⬜ | — | — | — | — |
-| 2.5.0 | ⬜ | — | — | — | — |
-| 2.4.0 | ⬜ | — | — | — | — |
-| 1.8.0 | ⬜ | — | — | — | — |
-| 1.7.0 | ⬜ | — | — | — | — |
-| 1.6.2 | ⬜ | — | — | — | — |
-| 1.5.0 | ⬜ | — | — | — | — |
-| 1.4.6 | ⬜ | — | — | — | — |
-| 1.4.0 | ⬜ | — | — | — | — |
-| 1.3.0 | ⬜ | — | — | — | — |
-| 1.2.7 | ⬜ | — | — | — | — |
 | 1.2.5 | ⬜ | — | — | — | — |
 
 ### Per-version recipe checklist (copy for each version)
@@ -325,6 +319,119 @@ For **X.Y.Z** (target: the NEXT version back, e.g. 3.4.0 when 3.5.0 is done):
 - [ ] Update this checklist table (status, named count)
 - [ ] Update `docs/symbol-index.md` with new names
 - [ ] Save all programs + `git add` + commit
+
+---
+
+## 5c. CHANGELOG-ANCHORED NAMING PHASE (CURRENT WORK — Aug 2026)
+
+> **This is where the project is RIGHT NOW.** All 22 versions are matched and
+> saved. The current goal is to USE those matches to NAME v3.7.0 functions
+> (the primary program) by correlating function *introduction* with the
+> official changelog, then EXPORT each named function to `firmware/`.
+
+### The lineage tool (NEW — `tools/version_lineage.py`)
+
+For every v3.7.0 function, walks the fuzzy-match chain backwards through ALL
+21 adjacent version pairs (v3.6→v3.5→…→v1.2.5) and records:
+- **`first_seen`** — the OLDEST version where the function exists. A function
+  first seen in version X was *introduced* by X → corresponds to a changelog
+  feature of X.
+- **`versions`** — address per version (ancestor chain).
+- **`changes`** — versions where the function was edited (hop score < 0.9).
+
+```bash
+python tools/version_lineage.py --out build/function_lineage.json
+# --min-score 0.9 detects edit clusters (noisier — relink shifts lower scores)
+```
+
+Output: `build/function_lineage.json` → `{versions: [...], functions: {addr: {first_seen, versions, changes}}}`.
+
+**Key result (Aug 2026):** of the 711 v3.7.0 functions traceable to v3.6:
+
+| Version | Functions introduced (first_seen) | Changelog anchor |
+|---------|----------------------------------:|------------------|
+| 1.2.5 | 462 | baseline SDK core (stable 2 yrs) |
+| 1.2.7 | 5 | song sort, clock reset, BT auto-reconnect |
+| 1.3.0 | 3 | ID3 title, clock 12/24h, Favorites |
+| 1.4.0 | 8 | cover display, FF/RW, 120-level volume |
+| 1.4.6 | 26 | gear rotation, screensaver clock, lyrics library |
+| 1.5.0 | 2 | Retro EQ, shutdown font, shuffle remembers |
+| 1.6.2 | 5 | track-artist priority, shuffle rules |
+| 1.7.0 | 18 | **Custom EQ**, OGG support, cover lyrics |
+| 1.8.0 | 12 | 3 themes, ID3 unknown, translations |
+| 2.4.0 | 5 | **USB DAC**, folder skip, DRE params |
+| 2.5.0 | 6 | noise, shuffle logic, memory display |
+| 2.6.0 | 4 | M4A sort, RIFF ID3 |
+| 2.7.0 | 9 | volume button swap, cover on track switch |
+| 2.8.0 | 5 | lyrics switch, channel balance |
+| 3.0.0 | 18 | long-press Favorites, FF/RW screen-off, rename Media Library |
+| 3.1.0 | 6 | genre play-all, sleep timer keypress |
+| 3.2.0 | 5 | click-to-play skip, volume 4-5 smoothness |
+| 3.3.0 | 7 | DSD ID3 display, Favorites clearing fix |
+| 3.4.0 | 18 | **Button Modes A/B**, battery accuracy |
+| 3.5.0 | 27 | album sorting CD#→track#→filename, Favorites resume |
+| 3.6.0 | 60 | **FLAC decoder rewrite**, M4A sort, Favorites freeze |
+
+**How to use it for naming (the recipe that worked this session):**
+1. Pick a version with a clear changelog (start with the big ones: 3.6.0, 3.5.0, 3.4.0, 3.0.0, 1.7.0).
+2. List that version's `first_seen` functions: the intro cluster.
+3. Decompile each FUN_* in v3.7.0 (`/decompile_function?address=XXXX` —
+   **raw C text**, not JSON; see gotcha 1) and look at:
+   - its **address region** (0x030DDxxx = FLAC, 0x0308Cxxx = WMA, 0x0302Bxxx = audio, …)
+   - **strings** it references (`s_*` symbols, e.g. `s_PICTURE_OGG_03023ad8` → OGG picture)
+   - **callers** (`/get_xrefs_to` — e.g. called by `AudioStop`/`MusicService` → audio state)
+4. Name it per the changelog feature + evidence; `save_program`; export.
+
+### Names applied this session (37 total → v3.7.0 now 688 named)
+
+**v3.6.0 cluster — FLAC decoder rewrite (14):**
+`flac_bs_bswap32` 030dd6d0 · `flac_clz32` 030dd956 · `flac_bs_getbits_u` 030dd842 ·
+`flac_bs_init` 030dd888 · `flac_bs_getbits_s` 030df3ae · `flac_bs_getbits_u_wide` 030df46c ·
+`flac_frame_header_parse` 030df30e · `flac_decode_subframe` 030ded62 · `flac_decode_frame` 030df9fa ·
+`flac_decode_residual` 030def58 · `flac_lpc_compute` 030ddd0a · `flac_hifi_cfg_write` 030de824 ·
+`flac_hifi_ctrl_clear` 030e0920 · `flac_hifi_ctrl_set` 030e0936 → `firmware/codecs/flac/`
+
+**v3.5.0 cluster — media library service (10):**
+`media_lib_service_dispatch` 03029730 (cmd dispatcher, reads cmd at struct+0x1c) ·
+`media_lib_op_cmd01` 030295d0 · `_cmd04` 030295fc · `_cmd08` 03029628 · `_cmd10` 03029654 ·
+`_cmd18` 03029680 · `_cmd20` 030296ac · `_cmd40` 030296d8 · `_cmd80` 03029704 ·
+`media_lib_op_dispatch_core` 03029246 → `firmware/firmware/media/`
+
+**v3.5.0 cluster — codecs (3):** `OGG_Picture_Parser` 030241f8 (refs `s_PICTURE_OGG_03023ad8`) ·
+`wma_input_read` 0308c9a4 · `wma_debug_helper` 0309fe6a → `firmware/codecs/{ogg,wma}/`
+
+**v3.4.0 cluster — config/GPIO/OGG helpers (3):** `config_parse_helper` 0301ded2 (called by
+`HostParseConfig`) · `gpio_int_mode_helper` 030202ce (called by `Gpio_SetPortIntMode`) ·
+`ogg_picture_parser_helper` 03026ccc (called by `OGG_Picture_Parser`) → `firmware/{firmware/os,drivers,codecs/ogg}/`
+
+**v3.0.0 cluster — audio/LCD/fs (7):** `AudioStateHandler` 0302a74e (state switch; called by
+`AudioStop`/`MusicService`) · `audio_file_input_helper` 0300d090 + `audio_file_input_read` 0300cfd4
+(called by `AudioFileInput2`) · `lcd_shell_helper` 0302aaf0 · `lcd_write_helper_a` 03028c9e +
+`lcd_write_helper_b` 03028628 (called by `LcdShell`/`Lcd_Write`) · `hifi_file_close_helper` 0306c6c4
+(called by `HifiFileClose`) → `firmware/apps/{audio,ui}/`, `firmware/firmware/filesystem/`
+
+### Remaining introduction clusters (the next names — by version)
+
+| Version | Cluster size (FUN_*) | Hints for the next AI |
+|---------|---------------------:|-----------------------|
+| **3.1.0** | 3 | genre play-all / sleep timer — look near media lib + power |
+| **3.2.0** | 3 | click-to-play skip / volume — near playback + dac_gain |
+| **3.3.0** | 2 | DSD ID3 (not DFF) — near DSD_DecodeBlock @ 0x030FFA3C |
+| **3.6.0** | 34 remaining | FLAC region 0x030DDxxx-0x030E0xxx + scattered; check callees of flac_decode_frame |
+| **3.5.0** | 8 remaining | album sort helpers near 0x030296xx-0x030297xx |
+| **1.7.0** | 9 | **Custom EQ** — near DSP_GOODEF @ 0x0300F7DC; OGG support — near VorbisOGG_Parser |
+| **1.4.6** | 11 | lyrics library, screensaver clock |
+| **1.8.0** | 8 | themes (FLAC_ThemeColor_Select @ 0x030054BA), ID3 unknown |
+| **2.4.0** | 3 | **USB DAC** — near USB_DAC_OpenStream @ 0x0302B80A |
+| **2.7.0** | 6 | volume button swap — near MusicPlay_VolumeDisplay @ 0x0300AD50 |
+| **2.8.0** | 4 | lyrics switch, channel balance |
+| **3.0.0** | 4 remaining | long-press Favorites (menu), FF/RW screen-off |
+| **1.2.5** | 292 | baseline SDK core — lower priority (exists in every version) |
+
+**Export recipe (used this session):** decompile live via
+`/decompile_function?address=XXXX`, write `firmware/<subsystem>/<name>.c` with
+a `/** ... */` header noting the version it was introduced in + the changelog
+anchor. `tools/export_named_flac.py` is a ready example.
 
 ---
 
@@ -933,6 +1040,8 @@ All saved to the Ghidra project. Rename history (re-apply after a restart):
 | `revert_weak_chain_names.py` | Undo chained names whose v3.6→v3.7 chain score < 0.6 (matcher floor is unreliable) |
 | `chain3_propagate_names.py` | 3-hop chain (v3.4→v3.5→v3.6→v3.7): per-hop auto-delta, offset-ok = all 3 hops same physical location, combo = min of 3 link scores; 39 names applied to v3.4.0 |
 | `chainN_propagate_names.py` | **NEW generic N-hop chain** (`--match` repeatable, oldest-pair first): per-hop auto-delta, offset-ok optional; 79 names applied to v3.3.0 (4 hops, combo ≥0.9, no offset due to relink shift) |
+| `version_lineage.py` | **NEW (CURRENT PHASE)** builds `build/function_lineage.json`: walks every v3.7.0 function back through all 21 adjacent pairs → `first_seen` (introduced-in) version + edit clusters (`--min-score 0.9`). The core driver of changelog-anchored naming. |
+| `export_named_flac.py` | **NEW example** of live-decompile + export pattern: writes `firmware/codecs/flac/*.c` from Ghidra with provenance headers |
 | `open_all_programs.py` / `close_program.py` / `manage_programs.py` | Open/close/switch Ghidra programs |
 | `wait_analysis.py` | Poll `/analysis_status` until a program finishes analyzing |
 | `check_close_schema2.py` | Inspect close/switch/save params |
@@ -984,46 +1093,43 @@ python tools/collect_new_names.py
 
 ---
 
-## 9. NEXT STEPS (Paso 2 & 3 — the core work)
+## 9. NEXT STEPS (CURRENT PHASE — changelog-anchored naming)
 
-**Done so far:** 3.6.0 imported + matched vs 3.7.0 (118 matches, 38 ≥0.9, 9
-renames applied). 3.5.0 imported + matched vs 3.6.0 (1,141 matches, 406 ≥0.9;
-9 direct + 67 chained renames applied, **13 weak-chain reverted**;
-**75 named**). 3.4.0 imported + matched vs 3.5.0 (1,132 matches, 404 ≥0.9;
-73 direct + 39 chain3 renames applied; **104 named**). All programs saved to
-the Ghidra project.
+**Done so far (all versions):** v3.7.0 primary (688 named) + 21 older versions
+all imported, matched, chain-propagated and saved (87–106 names each).
+`build/function_lineage.json` maps every traceable v3.7.0 function to its
+`first_seen` version. See §5c for the full cluster table.
 
-1. **Continue backwards to 3.1.0.** Same recipe, now SIX hops:
-   3.1→3.2→3.3→3.4→3.5→3.6→3.7. Use `chainN_propagate_names.py` with all six
-   match files (v31_v32 … v36_v8m_full). Expect ANOTHER relink shift (every
-   pair so far below 3.5 has one: +24, +512…) — use `--threshold 0.9` without
-   `--require-offset`:
-   - Extract: `python tools/extract_sec3_for_ghidra.py 3.1.0`
-   - Import: `python tools/import_into_ghidra.py build/sec3_3_1_0.bin --language
-     ARM:LE:32:v8-m --base 0x03000000`
-   - Wait: `python tools/wait_analysis.py 3_1_0` then `save_program`
-   - String diff: `python tools/string_diff_versions.py 3.1.0 3.2.0 --limit 30`
-   - Segment diff: `python tools/segment_table_diff.py 3.1.0 3.2.0`
-   - Match: `python tools/run_bulk_match.py sec3_3_1_0.bin sec3_3_2_0.bin
-     --filter FUN_ --threshold 0.5 --out fuzzy_match_v31_v32.json`
-   - Apply direct: `python tools/apply_cross_version_names.py sec3_3_1_0.bin
-     --matches build/fuzzy_match_v31_v32.json --threshold 0.9`
-   - Chain 6: `python tools/chainN_propagate_names.py --match
-     build/fuzzy_match_v31_v32.json --match build/fuzzy_match_v32_v33.json
-     --match build/fuzzy_match_v33_v34.json --match
-     build/fuzzy_match_v34_v35.json --match build/fuzzy_match_v35_v36.json
-     --match build/fuzzy_match_v36_v8m_full.json --program sec3_3_1_0.bin
-     --threshold 0.9`
-   - **SAVE immediately after renames.**
-2. **Paso 3 — Changelog anchoring** for 3.1.0 (Genre play-all; sleep timer no
-   longer reset by keypress; other):
-   - Genre play-all → media library / genre browsing cluster.
-   - Sleep timer keypress fix → power/sleep timer cluster.
-3. Repeat for every version back to 1.2.5. Each pair labels another cluster.
-4. Keep `docs/symbol-index.md` updated with every function named in Ghidra.
-5. When continuing, **re-open programs after a Ghidra restart** with
-   `python tools/open_all_programs.py`; renames may be lost if unsaved — always
-   save after applying.
+**1. (IMMEDIATE) Continue naming the introduction clusters — see §5c table.**
+Recommended order (most changelog certainty first):
+1. **v1.7.0** (9 FUN_*) — Custom EQ (near `DSP_GOODEF_*` @ 0x0300F7DC) +
+   OGG support (near `VorbisOGG_Parser` @ 0x03023BE8). Most valuable.
+2. **v2.4.0** (3 FUN_*) — USB DAC (near `USB_DAC_OpenStream` @ 0x0302B80A).
+3. **v3.6.0** remaining 34 — callees of `flac_decode_frame`/`flac_decode_subframe`.
+4. **v1.4.6** (11) — lyrics library; **v1.8.0** (8) — themes;
+   **v3.1.0** (3) — genre/sleep; **v3.2.0** (3) — volume.
+
+For each cluster: decompile FUN_* → inspect region/strings/callers → name per
+changelog → `save_program` → export `.c` to `firmware/<subsystem>/`.
+
+**2. Keep `docs/symbol-index.md` updated** with every function named in Ghidra
+(this session added: flac_*, media_lib_*, OGG_*, wma_*, AudioState*, lcd_*,
+config_*, gpio_*, audio_file_*, hifi_file_*).
+
+**3. When continuing, re-open programs after a Ghidra restart** with
+`python tools/open_all_programs.py`; renames may be lost if unsaved — always
+`save_program` after every rename batch (the whole workflow depends on it).
+
+**4. Deeper changelog anchoring per version** (Paso 3, still mostly open):
+each changelog line should eventually map to a named function cluster. The
+lineage tool gives the introduction clusters; the string diff tool
+(`string_diff_versions.py`) gives the UI/text clues for the rest.
+
+**5. Remaining cleanup (documented earlier):**
+- 3.8.0 forward diff (its own layout check — big diff vs 3.7).
+- Boundary repair: `hifi_busy_delay_ovl_09e3`, `_0fd1`, `_0e48`.
+- `AudioPlayback_Start`/`MusicService_Init` mid-function split revisit.
+- The 1.2.5 baseline (292 FUN_*) is low priority — stable SDK core.
 
 ---
 
@@ -1110,3 +1216,28 @@ the Ghidra project.
 17. **The chain threshold must gate the combo score, not just the direct
     score** — names originate from v3.7, so the weaker of the two links bounds
     the confidence.
+18. **Relink shifts are the norm below v3.5.** Every pair 3.4→3.3→…→1.2.5
+    moves buffers (31/32 segments MOVE; shifts of +24, +512, …). After a
+    shift, offset-ok REJECTS perfect matches (score 1.0) because the function
+    physically moved — use `--threshold 0.9` WITHOUT `--require-offset` for
+    shifted pairs (a combo of 10+ scores all ≥0.9 is trustworthy on its own).
+    Check `segment_table_diff.py` output first: `0/32 moved` → offset-ok is
+    safe; `30-31/32 moved` → drop it.
+19. **`/decompile_function` returns RAW C TEXT, not JSON** (repeat of gotcha 1
+    — it bit us again this session). Use `urllib.urlopen(...).read().decode()`
+    directly, or the `_get` wrapper will choke trying to `json.loads` it.
+20. **The lineage tool is the naming map:** `build/function_lineage.json` tells
+    you WHICH version introduced each v3.7.0 function. A function first seen
+    in vX is a changelog feature of vX — name it accordingly (see §5c).
+    Functions with NO lineage (not in `v36_v8m_full` targets) were introduced
+    in 3.7.0 itself (Button C Mode, USB power control).
+21. **Name clusters in v3.7.0, not in the old versions.** v3.7.0 is the
+    decompile/export source. The 21 old programs already carry their names
+    (87–106 each); new discovery happens on v3.7.0 and exports to `firmware/`.
+22. **UI/button clusters have no strings** (0x037xxxxx resource region, gotcha
+    8) — for those, name by CALLER evidence (`get_xrefs_to`: e.g. called by
+    `AudioStop`/`MusicService` → `AudioStateHandler`) + address region. Names
+    from caller evidence are conservative; that's fine.
+23. **Always re-verify counts after a session:** `list_functions_enhanced` on
+    v3.7.0 = 688 named (24.8%) as of this handoff. The `.0` orphan program
+    (`sec3_3_6_0.bin.0`, 0 funcs) is still open — ignore it.
