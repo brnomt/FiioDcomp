@@ -1,13 +1,33 @@
 /* stubs.c — ReChord link stubs.
- * Auto-generated: defines globals (zero) + function stubs referenced
- * by the Rockchip SDK that come from the FiiO layer / ROM API.
- * These are placeholders until the real implementations are linked.
+ *
+ * Defines globals (zero) + function stubs referenced by the Rockchip
+ * SDK that come from the FiiO layer / ROM API.
+ *
+ * CRITICAL RULE (learned the hard way, twice):
+ *   A symbol the SDK CALLS with () MUST be defined as a FUNCTION, never
+ *   as a zeroed VARIABLE. If stubs.c defines `uint32_t Foo;` and the SDK
+ *   does `Foo(...)`, the CPU branches to the DATA address and executes
+ *   zeros -> hard fault at the first call (BSP_Init2 -> MailBoxEnableA2BInt
+ *   -> crash before Main2's loop; this was the V0.2-V0.5 "no heartbeat"
+ *   bug). Classification is by call-site audit: `name(` in SDK .c files
+ *   => function; `&name` or plain data use => variable.
+ *
+ * Fixed in this revision: MailBox*A2B/B2A, SysTick*2, Codec*2, bb_printf1,
+ * TaskID2Str, FindFirst/NextFile, GetCurFileNum, GetGlobeFileNum,
+ * GetLongFileName, GetTotalFiles, BuildDirInfo, PowerOff, GetAdcData,
+ * ScuClockGateCtr, SetPllDefault, System_Power_On, MDDeInitAll,
+ * HostGetChannelInfo, Gpio_SetPortDirec, Grf_*, SFlashGetBluetoothMac,
+ * CheckAdcState, AdcPowerDown, BluetoothReconnectResult, Codec_*,
+ * MusicWinPaint, bt_a2dp_connect, rk_print_string2.
  */
 #include <stdint.h>
 #include <string.h>
 
-/* ---- globals (zero-init) ---- */
-uint32_t AdcPowerDown __attribute__((used));
+typedef unsigned int   uint32;
+typedef unsigned long  ulong;
+typedef unsigned short uint16;
+
+/* ---- globals (zero-init) — DATA ONLY, never called with () ---- */
 uint32_t AdcSamplingCh __attribute__((used));
 uint32_t AudioCodecOpenErr __attribute__((used));
 uint32_t AudioDecodeCnt __attribute__((used));
@@ -25,29 +45,10 @@ uint32_t BatteryCounter __attribute__((used));
 uint32_t BatteryCounter1 __attribute__((used));
 uint32_t BatterySystickCounterBack __attribute__((used));
 uint32_t BlueToothThread __attribute__((used));
-uint32_t BluetoothReConnectResult __attribute__((used));
 uint32_t BtWinStatus __attribute__((used));
-uint32_t BuildDirInfo __attribute__((used));
 uint32_t ChargeFullFlag __attribute__((used));
 uint32_t ChargeWin __attribute__((used));
-uint32_t CheckAdcState __attribute__((used));
 uint32_t CodeLogicAddress __attribute__((used));
-uint32_t CodecClose2 __attribute__((used));
-uint32_t CodecDecode2 __attribute__((used));
-uint32_t CodecGetBitrate2 __attribute__((used));
-uint32_t CodecGetBps2 __attribute__((used));
-uint32_t CodecGetCaptureBuffer2 __attribute__((used));
-uint32_t CodecGetChannels2 __attribute__((used));
-uint32_t CodecGetLength2 __attribute__((used));
-uint32_t CodecGetSampleRate2 __attribute__((used));
-uint32_t CodecGetTime2 __attribute__((used));
-uint32_t CodecOpen2 __attribute__((used));
-uint32_t CodecSeek2 __attribute__((used));
-uint32_t Codec_DeInitial __attribute__((used));
-uint32_t Codec_ExitMode __attribute__((used));
-uint32_t Codec_SetMode __attribute__((used));
-uint32_t Codec_SetSampleRate __attribute__((used));
-uint32_t Codec_SetVolumet __attribute__((used));
 uint32_t CurrentCodec2 __attribute__((used));
 uint32_t DataDiskID __attribute__((used));
 uint32_t DefaultLanguage __attribute__((used));
@@ -57,73 +58,116 @@ uint32_t FMThread __attribute__((used));
 uint32_t FM_State_StepStation __attribute__((used));
 uint32_t FileInfo __attribute__((used));
 uint32_t FileOpenStringR __attribute__((used));
-uint32_t FindFirstFile __attribute__((used));
-uint32_t FindNextFile __attribute__((used));
 uint32_t FmStandbyFlag __attribute__((used));
 uint32_t GBKLogicAddress __attribute__((used));
-uint32_t GetAdcData __attribute__((used));
-uint32_t GetCurFileNum __attribute__((used));
-uint32_t GetGlobeFileNum __attribute__((used));
-uint32_t GetLongFileName __attribute__((used));
-uint32_t GetTotalFiles __attribute__((used));
-uint32_t Gpio_SetPortDirec __attribute__((used));
-uint32_t Grf_NOC_Remap_Sel __attribute__((used));
-uint32_t Grf_otgphy_suspend __attribute__((used));
-uint32_t HostGetChannelInfo __attribute__((used));
 uint32_t IsBTOpened __attribute__((used));
 uint32_t IsBackLightOn __attribute__((used));
 uint32_t LanguageNum __attribute__((used));
 uint32_t LowPowerWin __attribute__((used));
-uint32_t MDDeInitAll __attribute__((used));
-uint32_t MailBoxClearB2AInt __attribute__((used));
-uint32_t MailBoxDisableB2AInt __attribute__((used));
-uint32_t MailBoxEnableA2BInt __attribute__((used));
-uint32_t MailBoxEnableB2AInt __attribute__((used));
-uint32_t MailBoxReadB2ACmd __attribute__((used));
-uint32_t MailBoxReadB2AData __attribute__((used));
-uint32_t MailBoxWriteA2BCmd __attribute__((used));
-uint32_t MailBoxWriteA2BData __attribute__((used));
 uint32_t MaxShuffleAllCount __attribute__((used));
 uint32_t MdbBuildWin __attribute__((used));
 uint32_t MenuLogicAddress __attribute__((used));
 uint32_t MusicFileExtString __attribute__((used));
 uint32_t MusicWin __attribute__((used));
-uint32_t MusicWinPaint __attribute__((used));
 uint32_t OutputVolOffset __attribute__((used));
 uint32_t PicWin __attribute__((used));
-uint32_t PowerOff __attribute__((used));
 uint32_t RadioWin __attribute__((used));
 uint32_t RebootTag __attribute__((used));
 uint32_t RecordFileExtString __attribute__((used));
 uint32_t RecordThread __attribute__((used));
 uint32_t RecordWin __attribute__((used));
-uint32_t SFlashGetBluetoothMac __attribute__((used));
-uint32_t ScuClockGateCtr __attribute__((used));
 uint32_t SetMenuLanguageInfo __attribute__((used));
-uint32_t SetPllDefault __attribute__((used));
 uint32_t SetPowerOffFlag __attribute__((used));
 uint32_t SysDiskID __attribute__((used));
 uint32_t SysProgRawDiskCapacity __attribute__((used));
-uint32_t SysTickClkSourceSet2 __attribute__((used));
 uint32_t SysTickCounter __attribute__((used));
-uint32_t SysTickDisable2 __attribute__((used));
-uint32_t SysTickEnable2 __attribute__((used));
-uint32_t SysTickPeriodSet2 __attribute__((used));
-uint32_t System_Power_On __attribute__((used));
-uint32_t TaskID2Str __attribute__((used));
 uint32_t ValidSysDisk __attribute__((used));
-/* (these ARM intrinsics are real functions — see below) */
-uint32_t bb_printf1 __attribute__((used));
-uint32_t bt_a2dp_connect __attribute__((used));
-uint32_t chip_freq __attribute__((used));
 uint32_t gBattery __attribute__((used));
 uint32_t gLangSel __attribute__((used));
 uint32_t gSysConfig __attribute__((used));
 uint32_t gSysSetBLTimeArray __attribute__((used));
 uint32_t gpRadioplayerRegKey __attribute__((used));
-uint32_t rk_print_string2 __attribute__((used));
+uint32_t chip_freq __attribute__((used));
 
-/* ---- function stubs (return 0) ---- */
+/* ---- function stubs (return 0 / no-op) — these were mistakenly
+ *      defined as VARIABLES before; every SDK call to them hard-faulted.
+ *      They must stay FUNCTIONS (weak, so a real impl can override). ---- */
+
+/* --- mailbox ROM APIs (A2B = AP->BB, B2A = BB->AP) --- */
+__attribute__((weak)) int MailBoxWriteA2BCmd(uint32 cmd, uint32 id, uint32 channel) { (void)cmd; (void)id; (void)channel; return 0; }
+__attribute__((weak)) int MailBoxWriteA2BData(uint32 data, uint32 id, uint32 channel) { (void)data; (void)id; (void)channel; return 0; }
+__attribute__((weak)) int MailBoxReadB2ACmd(uint32 id, uint32 channel) { (void)id; (void)channel; return 0; }
+__attribute__((weak)) int MailBoxReadB2AData(uint32 id, uint32 channel) { (void)id; (void)channel; return 0; }
+__attribute__((weak)) int MailBoxEnableA2BInt(uint32 id, uint32 int_sel) { (void)id; (void)int_sel; return 0; }
+__attribute__((weak)) int MailBoxEnableB2AInt(uint32 id, uint32 int_sel) { (void)id; (void)int_sel; return 0; }
+__attribute__((weak)) int MailBoxClearB2AInt(uint32 id, uint32 int_sel) { (void)id; (void)int_sel; return 0; }
+__attribute__((weak)) int MailBoxDisableB2AInt(uint32 id, uint32 int_sel) { (void)id; (void)int_sel; return 0; }
+/* (these were already functions; kept for completeness) */
+__attribute__((weak)) int MailBoxClearA2BInt(uint32 id, uint32 int_sel) { (void)id; (void)int_sel; return 0; }
+__attribute__((weak)) int MailBoxReadA2BCmd(uint32 id, uint32 channel) { (void)id; (void)channel; return 0; }
+__attribute__((weak)) int MailBoxReadA2BData(uint32 id, uint32 channel) { (void)id; (void)channel; return 0; }
+__attribute__((weak)) int MailBoxWriteB2ACmd(uint32 cmd, uint32 id, uint32 channel) { (void)cmd; (void)id; (void)channel; return 0; }
+__attribute__((weak)) int MailBoxWriteB2AData(uint32 data, uint32 id, uint32 channel) { (void)data; (void)id; (void)channel; return 0; }
+
+/* --- SysTick (systick2.c excluded -> these were variables!) --- */
+__attribute__((weak)) void SysTickClkSourceSet2(uint32 Source) { (void)Source; }
+__attribute__((weak)) void SysTickEnable2(void) { }
+__attribute__((weak)) void SysTickDisable2(void) { }
+__attribute__((weak)) void SysTickPeriodSet2(uint32 mstick) { (void)mstick; }
+
+/* --- codec API (pCODECS2.c excluded -> variables!) --- */
+__attribute__((weak)) ulong CodecOpen2(ulong ulCodec, ulong ulFlags) { (void)ulCodec; (void)ulFlags; return 0; }
+__attribute__((weak)) ulong CodecDecode2(void) { return 0; }
+__attribute__((weak)) ulong CodecSeek2(ulong ulTime, ulong ulSeekType) { (void)ulTime; (void)ulSeekType; return 0; }
+__attribute__((weak)) ulong CodecGetTime2(ulong *pulTime) { (void)pulTime; return 0; }
+__attribute__((weak)) ulong CodecGetBitrate2(ulong *pulBitrate) { (void)pulBitrate; return 0; }
+__attribute__((weak)) ulong CodecGetSampleRate2(ulong *pulSampleRate) { (void)pulSampleRate; return 0; }
+__attribute__((weak)) ulong CodecGetChannels2(ulong *pulChannels) { (void)pulChannels; return 0; }
+__attribute__((weak)) ulong CodecGetLength2(ulong *pulLength) { (void)pulLength; return 0; }
+__attribute__((weak)) ulong CodecGetBps2(ulong *pulBps) { (void)pulBps; return 0; }
+__attribute__((weak)) ulong CodecGetCaptureBuffer2(short *ppsBuffer, long *plLength) { (void)ppsBuffer; (void)plLength; return 0; }
+__attribute__((weak)) ulong CodecClose2(void) { return 0; }
+
+/* --- FiiO app layer / file system --- */
+__attribute__((weak)) int BuildDirInfo(void) { return 0; }
+__attribute__((weak)) int FindFirstFile(void *p) { (void)p; return 0; }
+__attribute__((weak)) int FindNextFile(void *p) { (void)p; return 0; }
+__attribute__((weak)) int GetCurFileNum(void) { return 0; }
+__attribute__((weak)) int GetGlobeFileNum(void) { return 0; }
+__attribute__((weak)) int GetLongFileName(void *p, void *q) { (void)p; (void)q; return 0; }
+__attribute__((weak)) int GetTotalFiles(void) { return 0; }
+__attribute__((weak)) int MDDeInitAll(void) { return 0; }
+__attribute__((weak)) int SFlashGetBluetoothMac(void *p) { (void)p; return 0; }
+__attribute__((weak)) int TaskID2Str(uint32 id) { (void)id; return 0; }
+__attribute__((weak)) int MusicWinPaint(void) { return 0; }
+__attribute__((weak)) void PowerOff(void) { }
+__attribute__((weak)) int SetPllDefault(void) { return 0; }
+__attribute__((weak)) int System_Power_On(void) { return 0; }
+__attribute__((weak)) int CheckAdcState(void) { return 0; }
+__attribute__((weak)) int GetAdcData(void) { return 0; }
+__attribute__((weak)) int AdcPowerDown(void) { return 0; }
+__attribute__((weak)) int BluetoothReConnectResult(void) { return 0; }
+
+/* --- codec-mode helpers (FiiO AudioControl/RecordControl layer) --- */
+__attribute__((weak)) int Codec_DeInitial(void) { return 0; }
+__attribute__((weak)) int Codec_ExitMode(void) { return 0; }
+__attribute__((weak)) int Codec_SetMode(void) { return 0; }
+__attribute__((weak)) int Codec_SetSampleRate(void) { return 0; }
+__attribute__((weak)) int Codec_SetVolumet(void) { return 0; }
+
+/* --- GPIO / clock / power helpers --- */
+__attribute__((weak)) int Gpio_SetPortDirec(void) { return 0; }
+__attribute__((weak)) int Grf_NOC_Remap_Sel(void) { return 0; }
+__attribute__((weak)) int Grf_otgphy_suspend(void) { return 0; }
+__attribute__((weak)) int HostGetChannelInfo(void) { return 0; }
+__attribute__((weak)) int ScuClockGateCtr(void) { return 0; }
+
+/* --- debug prints --- */
+__attribute__((weak)) int bb_printf1(const char *fmt, ...) { (void)fmt; return 0; }
+__attribute__((weak)) int rk_print_string2(const char *fmt, ...) { (void)fmt; return 0; }
+__attribute__((weak)) int bt_a2dp_connect(void) { return 0; }
+
+/* ---- generic stubs (were functions already) ---- */
 __attribute__((weak)) int ACodec_PLL_Set(void) { return 0; }
 __attribute__((weak)) int AdcSleepEnter(void) { return 0; }
 __attribute__((weak)) int AdcSleepExit(void) { return 0; }
@@ -176,11 +220,6 @@ __attribute__((weak)) int LcdWakeUp(void) { return 0; }
 __attribute__((weak)) int MDGetInfo(void) { return 0; }
 __attribute__((weak)) int MDRead(void) { return 0; }
 __attribute__((weak)) int MDWrite(void) { return 0; }
-__attribute__((weak)) int MailBoxClearA2BInt(void) { return 0; }
-__attribute__((weak)) int MailBoxReadA2BCmd(void) { return 0; }
-__attribute__((weak)) int MailBoxReadA2BData(void) { return 0; }
-__attribute__((weak)) int MailBoxWriteB2ACmd(void) { return 0; }
-__attribute__((weak)) int MailBoxWriteB2AData(void) { return 0; }
 __attribute__((weak)) int PWM_Start(void) { return 0; }
 __attribute__((weak)) int PWM_Stop(void) { return 0; }
 __attribute__((weak)) int PowerPath_Set(void) { return 0; }
@@ -222,9 +261,7 @@ void IntMasterEnable(void)
     __asm volatile("cpsie i" ::: "memory");
 }
 
-/* ---- ARM intrinsics the SDK calls as functions (real impls) ----
- * Replaces the zeroed VARIABLES that previously collided with these names.
- * __CPU_IntDefaultHandler2 is the real fault handler in firmware/fault.c. */
+/* ---- ARM intrinsics the SDK calls as functions (real impls) ---- */
 __attribute__((naked)) void __SETPRIMASK2(void)     { __asm__ volatile("cpsid i; bx lr"); }
 __attribute__((naked)) void __RESETPRIMASK2(void)   { __asm__ volatile("cpsie i; bx lr"); }
 __attribute__((naked)) void __SETFAULTMASK2(void)   { __asm__ volatile("cpsid f; bx lr"); }

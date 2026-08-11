@@ -135,6 +135,29 @@ real intrinsics (`cpsid i / cpsie i / cpsid f / cpsie f / wfi`).
 A quick heuristic: name ends in Set/Get/Init/Start/Stop/Enable/Disable/Read/
 Write/Enter/Exit/Register → function. Then check the header decl for `(...)`.
 
+> ⚠️ **THE SAME BUG HIT AGAIN (V0.2–V0.5, root-caused in the "stub-fix"
+> pass):** the mailbox/SysTick/codec function stubs were STILL zeroed
+> variables, so the boot path crashed silently:
+> `BSP_Init2()` → `MailBoxEnableA2BInt()` (variable @ bss) → CPU executes
+> zeros → hard fault before Main2's loop. That's why no heartbeat ever
+> showed and the menu freeze never changed. **Fixed in commit `stub-fix`:**
+> 57 symbols converted to `__attribute__((weak))` FUNCTIONS (MailBox*A2B/
+> B2A, SysTick*2, Codec*2, bb_printf1, TaskID2Str, FindFirst/NextFile,
+> GetCurFileNum, GetGlobeFileNum, GetLongFileName, GetTotalFiles,
+> BuildDirInfo, PowerOff, GetAdcData, ScuClockGateCtr, SetPllDefault,
+> System_Power_On, MDDeInitAll, HostGetChannelInfo, Gpio_SetPortDirec,
+> Grf_*, SFlashGetBluetoothMac, CheckAdcState, AdcPowerDown,
+> BluetoothReConnectResult, Codec_*, MusicWinPaint, bt_a2dp_connect,
+> rk_print_string2). **Audit method that works:** scan every SDK .c for
+> `name(` (→ function) vs `&name`/data use (→ variable). `SetPowerOffFlag`
+> is a real UINT8 VARIABLE despite the `Set` prefix — always verify call
+> sites, never trust the name heuristic alone.
+>
+> ⚠️ Stub-return-0 is NOT a fix for the freeze itself — the AP still waits
+> for real mailbox replies. V0.6 (stub-fix) is a *diagnostic*: if the
+> fullscreen red/black heartbeat shows, Main2 reaches its loop and the
+> mailbox ROM-API register addresses are the only remaining blocker.
+
 `IntDefaultHandler2` is `interrupt("IRQ") naked` and branches to
 `__CPU_IntDefaultHandler2`; our replacement is plain naked (the branch target
 must not return).
