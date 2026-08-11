@@ -89,3 +89,45 @@ loader loop. 0x0306fda8 is in a map GAP (0x03057698-0x030795cc) — free RAM.
 4. Ghidra: sec2_bootloader.bin (162 funcs) is in project
    `FIIO-3.7.0-Decomp`; section_3 program covers 0x03000000+; ROM_API block
    at 0x02FE0000 is an EMPTY placeholder (no ROM bytes available).
+
+## UPDATE (same session, Ghidra deep-dive): section_3 = the WHOLE APP, not the BB
+
+Big correction to earlier conclusions. The stock section_3 (fw2, IMG 0x81a14+)
+is NOT just the "BB". It is the COMPLETE RKnanoD application:
+
+- **UI**: `music_menu_draw @ 0300512a`, `music_ui_draw @ 0301231c`,
+  `GUI_TextDisplay @ 03013378`, `GUI_TextDisplayBuff @ 030128bc`,
+  `GUI_BmpFronDisplay @ 03012128`, `DisplayDev_ScreenUpdate @ 030198de`,
+  `Lcd_Write @ 03027afa`, `Font12_CompiType @ 03010f98` (FONT DATA nearby!)
+- **App flow**: `application_start @ 0300710a` (ROM event callback),
+  `MusicService @ 03029afc`, `MusicService_Init @ 0302a3e0`,
+  `AudioPlayback_Start @ 0302a398`, `MusicInit @ 0302b9d8`,
+  `MainUI_KeyHandler @ 0301020c`, task entries (`MusicPlayMenuTask_Enter`,
+  `SystemSetTask_Enter`, `FMControlTask_Enter`, `AudioControlTask_Enter`...)
+- **BB/audio**: `main2_entry @ 03000aba` (USB MSC mode!),
+  `HifiFileOpen/Read/Seek/Write/Close @ 0306b8e6+`, codecs, `AudioDecoding`
+- **DSP**: `DSP_GOODEF_Init @ 0300f7dc`, `DSP_GOODEF_Process @ 0300fb0e`,
+  `DSP_GOODEF_Reload @ 0301022c`, `RockEQReduce9dB @ 0302cd22`,
+  `eq_key_handler @ 03020810`
+- **IPC**: `ipc_post_cmd @ 03073c7c`, `media_lib_service_dispatch @ 03029730`
+
+The RKnanoC ROM dispatches to MANY app entries (firmware_entry @ 0x03000010
+= HW init, main2_entry = USB MSC, application_start = event callback, ...)
+based on boot mode / events. The mailbox (`MailBoxWriteB2ACmd`) is the
+CPU <-> GOODE external DSP chip protocol, NOT AP<->BB.
+
+**ROOT CAUSE of "cassette + no strings + menu freeze" (V0.1-V0.6):**
+our section_3 build only runs `Main2` (BB decode loop) — it NEVER runs the
+UI (application_start / OSStart / windows / Font12 rendering). The cassette
+is the loader/boot screen (resources, preserved). With our firmware the app
+never takes over the display -> cassette stays, no text, and the other side
+(ROM/GOODE) waits on the mailbox handshake that our stubs never send ->
+menu press freezes.
+
+**STRATEGY REVISION:** "Rebuild the BB from SDK" was the wrong goal.
+Realistic path forward:
+1. Restore stock section_3 -> device fully works again (UI + Font12 intact).
+2. Patch ONLY the DSP/effect hook in stock section_3
+   (`DSP_GOODEF_Process @ 0x0300fb0e` or `EffectProcess`) with our compiled
+   DSP code -> keep the working UI, add bass boost/reverb/custom EQ.
+   Addresses already mapped in `firmware/rockchip/fiio_map.h`.
