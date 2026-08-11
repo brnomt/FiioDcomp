@@ -1,60 +1,128 @@
 /*
- * Linker script for Echo Mini v3.7.0 main firmware (section_3 code region).
+ * ReChord linker script — Echo Mini (RKnanoC) custom firmware.
  *
- * Load address 0x03000000 matches Ghidra / HIFIEC37.IMG section_3.
- * RAM layout follows segment table in docs/memory-map.md (simplified).
+ * Layout follows the stock section_3 + segment table (docs/HARDWARE.md):
+ *   - Code + rodata in the firmware window at 0x03000000
+ *   - The 16-byte RKnanoFW header at 0x03000000 (magic filled by pack_img)
+ *   - firmware_entry (reset vector) at 0x03000010
+ *   - Data/bss in on-chip SRAM (0x03005AFC .. 0x03060000)
+ *   - SDK named sections (bb_vect, BBSysData, APMainStack, ...) placed per
+ *     the stock segment table so runtime addresses match.
  */
 
 ENTRY(firmware_entry)
 
 MEMORY
 {
-    /* Code in SPI-loaded firmware window (first ~9.6 MB of section_3 code) */
+    /* Code window (section_3 region, SPI-loaded) */
     FW_CODE (rx)  : ORIGIN = 0x03000000, LENGTH = 0x00939000
-    /* On-chip SRAM for data/stack (0x03005AFC .. 0x03060000) */
+    /* On-chip SRAM for data/stack */
     FW_RAM  (rwx) : ORIGIN = 0x03005AFC, LENGTH = 0x0005A504
 }
 
-/* Main stack top — 16 KiB block @ 0x0301E794 per segment table */
+/* Main stack top — 16 KiB block @ 0x0301E794 (segment table) */
 __stack_top = 0x0301E794 + 0x4000;
+__main_stack = 0x0301E794;
+
+/* Keil scatter-file symbols the SDK references */
+Image$$BB_MAIN_STACK$$ZI$$Limit = __main_stack + 0x4000;
+Image$$BB_SYS_DATA$$ZI$$Base = ORIGIN(FW_RAM);
+Image$$BB_SYS_DATA$$ZI$$Length = LENGTH(FW_RAM);
 
 SECTIONS
 {
+    /* ---- RKnanoFW 16-byte header (magic/load-addr written by pack_img) ---- */
     . = ORIGIN(FW_CODE);
-
     .fw_header 0x03000000 :
     {
         KEEP(*(.fw_header))
     } > FW_CODE
 
+    /* ---- firmware_entry @ 0x03000010 (bootloader jumps here) ---- */
     .text 0x03000010 :
     {
         KEEP(*(.text.firmware_entry))
+        KEEP(*(.text.firmware_entry_trampoline))
         *(.text*)
         *(.rodata*)
+        *(.ARM.extab*)
+        *(.ARM.exidx*)
+        *(.bb_vect)
+        . = ALIGN(4);
+        *(.driver_code)
+        . = ALIGN(4);
+        *(.SysInitCode)
+        . = ALIGN(4);
+        *(.SysCode)
+        . = ALIGN(4);
+        *(.SysReservedCode)
+        . = ALIGN(4);
+        *(.FindFileCode)
+        . = ALIGN(4);
+        *(.AudioInitCode)
+        . = ALIGN(4);
+        *(.AudioCode)
+        . = ALIGN(4);
+        *(.FlacDecCode)
     } > FW_CODE
 
-    . = ORIGIN(FW_RAM);
+    .vectors (NOLOAD) :
+    {
+        KEEP(*(.vectors))
+    } > FW_CODE
 
-    .data :
+    /* ---- SDK named data sections ---- */
+    .data ALIGN(4) :
     {
         _data_start = .;
         *(.data*)
+        *(.BBSysData)
+        *(.SysData)
+        *(.SysReservedData)
+        *(.AudioData)
         _data_end = .;
     } > FW_RAM
 
-    .bss :
+    /* ---- SDK named bss sections ---- */
+    .bss ALIGN(4) :
     {
         _bss_start = .;
         *(.bss*)
         *(COMMON)
+        *(.SysBss)
+        *(.AudioBss)
         _bss_end = .;
     } > FW_RAM
 
-    /* Discard unwieldy SDK sections until overlay model is ported */
-    /DISCARD/ :
+    . = ORIGIN(FW_RAM);
+
+    /* ---- Buffer regions from the segment table (NOLOAD, placed at their
+           stock addresses so absolute pointers in code match) ---- */
+    .audio_buffer 0x03005AFC (NOLOAD) : { . = 0x18C50; } > FW_RAM   /* 101,456 */
+    .dsp_buffers  0x0301E74C (NOLOAD) : { . = 0x28; }  > FW_RAM
+    .id3_parse    0x0301E770 (NOLOAD) : { . = 0x36; }  > FW_RAM
+    .fat_cache    0x0301E778 (NOLOAD) : { . = 0x10000; } > FW_RAM  /* 64KB */
+    .flac_work    0x03041550 (NOLOAD) : { . = 0x4; }  > FW_RAM
+    .ogg_decode   0x0301E7D4 (NOLOAD) : { . = 0x242; } > FW_RAM
+    .mp3_frame    0x0301EB30 (NOLOAD) : { . = 0x12810; } > FW_RAM  /* 75,792 */
+    .wma_work     0x03031454 (NOLOAD) : { . = 0x100D4; } > FW_RAM  /* 65,748 */
+    .ape_work     0x0301E76C (NOLOAD) : { . = 0x35; }  > FW_RAM
+    .dsd_buffer   0x0301E7D0 (NOLOAD) : { . = 0x14; }  > FW_RAM
+    .aac_decoder  0x0301EE5C (NOLOAD) : { . = 0x6CDF; } > FW_RAM  /* 27,871 */
+    .wav_decode   0x03025F90 (NOLOAD) : { . = 0x93B4; } > FW_RAM  /* 37,812 */
+    .dict_decoder 0x0301E770 (NOLOAD) : { . = 0x199; } > FW_RAM
+    .media_index  0x030234B8 (NOLOAD) : { . = 0x12ED; } > FW_RAM
+    .ui_fb        0x03024868 (NOLOAD) : { . = 0xFB20; } > FW_RAM  /* 64,288 */
+    .bt_stream    0x030247BC (NOLOAD) : { . = 0x8444; } > FW_RAM  /* 33,860 */
+    .usb_dma      0x0301E78C (NOLOAD) : { . = 0x8; }  > FW_RAM
+    .record_buf   0x0301EABC (NOLOAD) : { . = 0x6; }  > FW_RAM
+    .jpeg_decode  0x0301E784 (NOLOAD) : { . = 0x11D6; } > FW_RAM  /* 4,566 */
+
+    /* ---- Heap / remaining SRAM ---- */
+    .heap (NOLOAD) :
     {
-        *(.ARM.exidx*)
-        *(.ARM.extab*)
-    }
+        __heap_start = .;
+        . = ORIGIN(FW_RAM) + LENGTH(FW_RAM) - .;
+        __heap_end = .;
+    } > FW_RAM
 }

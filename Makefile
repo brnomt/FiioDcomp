@@ -137,6 +137,14 @@ link-test: $(BUILD_DIR)/reference.o
 	@echo "Linker script: firmware/firmware.ld (not wired to full image yet)"
 	$(CC) $(CFLAGS) -T firmware/firmware.ld -nostdlib $(OBJS) -o $(BUILD_DIR)/section3_test.elf || true
 
+# ReChord: link the compiled SDK objects into section_3 binary
+# (run tools/build_sdk.py first to produce build/objs/*.o)
+SDK_OBJS := $(wildcard build/objs/*.o)
+link-firmware:
+	$(CC) -mcpu=cortex-m3 -mthumb -T firmware/firmware.ld -nostartfiles 		-ffreestanding build/objs/startup.o build/objs/stubs.o 		$(filter-out build/objs/startup.o build/objs/stubs.o,$(SDK_OBJS)) 		-o build/rechord_full.elf
+	arm-none-eabi-objcopy -O binary -j .fw_header -j .text build/rechord_full.elf build/section3_custom.bin
+	@echo "Built: build/section3_custom.bin (splice with pack_img.py)"
+
 extract-img:
 	$(PYTHON) tools/extract_fw.py "$(IMG_FILE)" -o "$(EXTRACT_DIR)"
 

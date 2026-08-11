@@ -1,31 +1,57 @@
 /*
- * firmware/startup/startup.c
- * Minimal Cortex-M3 bring-up for v3.7.0 section_3 link tests.
+ * ReChord startup — Echo Mini (RKnanoC) boot entry.
  *
- * Stock Fiio images place a 16-byte RKnanoFW header @ 0x03000000 and
- * jump to firmware_entry @ 0x03000010 (bootloader passes boot params).
- * This file mirrors that layout for future `make link` experiments.
+ * The RKnano bootloader loads section_3 to RAM, reads the 16-byte
+ * RKnanoFW header, and jumps to firmware_entry @ 0x03000010 passing
+ * boot parameters in r0.
+ *
+ * This file:
+ *   1. Provides the RKnanoFW header placeholder (pack_img fills magic).
+ *   2. Defines firmware_entry -> calls the SDK's Main2.
+ *   3. Provides a minimal vector table + Default_Handler for Cortex-M3.
  */
-
 #include <stdint.h>
-#include "decomp_support.h"
-#include "decomp_globals.h"
+#include <stddef.h>
 
-extern void firmware_entry(uint16_t *param);
+typedef unsigned int uint32;
 
-/* 16-byte image header placeholder (magic filled by pack_img later) */
-const uint32_t fw_image_header[4] __attribute__((section(".fw_header"), used)) = {
-    0x03000000, 0x00000000, 0x00000000, 0x00000000,
+extern void Main2(void *boot_params);
+
+/* ---- 16-byte RKnanoFW header (magic + load-addr + count) ----
+ * pack_img.py rewrites the magic; load address 0x03000000 and the
+ * count/flags 0x52 match the stock firmware. */
+const uint32_t fw_image_header[4]
+    __attribute__((section(".fw_header"), used, aligned(16))) = {
+    0x03000000,  /* load address (RKnanoFW field) */
+    0x00000052,  /* count / flags (matches stock) */
+    0x00000000,  /* reserved */
+    0x00000000,  /* reserved */
 };
 
-/* Bootloader calls firmware_entry directly — not Reset_Handler */
-void firmware_entry_trampoline(uint16_t *param)
+/* ---- firmware_entry @ 0x03000010 (bootloader jumps here, r0 = params) ---- */
+void firmware_entry(void *boot_params)
+    __attribute__((section(".text.firmware_entry"), naked, used));
+
+void firmware_entry(void *boot_params)
 {
-    firmware_entry(param);
+    __asm__ volatile(
+        "mov r0, r0\n"   /* keep boot_params (no-op, safe) */
+        "b Main2\n");    /* jump into the SDK entry */
 }
+
+/* ---- Minimal Cortex-M3 vector table (first two entries) ---- */
+extern uint32 __stack_top;
+void Default_Handler(void) __attribute__((naked));
 
 void Default_Handler(void)
 {
     for (;;)
         ;
 }
+
+const uint32_t vectors[8]
+    __attribute__((section(".vectors"), used, aligned(256))) = {
+    (uint32_t)&__stack_top,   /* initial MSP */
+    (uint32_t)&firmware_entry, /* Reset_Handler -> firmware_entry */
+    0, 0, 0, 0, 0, 0,
+};
