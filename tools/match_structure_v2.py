@@ -162,6 +162,16 @@ def main() -> None:
     name_to_addr = {v: k for k, v in named.items()}
     print(f"named anchors: {len(named)}")
 
+    # Module map: sdk_func name -> (sdk module source file, prefix)
+    # e.g. mbedtls_mpi_div_mpi -> mbedtls_mpi ; wwd_bus_init -> wwd
+    def module_of(name: str) -> str:
+        feat = sdk_features.get(name, {})
+        src = str(feat.get("source_file", ""))
+        # last path component, strip extension
+        base = src.replace("\\", "/").split("/")[-1]
+        base = re.sub(r"\.(c|h)$", "", base)
+        return base
+
     # Enumerate all functions
     d = get_json(f"{BASE}/list_functions_enhanced")
     allf = d.get("functions", [])
@@ -172,6 +182,13 @@ def main() -> None:
 
     # SDK vocabulary of callee names (for overlap check)
     sdk_vocab = set(SDK_CALLEES.keys())
+    # module of each already-named binary function (prefix before _ or first word)
+    named_modules = {}
+    for nm in named.values():
+        m = re.match(r'^([a-zA-Z]+)', nm)
+        if m:
+            named_modules.setdefault(m.group(1).lower(), 0)
+            named_modules[m.group(1).lower()] += 1
 
     results = []
     t0 = time.time()
@@ -189,15 +206,31 @@ def main() -> None:
             bcal = callees_of(addr)
         except Exception:
             bcal = []
-        # restrict binary callees to the SDK vocabulary
         bcal_sdk = [c for c in bcal if c in sdk_vocab]
-        # also map named binary callees to their SDK names (identical if named)
         bin_size = len(code)
+
+        # MODULE SIGNAL: binary calls to already-named funcs -> module prefixes
+        bin_call_names = []
+        for m in re.finditer(r'\b([a-zA-Z_]\w*)\(', code):
+            cname = m.group(1)
+            if cname in named.values() and not cname.startswith(("FUN_", "LAB_", "DAT_")):
+                bin_call_names.append(cname)
+        bin_module_prefixes = set()
+        for c in bin_call_names:
+            pm = re.match(r'^([a-zA-Z]+)', c)
+            if pm:
+                bin_module_prefixes.add(pm.group(1).lower())
 
         # score against all SDK functions
         scored = []
         for sdk_name in sdk_features:
             s = score_binary(params, ret_void, consts, bin_size, bcal_sdk, sdk_name)
+            # module bonus: SDK candidate's module prefix in binary's call prefixes
+            sm = re.match(r'^([a-zA-Z]+)', sdk_name)
+            if sm and sm.group(1).lower() in bin_module_prefixes:
+                s += 12
+            elif sm and sm.group(1).lower() in named_modules and not bin_module_prefixes:
+                pass  # no info
             if s >= args.threshold:
                 scored.append((s, sdk_name))
         if not scored:
@@ -209,6 +242,7 @@ def main() -> None:
             "binary_func": f["name"],
             "params": params,
             "callees": bcal_sdk[:8],
+            "calls_named": bin_call_names[:8],
             "candidates": [{"sdk": n, "score": round(sc, 1)} for sc, n in top],
             "best_score": top[0][0],
         })
