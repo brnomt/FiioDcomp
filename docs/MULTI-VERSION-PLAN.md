@@ -7,8 +7,8 @@
 > `docs/changelog-string-diff.md` before doing anything. This file exists so
 > the process is never lost.
 >
-> **Last updated:** Aug 2026 · v1.6.2 analysis complete (92 names); **next up: 1.5.0**.
-> 1.6.2→1.7.0 had a relink shift (27/32 moved); 15-hop chain to v3.7 at
+> **Last updated:** Aug 2026 · v1.5.0 analysis complete (94 names); **next up: 1.4.6**.
+> 1.5.0→1.6.2 identical layout (0/32 moved); 16-hop chain to v3.7 at
 > threshold 0.9 without offset check.
 
 ---
@@ -268,7 +268,8 @@ no dedup possible.** There are no regional variants with identical section 3.
 | **1.8.0** | ✅ | `sec3_1_8_0.bin` | 1,580 | **89** | 74 direct (≥0.9) + 74 chainN 13-hop (combo ≥0.9, no offset); saved |
 | **1.7.0** | ✅ | `sec3_1_7_0.bin` | 1,573 | **90** | 78 direct (≥0.9) + 78 chainN 14-hop (combo ≥0.9, no offset); saved |
 | **1.6.2** | ✅ | `sec3_1_6_2.bin` | 1,549 | **92** | 78 direct (≥0.9) + 78 chainN 15-hop (combo ≥0.9, no offset); saved |
-| 1.5.0 | ▶ | — | — | — | **NEXT** — extract `sec3_1_5_0.bin`, chain 1.5→…→3.7 (16 hops) |
+| **1.5.0** | ✅ | `sec3_1_5_0.bin` | 1,569 | **94** | 78 direct (≥0.9) + 78 chainN 16-hop (combo ≥0.9, no offset); saved |
+| 1.4.6 | ▶ | — | — | — | **NEXT** — extract `sec3_1_4_6.bin`, chain 1.4.6→…→3.7 (17 hops) |
 | 3.2.0 | ⬜ | — | — | — | — |
 | 3.1.0 | ⬜ | — | — | — | — |
 | 3.0.0 | ⬜ | — | — | — | — |
@@ -413,6 +414,22 @@ edited modules.
 - Main code 43.5% changed; 513,747 small diff regions (relink fixups).
 - Changelog symbols all show ~4KB changed windows → **addresses moved**, so
   never assume v3.7 Ghidra addresses apply to v3.8.
+
+### ✅ 1.5.0→1.6.2 pair (done Aug 2026 session)
+
+**IDENTICAL LAYOUT (0/32 segments changed).**
+
+- Fuzzy match 1.5.0 vs 1.6.2: 1,086 matches; 400 ≥0.9; 81 named targets.
+- Direct renames (threshold 0.9): **78 applied**.
+- Chain 16 (chainN): **78 applied** (combo ≥0.9) — `wma_floor_log2`,
+  `event_set`, `ipc_post_cmd/arg`, `hifi_busy_delay`, etc.
+- **v1.5.0 now has 94 named / 1,569 functions (6.0%)** — was 0 before.
+
+**Ghidra program state (saved Aug 2026):** 18 programs — add `sec3_1_5_0.bin`
+(v1.5.0, 1,569 funcs, **94 named**) to the table above.
+
+Rename history: `build/cross_version_renames_log.json` (keys include
+`sec3_1_5_0.bin.chainN`).
 
 ### ✅ 1.6.2→1.7.0 pair (done Aug 2026 session)
 
