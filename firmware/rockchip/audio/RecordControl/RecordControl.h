@@ -300,3 +300,52 @@ _ATTR_RECORD_CONTROL_DATA_ EXT THREAD RecordThread;
 #endif
 
 
+
+/* ---- Echo Mini record layer (added for build) ---- */
+#ifndef RECORD_FIIO_EXTRA
+#define RECORD_FIIO_EXTRA
+
+typedef enum { PCM_ENC_NONE = 0, PCM_ENC_WAV, PCM_ENC_PCM } tPCM_enc;
+
+typedef enum { DMA_CHN_A = 0, DMA_CHN_B, DMA_CHN_C, DMA_CHN_D } eDMA_CHN;
+
+#define RECORD_BEING          2
+#define RECORD_PAUSE          3
+#define RECORD_ERROR          4
+#define NOT_OPEN_FILE         0xFF
+#define RECORD_QUALITY_HIGH   0
+
+#define I2S_CH                0
+#define I2S_PORT              0
+#define I2S_START_DMA_RX      1
+#define FM_OUT_CONFIG         0
+#define FM_I2S_HP             0
+
+#define Codec_MicStero        0
+#define Codec_Mic1Mono        1
+#define Codec_Mic2Mono        2
+#define Codec_Line1ADC        3
+#define Codec_Line2ADC        4
+
+typedef struct _FILE_TREE_BASIC {
+    uint32  file_cnt;
+    uint32  dir_cnt;
+    uint32  dwBasicInfoID;
+    uint32  dwNodeFlag;
+    uint32  dwNextBrotherID;
+    uint32  dwExtendTreeID;
+    uint32  FstClus;
+    uint32  dwFileSize;
+} FILE_TREE_BASIC;
+
+#define SECTOR_BYTE_SIZE              512
+#define BYTE_NUM_SAVE_PER_FILE        32
+#define MEDIAINFO_BLOCK_SIZE          8
+#define RECORD_PREPARE                5
+#define RECORD_SAVE_INFO_SECTOR_START 0x100
+#define RECORD_TREE_INFO_SECTOR_START 0x200
+#define RECORD_TREE_SORT_INFO_SECTOR_START 0x300
+
+extern uint32 sysFreeMemeryFlash0;
+extern uint32 REC_Flag;
+#endif

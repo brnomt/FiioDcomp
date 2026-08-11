@@ -3,6 +3,8 @@
 #ifndef SERVICE_GLOBALS_H
 #define SERVICE_GLOBALS_H
 #include "typedef.h"
+#include "Thread.h"
+#include "Win.h"
 
 extern UINT8   SetPowerOffFlag;
 extern INT8    AutoPowerOffDisableCounter;
@@ -15,18 +17,32 @@ extern uint32  AudioNeedDecode;
 extern uint32  AudioLen;
 extern UINT32  AudioDecodeCnt;
 
-extern void FMThread;
-extern void RecordThread;
-extern void LowPowerWin;
+extern THREAD FMThread;
+extern THREAD RecordThread;
+extern WIN LowPowerWin;
 typedef struct {
     uint32 FmState;
 } RADIO_REG_KEY;
 extern RADIO_REG_KEY *gpRadioplayerRegKey;
-typedef struct {
-    uint32 Offset;
-    uint32 FileSize;
-} FILE_INFO_T;
-extern FILE_INFO_T FileInfo[];
+
 
 extern uint32 FM_State_StepStation;
 #endif
+
+typedef struct {
+    uint32 FirstDataSector;
+    uint32 BytesPerSec;
+    uint32 SecPerClus;
+    uint32 FatSectors;
+} BOOT_SECTOR_T;
+extern BOOT_SECTOR_T BootSector;
+extern uint32 FileDiskID;
+
+extern UINT16 AudioPlayerState;
+extern void AudioDmaIsrHandler(void);
+
+
+#include "FileInfo.h"
+
+
+extern void AudioDecoding(void);

@@ -13,6 +13,7 @@
 ********************************************************************************
 */
 
+#include "fsinclude.h"
 #ifndef _AUDIO_FILE_ACCESS_H_
 #define _AUDIO_FILE_ACCESS_H_
 
@@ -43,7 +44,7 @@
 
 typedef unsigned int size_t;
 
-extern size_t   (*RKFIO_FOpen)();
+extern size_t (*RKFIO_FOpen)();
 extern size_t   (*RKFIO_FRead)(void * /*buffer*/, size_t /*length*/,FILE *) ;
 extern int      (*RKFIO_FSeek)(long int /*offset*/, int /*whence*/ ,FILE * /*stream*/);
 extern long int (*RKFIO_FTell)(FILE * /*stream*/);

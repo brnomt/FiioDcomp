@@ -431,6 +431,9 @@ typedef struct {
 #define DMA_CTLL_I2S0_TX  0x00000018   /* 32-bit, inc src, fixed dst */
 #define DMA_CFGL_I2S0_TX  0x00000001
 #define DMA_CFGH_I2S0_TX  0x00000000
+#define DMA_CTLL_I2S0_RX  0x00000018
+#define DMA_CFGL_I2S0_RX  0x00000001
+#define DMA_CFGH_I2S0_RX  0x00000000
 
 /* Watchdog / misc */
 #define PCLK_WDT_GATE    0
@@ -464,3 +467,86 @@ typedef struct {
 } PLL_ARG_t;
 extern PLL_ARG_t PllArg;
 #endif
+
+#define BAD_CLUS  0x0FFFFFF7
+extern uint32 RX_FIFO_ADDR;
+#define RECORD_DMACHANNEL_IIS  3
+#define WAV_AD_PIPO_BUFFER_SIZE 4096
+#define RECORD_STA_PCMBUF_EMPTY 0x01
+
+#define FILE_NOT_EXIST  0xFFFFFFFF
+#define ATTR_LFN_ENTRY  0x0F
+
+/* ---- more record/FAT/I2S constants ---- */
+#ifndef DRIVERLIB_REC_EXTRA
+#define DRIVERLIB_REC_EXTRA
+#define ATTR_DIRECTORY    0x10
+#define DMA_CTLL_M2M_WORD 0x00000010
+#define DMA_CFGL_M2M_WORD 0x00000001
+#define DMA_CFGH_M2M_WORD 0x00000000
+#define DMA_FALSE         0
+#define MODULE_ID_WAV_DECODE_BIN  15
+#define MEDIA_ID3_SAVE_CHAR_NUM   128
+#define MEDIA_FILE_TYPE_DELETED   0xE5
+#define MEDIA_FILE_TYPE_FILE      0
+#define RECORD_NULL       0
+#define I2S_NORMAL_MODE   0
+#define I2S_MODE          0
+#define I2S_FORMAT        0
+#define LogSecPerClus     0
+#define FILE_NAME_SAVE_ADDR_OFFSET  0
+#define DIR_CLUS_SAVE_ADDR_OFFSET   1
+#define DIR_INDEX_SAVE_ADDR_OFFSET  2
+#define ATTR_SAVE_ADDR_OFFSET       3
+#endif
+
+#ifndef _ATTR_FAT_FIND_CODE_
+#define _ATTR_FAT_FIND_CODE_
+#endif
+#define I2S_START_DMA_TX  1
+#define Codec_DACoutHP    0
+#define ACodec_I2S_DATA_WIDTH24  24
+#define MODULE_ID_AUDIO_INIT  16
+
+/* ---- audio clock / sample-rate constants (AudioControl.c) ---- */
+#ifndef DRIVERLIB_AUDIO_CLK
+#define DRIVERLIB_AUDIO_CLK
+#define Pll_Target_Freq_40960   40960000
+#define Pll_Target_Freq_56448   56448000
+#define Pll_Target_Freq_61440   61440000
+#define MODULE_ID_BT            17
+#define I2S_DATA_WIDTH24        24
+#define F_SOURCE_24000KHz       24000000
+#define FS_88200Hz              88200
+#define FS_96KHz                96000
+#define FS_8000Hz               8000
+#define FS_16KHz                16000
+#define FS_22050Hz              22050
+#define FS_11025Hz              11025
+#define FS_12000Hz              12000
+#define FS_24000Hz              24000
+#define FS_32000Hz              32000
+#define FS_32KHz                32000
+#define FS_128KHz               128000
+#define FS_192KHz               192000
+#define FS_48KHz                48000
+#define FS_64KHz                64000
+#define FS_12KHz                12000
+#define FS_24KHz                24000
+#define FS_1764KHz              176400
+#define I2S_CH    0
+#define I2S_PORT  0
+#endif
+
+/* ---- BT status / fade (AudioControl.c) ---- */
+#ifndef DRIVERLIB_BT_FADE
+#define DRIVERLIB_BT_FADE
+#define BT_WIN_STATUS_IDLE        0
+#define BT_WIN_STATUS_CONNECTING  1
+#define FADE_OUT                  0
+#define FADE_IN                   1
+extern uint32 BtWinStatus;
+extern uint32 BluetoothReConnectResult;
+extern void BlueToothThread;
+#endif
+

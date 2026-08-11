@@ -30,7 +30,7 @@
 typedef unsigned int size_t;
 
 
-size_t   (*RKFIO_FOpen)(uint8 * /*shortname*/, int32 /*DirClus*/, int32 /*Index*/, FS_TYPE /*FsType*/, uint8* /*Type*/) ;
+size_t   (*RKFIO_FOpen)();
 size_t   (*RKFIO_FRead)(void * /*buffer*/, size_t /*length*/,FILE *) ;
 int      (*RKFIO_FSeek)(long int /*offset*/, int /*whence*/ , FILE * /*stream*/);
 long int (*RKFIO_FTell)(FILE * /*stream*/);

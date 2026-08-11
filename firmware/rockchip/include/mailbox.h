@@ -30,8 +30,6 @@
 #define MSGBOX_CMD_BB_HOLD_ACK             0x0004
 #define MSGBOX_CMD_BB_HOLD_EXIT            0x0005
 
-#define MEDIA_MSGBOX_CMD_ENCODE             0x0100
-#define MEDIA_MSGBOX_CMD_ENCODE_INIT        0x0101
 #define MEDIA_MSGBOX_CMD_FILE_OPEN          0x0102
 #define MEDIA_MSGBOX_CMD_FILE_OPEN_HANDSHK  0x0103
 #define MEDIA_MSGBOX_CMD_FILE_OPEN_CMPL     0x0104
@@ -51,9 +49,6 @@
 #define MEDIA_MSGBOX_CMD_FILE_TELL_CMPL     0x0112
 #define MEDIA_MSGBOX_CMD_FILE_GET_LENGTH    0x0113
 #define MEDIA_MSGBOX_CMD_FILE_GET_LENGTH_CMPL 0x0114
-#define MEDIA_MSGBOX_CMD_REC_FILE_CLOSE     0x0115
-#define MEDIA_MSGBOX_CMD_REC_FILE_CLOSE_HANDSHK 0x0116
-
 /* ---- API ---- */
 API int  MailBoxWriteB2ACmd(uint32 cmd, uint32 id, uint32 channel);
 API int  MailBoxWriteB2AData(uint32 data, uint32 id, uint32 channel);
@@ -63,3 +58,4 @@ API void MailBoxClearA2BInt(uint32 id, uint32 int_sel);
 API void MailBoxInit(void);
 
 #endif /* MAILBOX_H */
+

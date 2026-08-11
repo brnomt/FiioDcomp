@@ -24,6 +24,8 @@ typedef struct _FDT {
     uint8   bFileAttr;
     char    szFileName[256];
     char    szPath[256];
+    char    Name[256];        /* RecordControl.c uses .Name */
+    uint8   Attr;
 } FDT;
 
 typedef struct _FIND_DATA {
@@ -31,6 +33,7 @@ typedef struct _FIND_DATA {
     uint8   bOpened;
     uint32  dwDirCluster;
     uint32  Clus;           /* current cluster (SysFindFile.c) */
+    uint32  Index;          /* current index (AudioControl.c) */
 } FIND_DATA;
 #endif
 
@@ -80,3 +83,6 @@ typedef enum {
 #define MUSIC_TYPE_SEL_RECORDFILE  2
 #define NOT_FIND_FILE              0xFFFFFFFF
 #define SORT_TYPE_SEL_NOW_PLAY     3
+
+#define MAX_OPEN_FILES  16
+#define SORT_FILENUM_DEFINE  0

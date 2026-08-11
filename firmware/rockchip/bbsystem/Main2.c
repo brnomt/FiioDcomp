@@ -42,6 +42,7 @@
 #include "SysInclude.h"
 #include "stdio.h"
 #include "mailbox.h"
+#include "main2_msgbox.h"
 #include "audio_globals.h"
 #include "audio_main.h"
 #include "fsinclude.h"
