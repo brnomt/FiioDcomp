@@ -28,6 +28,22 @@ Reverse engineering notes, documentation, tooling, patches, and clean-room imple
 - Enable reproducible firmware research.
 - Explore safe firmware modifications and custom features.
 
+## RE Progress (Aug 2026)
+
+Function naming status in Ghidra: **624 / 2,776 functions named (22.5%)**
+
+| Approach | Functions named |
+|----------|---------------|
+| Manual analysis + Ghidra auto-analysis | 188 |
+| Distinctive constant matching (>= 0x100) | +85 |
+| Structural matching (code shape fingerprint) | +195 |
+| Combined constant + structural matching | +67 |
+| Call graph propagation (SDK callee index) | +80 |
+| ROM API naming + similarity matching | +15 |
+
+All matching uses leaked Rockchip SDK source (`RKNanoD_MP3_V1.3` + `RKNanoD_Wireless_Audio_SDK_V1.5`)
+as reference. See `docs/sdk-matching-progress.md` for full details.
+
 ## Repository Structure
 
 ```

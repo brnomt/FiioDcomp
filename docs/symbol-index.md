@@ -1,13 +1,13 @@
 # Echo Mini Firmware — Module Reference
 
-## Labeled Functions (Ghidra custom-named grows each pass; 544/2,776 = 19.6%)
+## Labeled Functions (Ghidra custom-named grows each pass; 624/2,776 = 22.5%)
 
 Phase goal: convert the entire IMG to C. Progress is tracked by custom-named
 count vs total. New C files land under `firmware/` as symbols are named.
 
 **SDK matching pass (Aug 2026):** Auto-analysis +21, similarity matching +8,
 ROM API naming +7, functionality matching (constants) +85, structural matching
-+195, combined matching +67. See `docs/sdk-matching-progress.md` for details.
++195, combined matching +67, call graph propagation +80. See `docs/sdk-matching-progress.md` for details.
 
 **Boundary repair pending (do not trust oversized decomp bodies):**
 `hifi_busy_delay_ovl_09e3`, `_0fd1`, `_0e48` — Ghidra body starts ~0xb00 before entry.

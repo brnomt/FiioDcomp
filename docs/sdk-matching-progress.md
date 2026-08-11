@@ -10,13 +10,16 @@ to automatically name functions in the Fiio Echo Mini firmware binary via Ghidra
 | Metric | Value |
 |--------|-------|
 | Total functions in binary | 2,776 |
-| **Named functions** | **544** (19.6%) |
-| Unnamed (`FUN_*`) | 2,232 |
+| **Named functions** | **624** (22.5%) |
+| Unnamed (`FUN_*`) | 2,152 |
 | SDK functions indexed | 5,333 |
+| SDK functions with callees indexed | 6,327 |
 | SDK functions with distinctive constants | 588 |
 | SDK functions with structural fingerprints | 5,028 |
 | Decompiled binary functions | 2,601 |
+| Anchor functions (named in both binary + SDK) | 431 |
 | Functions named by functionality matching | +356 (188→544) |
+| Functions named by call graph propagation | +80 (544→624) |
 
 ## Approaches Tried
 
@@ -148,6 +151,25 @@ get a lower score.
 
 Tools: `tools/match_combined.py`
 
+### 12. Call Graph Propagation (SUCCESS)
+
+**Result:** +80 functions (544→624, across multiple rounds).
+
+Built an SDK callee index (6,327 functions with their call targets). For each
+of the 431 "anchor" functions (named in both binary and SDK), matched unnamed
+binary callees to unmatched SDK callees:
+
+- **1:1 match** (1 unnamed binary callee + 1 unmatched SDK callee): high confidence (3 votes)
+- **N:N positional match** (same count): lower confidence (1 vote)
+- **Uniqueness**: only keep unambiguous suggestions (one SDK name per binary address)
+
+This caught common library/system functions that are called by many anchors:
+`memcpy`, `memset`, `strlen`, `printf`, `FileRead`, `FileWrite`, `DelayMs`,
+`DelayUs`, `rkos_memory_malloc`, `rkos_queue_send`, `DisplayDev_SetOffset`,
+`Lcd_Write`, `WatchDogReload`, `freertos_create_task`, `mbedtls_md4_process`, etc.
+
+Tools: `tools/build_sdk_callees.py`, `tools/propagate_callgraph.py`
+
 ## Fundamental Insight
 
 The SDK and binary use **different function names** for the same operations,
@@ -160,9 +182,11 @@ call patterns. By matching on what the code *does* rather than what it's
 
 All matching tools are in `tools/`:
 - `extract_sdk_features.py` — Extract distinctive constants + structure from SDK source
+- `build_sdk_callees.py` — Extract callee index from SDK source (6,327 functions)
 - `match_functionality_v2.py` — Match by distinctive constant overlap
 - `match_structure.py` — Match by code structural fingerprint
 - `match_combined.py` — Combined constant + structural matching
+- `propagate_callgraph.py` — Propagate names through call graph
 - `decompile_all.py` — Decompile all 2,601 functions in Ghidra
 - `verify_matches.py` — Verify matches by comparing decompiled code to SDK source
 - `analyze_consts.py` — Analyze constant distribution for threshold tuning
