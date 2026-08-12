@@ -46,8 +46,10 @@ static void crash_trigger_refresh(void)
 
 /* ---- loader display API (the one that actually draws the menu) ---- */
 typedef void (*rom_rect_fn)(uint32_t, uint32_t, uint32_t, uint32_t);
-#define ROM_DISP_RECT   ((rom_rect_fn)(0x02fea8f4 | 1))  /* fill rect(x,y,w,h) */
-#define ROM_DISP_REFR   ((void (*)(uint32_t))(0x02feabea | 1)) /* refresh(1)   */
+typedef void (*rom_fn1)(uint32_t);
+#define ROM_DISP_COLOR  ((rom_fn1)(0x02feb0f6 | 1))   /* set fill colour   */
+#define ROM_DISP_RECT   ((rom_rect_fn)(0x02fea8f4 | 1)) /* fill rect(x,y,w,h)*/
+#define ROM_DISP_REFR   ((rom_fn1)(0x02feabea | 1))   /* refresh(1)         */
 
 /* 16-colour palette (RGB565) chosen to be distinguishable by eye. */
 static const uint16_t crash_palette[16] = {
@@ -56,6 +58,23 @@ static const uint16_t crash_palette[16] = {
     0x7BEF, 0xFD20, 0x9FE0, 0x57FF,  /* 8 grey 9 orange A lime B sky      */
     0xFDFF, 0x8A20, 0x7FE0, 0x39E7,  /* C pink D brown E olive F dkgrey   */
 };
+
+/* Blink the whole screen through the loader's OWN draw sequence
+ * (feb0f6 colour -> fea8f4 rect -> feabea refresh) — the one display
+ * path we KNOW works (the loader draws the menu with it). If the user
+ * sees blinking colours, we can encode the PC in the pattern. */
+static void crash_blink_colours(void)
+{
+    volatile uint32_t d;
+    int rep;
+    for (rep = 0; rep < 12; rep++) {
+        ROM_DISP_COLOR(rep & 0xF);
+        ROM_DISP_RECT(0, 0, 320, 170);
+        ROM_DISP_REFR(1);
+        for (d = 0; d < 1500000; d++)
+            ;
+    }
+}
 
 /* Paint the 32-bit value as 8 vertical colour strips (one hex digit
  * each) into the framebuffer with our own RGB565 palette, then ask the
@@ -198,6 +217,10 @@ void FaultHandlerC(uint32_t sp, uint32_t pc)
     /* paint the PC as 8 colour strips via the loader's display API */
     crash_paint_strips(pc);
     crash_trigger_refresh();
+
+    /* try the loader's own draw sequence (feb0f6 + fea8f4 + feabea) —
+     * the display path that actually works on this device */
+    crash_blink_colours();
 
     /* bonus: overwrite the displayed "Software:3.7.0" version string
      * (RAM copy @ 0x0301506C) with the PC so that IF any later build
