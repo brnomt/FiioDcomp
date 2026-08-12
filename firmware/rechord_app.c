@@ -27,6 +27,9 @@ typedef int  (*rom_fn0)(void);
 #define ROM_DISP_REFRESH ((rom_fn1)(0x02feabea | 1))  /* refresh(1)          */
 #define ROM_DISP_UNLOCK ((rom_fn1)(0x02fea824 | 1))  /* unlock(2)           */
 
+#define FB       ((volatile uint16_t *)0x03024868)
+#define FB_WORDS (0xfb20 / 2)
+
 /* rect is (x, y, w, h): call as two packed args like the loader does */
 static void fill_rect(int x, int y, int w, int h)
 {
@@ -34,9 +37,43 @@ static void fill_rect(int x, int y, int w, int h)
                   (uint32_t)((h << 16) | (w & 0xFFFF)));
 }
 
+/* ---- ReChord crash telemetry (filled by fault.c on any hard fault) ---- */
+#define crash_log ((volatile uint32_t *)0x03000100u)
+#define CRASH_MAGIC 0x52454348u  /* 'RECH' */
+
+static void paint_crash_color(void)
+{
+    /* Paint the framebuffer with a colour derived from the crash PC so
+     * it can be read even if the fault text render is not visible.
+     * Colour = RGB565 made from (pc>>16), (pc>>8), pc. */
+    uint32_t pc = crash_log[1];
+    uint16_t color = (uint16_t)(((pc >> 16) & 0xF8) << 8) |
+                     (uint16_t)(((pc >> 8) & 0xFC) << 3) |
+                     (uint16_t)((pc >> 3) & 0x1F);
+    uint32_t i;
+    for (i = 0; i < FB_WORDS; i++)
+        FB[i] = color;
+    ROM_DISP_REFRESH(1);
+    ROM_DISP_REFRESH(1);
+}
+
 void rechord_app(void *boot_params)
 {
     (void)boot_params;
+
+    /* If a crash was recorded, show its PC colour first (then keep it
+     * on screen) so the user can read it off. */
+    if (crash_log[0] == CRASH_MAGIC) {
+        paint_crash_color();
+        crash_log[0] = 0;   /* consumed */
+        for (;;) {
+            volatile uint32_t d;
+            for (d = 0; d < 2000000; d++)
+                ;
+            ROM_DISP_REFRESH(1);
+            ROM_DISP_REFRESH(1);
+        }
+    }
 
     /* --- replicate the loader's display sequence exactly --- */
     ROM_DISP_WAIT(0x19b, 0xbd706008);

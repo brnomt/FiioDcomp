@@ -24,6 +24,26 @@
 #define ICSR         (*(volatile uint32_t *)0xE000ED04u)  /* VECTACTIVE bits 0..8 */
 #define CFSR         (*(volatile uint32_t *)0xE000ED28u)  /* fault status */
 
+/* ---- ReChord crash telemetry buffer ----
+ * Fixed address 0x03000100 = zero padding in our entry_stubs.S (between
+ * firmware_entry @ 0x10 and stub_03000162 @ 0x162). It is inside our
+ * own code region (always loaded to RAM) and never written by the
+ * stock app. Written by the fault handler on any hard fault; read by
+ * rechord_app at the next boot (if the device watchdog-resets).
+ * magic = 'RECH'. */
+#define CRASH_LOG_ADDR 0x03000100u
+#define crash_log      ((volatile uint32_t *)CRASH_LOG_ADDR)
+#define CRASH_MAGIC    0x52454348u  /* 'RECH' */
+
+static void crash_trigger_refresh(void)
+{
+    /* call the loader's LCD refresh (ROM 0x02feabea) so the fault text
+     * MAY become visible even though the DMA framebuffer path is not
+     * our display. Thumb indirect call. */
+    typedef void (*fn)(uint32_t);
+    ((fn)(0x02feabea | 1))(1);
+}
+
 /* ---- 5x7 font for hex digits ---- */
 static const uint8_t font_hex[16][7] = {
     {0x0E,0x11,0x13,0x15,0x19,0x11,0x0E}, /* 0 */
@@ -116,14 +136,30 @@ void FaultHandlerC(uint32_t sp, uint32_t pc)
 {
     uint32_t vect = ICSR & 0x1FF;      /* VECTACTIVE: 3=HardFault 4=Mem 5=Bus 6=Usage */
     uint32_t cfsr = CFSR;
+    uint32_t lr;
 
     __asm volatile("cpsid i" ::: "memory");   /* disable IRQ */
+
+    /* --- crash telemetry: save to our own RAM buffer (survives a
+     *     watchdog reset; read back by rechord_app on next boot) --- */
+    __asm volatile("mov %0, lr" : "=r"(lr));
+    crash_log[0] = CRASH_MAGIC;
+    crash_log[1] = pc;
+    crash_log[2] = lr;
+    crash_log[3] = cfsr;
+    crash_log[4] = sp;
+    crash_log[5] = vect;
 
     fb_clear(0x0000);                  /* black background */
     fb_text(8,  8,  "RECHORD FAULT", 0xFFFF);
     fb_text(8,  24, "VEC=", 0xFFFF);   fb_num(56, 24, vect, 0xFFFF);
     fb_text(8,  40, "PC=", 0xFFFF);    fb_hex32(48, 40, pc, 0xFFE0);
     fb_text(8,  56, "CFSR=", 0xFFFF);  fb_hex32(64, 56, cfsr, 0x07FF);
+    fb_text(8,  72, "SP=", 0xFFFF);    fb_hex32(48, 72, sp, 0x07FF);
+
+    /* attempt to push the fault frame to the LCD via the loader's
+     * refresh (the plain framebuffer may not be what the LCD scans) */
+    crash_trigger_refresh();
 
     for (;;)
         ;
