@@ -193,6 +193,34 @@ arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -Os -ffunction-sections -fdata-section
 
 ## 7. The current mystery: why no fault screen? (NEXT AGENT, START HERE)
 
+**UPDATE (V0.15, fresh-instance session): ROOT CAUSE FOUND via Ghidra** —
+the stock `firmware_entry` @ 0x03000010 is an **HW-init callback that RETURNS**
+to the ROM. Stock disasm: `push {r4,lr}; mov r4,r0; bl boot_param_layout;
+rom_alloc(0x1dc); [rom_hw_init(0x1dc/0x16f/0x16f) rom_hw_init2(0x171)
+rom_hw_init(0x170)]; rom_early_init(); ldrh r0,[r4]; cmp r0,#0xb;
+pop {r4,lr}; movw r0,#0x18f/0x191; b.w rom_hw_init2` — the final
+`b.w rom_hw_init2` is a TAIL CALL whose return goes back to the ROM.
+
+Our V0.1-V0.14 entries did `b rechord_app` -> infinite loop -> **the ROM
+boot sequence never continued**: cassette stays (loader boot screen), no
+text, no app, and a ~23s poweroff (ROM-side timeout, NOT our fault handler
+looping — that V0.13 inference was wrong). The whole V0.8-V0.14 display
+test series was invalidated by the hung boot; that's why NOTHING custom
+was ever visible even though code likely ran.
+
+V0.15 (`build/ReChord_V0.15_bootfix.IMG`) mirrors stock exactly:
+`rechord_firmware_entry()` (rechord_app.c) runs the stock init and returns
+0x18f/0x191; entry_stubs.S does `pop {r4,lr}; b.w 0x02feee7c` (tail call).
+The draw test moved to the `application_start` stub (0x0300710a). Also
+learned: the loader draws via `fef124(0x19b) wait -> fea848(1)/fea824(2)
+save -> feb0f6(color) -> fea8f4(x,y,w,h,a5,a6) -> feabea(1) refresh ->
+restore`. **fea8f4 takes SIX args** (r0=x,r1=y,r2=w,r3=h,sp[0]=2,sp[4]=var)
+— the V0.10 packed-2-arg and V0.14 4-arg calls were wrong. Known-good
+rects: top bar (0,3,320,16,2,0x58), bottom (0,120,320,15,2,0x6c).
+
+Legacy theories below (mailbox deadlock etc.) were never proven; the boot
+hang explains everything observed.
+
 Symptom: **every** menu item press → screen freezes → device powers off.
 V0.2 added a real hard-fault handler that should show `PC=0x…` on the
 framebuffer, but the user reports the freeze still happens and **no fault

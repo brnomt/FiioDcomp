@@ -2,8 +2,8 @@
  *
  * The RKnano boot ROM / loader calls FIXED offsets in section_3 for
  * specific purposes (see docs/bootloader-analysis.md):
- *   0x03000010  firmware_entry       (boot, HW init, return)
- *   0x03000162  FUN_03000162         (USB/MSC misc)
+ *   0x03000010  firmware_entry       (boot, HW init, RETURNS)
+ *   0x03000162  FUN_03000162         (USB/MSC misc — stock is `bx lr`)
  *   0x0300016c  WriteData_To_Flash   (USB MSC write)
  *   0x0300024e  MscTestUnitReady     (USB MSC)
  *   0x03000296  FUN_03000296
@@ -12,15 +12,26 @@
  *   0x03000a72  FUN_03000a72
  *   0x03000a74  DeleteDeviceListEmmcDataBase
  *   0x03000aba  main2_entry          (USB mass-storage mode)
- *   0x0300710a  application_start    (UI event callback)
+ *   0x0300710a  application_start    (UI event callback — V0.15 hooks the
+ *                                     draw test here)
  *
- * V0.1-V0.8 all crashed/froze on menu press because our binary had
- * GARBAGE at these offsets (the ROM/loader dispatches here). These
- * trampolines make every dispatch safe (return), and firmware_entry
- * starts our C app. All compiled from source — no binary patching.
+ * V0.15 FIX (root cause of V0.1-V0.14 "nothing custom ever shows"):
+ * the stock firmware_entry is an HW-init callback that RETURNS to the ROM.
+ * Ghidra disasm of stock @ 0x03000010:
+ *     push {r4,lr}; mov r4,r0; bl boot_param_layout; rom_alloc(0x1dc);
+ *     [rom_hw_init(0x1dc/0x16f/0x16f) rom_hw_init2(0x171) rom_hw_init(0x170)]
+ *     rom_early_init(); ldrh r0,[r4]; cmp r0,#0xb;
+ *     pop {r4,lr}; movw r0,#0x18f; b.w rom_hw_init2   <- early path
+ *     pop {r4,lr}; movw r0,#0x191; b.w rom_hw_init2   <- app path
+ * Our V0.1-V0.14 entries did `b rechord_app` -> infinite loop -> the ROM
+ * boot sequence never continued -> cassette stays, no text, no app, and a
+ * ~23s poweroff (ROM-side timeout).
  *
- * NOTE: stubs are 2-byte `bx lr` (0xa72 and 0xa74 are only 2 bytes
- * apart in stock — they cannot both hold 4-byte stubs).
+ * V0.15 mirrors stock exactly: rechord_firmware_entry() (rechord_app.c)
+ * runs the stock init sequence and returns the rom_hw_init2 code
+ * (0x18f/0x191) in r0; we restore the caller's LR and TAIL-CALL
+ * rom_hw_init2, exactly like stock, so control returns to the ROM inside
+ * rom_hw_init2.
  */
     .syntax unified
     .thumb
@@ -28,15 +39,22 @@
     .section .text.boot, "ax"
     .balign 2
 
+    .equ ROM_HW_INIT2, 0x02feee7c    /* rom_hw_init2 (tail-call target) */
+
     /* firmware_entry @ 0x03000010 — bootloader jumps here, r0 = boot params */
     .global firmware_entry
     .thumb_func
 firmware_entry:
-    push {r4}
+    push {r4, lr}
     mov  r4, r0
-    b    rechord_app
+    bl   rechord_firmware_entry      /* C: stock init, returns 0x18f/0x191 */
+    pop  {r4, lr}                    /* restore caller's lr (the ROM) */
+    b.w  ROM_HW_INIT2                /* tail call — rom_hw_init2 returns to ROM */
 
-    /* --- ROM/loader dispatch trampolines (bx lr = return) --- */
+    /* --- ROM/loader dispatch trampolines (bx lr = return) ---
+     * NOTE: stub_03000162 stays a 2-byte `bx lr`: the bytes at 0x03000164+
+     * (immediately after it) are free padding used at runtime by
+     * boot_param_layout() writes (see rechord_app.c). */
     .org 0x152                    /* -> 0x03000162 */
     .thumb_func
 stub_03000162:
@@ -82,10 +100,12 @@ stub_03000a74:
 stub_03000aba:
     bx   lr
 
-    .org 0x70fa                   /* -> 0x0300710a */
+    .org 0x70fa                   /* -> 0x0300710a  application_start */
     .thumb_func
 stub_0300710a:
-    bx   lr
+    push {lr}
+    bl   rechord_ui_event          /* draw test via the loader display API */
+    pop  {pc}
 
     .org 0x7104                   /* pad to 0x03007114 */
     .section .text, "ax"          /* continue normal code layout after */
