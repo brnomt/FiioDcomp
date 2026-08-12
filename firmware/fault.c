@@ -44,6 +44,40 @@ static void crash_trigger_refresh(void)
     ((fn)(0x02feabea | 1))(1);
 }
 
+/* ---- loader display API (the one that actually draws the menu) ---- */
+typedef void (*rom_rect_fn)(uint32_t, uint32_t, uint32_t, uint32_t);
+#define ROM_DISP_RECT   ((rom_rect_fn)(0x02fea8f4 | 1))  /* fill rect(x,y,w,h) */
+#define ROM_DISP_REFR   ((void (*)(uint32_t))(0x02feabea | 1)) /* refresh(1)   */
+
+/* 16-colour palette (RGB565) chosen to be distinguishable by eye. */
+static const uint16_t crash_palette[16] = {
+    0x0000, 0xF800, 0x07E0, 0x001F,  /* 0 black 1 red 2 green 3 blue      */
+    0xFFE0, 0x07FF, 0xF81F, 0xFFFF,  /* 4 yellow 5 cyan 6 magenta 7 white */
+    0x7BEF, 0xFD20, 0x9FE0, 0x57FF,  /* 8 grey 9 orange A lime B sky      */
+    0xFDFF, 0x8A20, 0x7FE0, 0x39E7,  /* C pink D brown E olive F dkgrey   */
+};
+
+/* Paint the 32-bit value as 8 vertical colour strips (one hex digit
+ * each) into the framebuffer with our own RGB565 palette, then ask the
+ * loader's refresh to push it. If the framebuffer is what the LCD
+ * scans (or feabea transfers it), the user reads the strip colours
+ * L->R and reports them; we decode the hex digits back to the value. */
+static void crash_paint_strips(uint32_t value)
+{
+    int i, y;
+    volatile uint16_t *fb = (volatile uint16_t *)FB_ADDR;
+    for (i = 0; i < 8; i++) {
+        uint32_t nib = (value >> (28 - i * 4)) & 0xF;
+        uint16_t col = crash_palette[nib];
+        for (y = 0; y < LCD_H; y++) {
+            int x;
+            for (x = i * 40; x < (i + 1) * 40; x++)
+                fb[y * LCD_W + x] = col;
+        }
+    }
+    crash_trigger_refresh();
+}
+
 /* ---- 5x7 font for hex digits ---- */
 static const uint8_t font_hex[16][7] = {
     {0x0E,0x11,0x13,0x15,0x19,0x11,0x0E}, /* 0 */
@@ -160,6 +194,24 @@ void FaultHandlerC(uint32_t sp, uint32_t pc)
     /* attempt to push the fault frame to the LCD via the loader's
      * refresh (the plain framebuffer may not be what the LCD scans) */
     crash_trigger_refresh();
+
+    /* paint the PC as 8 colour strips via the loader's display API */
+    crash_paint_strips(pc);
+    crash_trigger_refresh();
+
+    /* bonus: overwrite the displayed "Software:3.7.0" version string
+     * (RAM copy @ 0x0301506C) with the PC so that IF any later build
+     * shows the About screen, the PC is there. */
+    {
+        static const char hexd[] = "0123456789ABCDEF";
+        volatile char *s = (volatile char *)0x0301506Cu;
+        int i;
+        s[0] = 'P'; s[1] = 'C'; s[2] = '='; s[3] = '0'; s[4] = 'x';
+        for (i = 0; i < 8; i++) {
+            uint32_t nib = (pc >> (28 - i * 4)) & 0xF;
+            s[5 + i] = hexd[nib];
+        }
+    }
 
     for (;;)
         ;
