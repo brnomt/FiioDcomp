@@ -115,6 +115,23 @@ uint32_t rechord_firmware_entry(void *param)
 
     boot_log[2] = BOOT_DONE;                /* boot init complete */
 
+    /* ---- V0.16 FAULT PROBE ----
+     * Set VTOR to OUR 256-aligned vector table (0x03000200) so faults are
+     * routed to our handler (fault.c), then execute a deliberate UDF. If
+     * the ROM calls our firmware_entry, the CPU hard-faults HERE and our
+     * handler loops forever: the device hangs immediately at boot (static
+     * cassette, no input, crash_log written @0x03000100) — a clearly
+     * different behavior from V0.15 (menu works briefly, freeze on press,
+     * ~23s poweroff). If the ROM NEVER calls firmware_entry, behavior is
+     * identical to V0.15.
+     * NOTE: without this, NO build ever showed the fault screen because
+     * nobody set VTOR — faults were going to the ROM's own table. */
+    {
+        extern uint32_t rechord_vectors[];
+        *(volatile uint32_t *)0xE000ED08u = (uint32_t)rechord_vectors;  /* VTOR */
+        __asm volatile("udf #0" ::: "memory");   /* deliberate UsageFault -> HardFault */
+    }
+
     /* mode check: return the code entry_stubs.S must tail-call */
     return (*bp != 0x0b) ? 0x18f : 0x191;
 }

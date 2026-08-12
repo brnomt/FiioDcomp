@@ -65,6 +65,23 @@ stub_03000162:
 stub_0300016c:
     bx   lr
 
+    .org 0x1f0                    /* -> RAM 0x03000200 (256-aligned, VTOR-ready) */
+    /* ReChord vector table (fault routing): entry 0 = MSP, 1 = reset,
+     * 2 = NMI, 3 = HardFault, 4 = MemManage, 5 = BusFault, 6 = UsageFault,
+     * 7 = SVCall. All faults -> IntDefaultHandler2 (SDK) ->
+     * __CPU_IntDefaultHandler2 (fault.c). NOTE: vector entries for Thumb
+     * handlers must be ODD (|1); only the MSP entry is even. */
+    .global rechord_vectors
+rechord_vectors:
+    .long __stack_top
+    .long firmware_entry + 1
+    .long IntDefaultHandler2 + 1
+    .long IntDefaultHandler2 + 1
+    .long IntDefaultHandler2 + 1
+    .long IntDefaultHandler2 + 1
+    .long IntDefaultHandler2 + 1
+    .long IntDefaultHandler2 + 1
+
     .org 0x23e                    /* -> 0x0300024e */
     .thumb_func
 stub_0300024e:
