@@ -1,68 +1,63 @@
 /*
- * rechord_app.c — ReChord V0.9: minimal C app, no ROM init.
+ * rechord_app.c — ReChord V0.10: EXACT loader display sequence.
  *
- * V0.8 (ROM hw_init mirror) showed nothing — the hw_init ROM calls may
- * hang or the refresh expects app state. V0.9 tests a different theory:
+ * The loader (sec2) draws the cassette via ROM functions:
+ *   func_0x02fef124(0x19b, ...)   wait for display ready
+ *   func_0x02fea848(1)            lock display context
+ *   func_0x02feb0f6(color)        set fill color
+ *   func_0x02fea8f4(x,y,w,h)      fill rect
+ *   func_0x02feabea(1)            refresh LCD
+ *   func_0x02fea824(2)            unlock display context
  *
- *   The loader (sec2) ALREADY initialised the hardware (clocks, LCD,
- *   DMA) to draw the cassette screen before jumping to our
- *   firmware_entry. So we need NO init — just write the framebuffer
- *   (0x03024868) and trigger the refresh.
- *
- * Plus: entry_stubs.S now places trampolines at the ROM/loader dispatch
- * offsets (0x162/0x16c/0x24e/0x296/0x4f4/0x546/0xa72/0xa74/0xaba/0x710a)
- * which our earlier builds left as garbage -> the menu-press freeze.
- *
- * Display path (from Ghidra):
- *   - framebuffer 0x03024868 (64,288 B, 320x100 RGB565 DMA source)
- *   - refresh candidates:
- *       A) ROM service 0x02ff05f0(0x172)   (= stock ui_post_redraw)
- *       B) ROM 0x02feabea(1)               (= loader boot-screen refresh)
- *   We call both (belt and suspenders).
+ * V0.10 calls EXACTLY that to fill the whole 320x100 screen with the
+ * loader's status-bar color. If the screen changes -> our compiled C
+ * runs AND the display path works. Then we know how to draw.
  */
 #include <stdint.h>
 
 /* ---- ROM service entry points (Thumb: |1 for indirect calls) ---- */
+typedef void (*rom_fn2)(uint32_t, uint32_t);
 typedef void (*rom_fn1)(uint32_t);
 typedef int  (*rom_fn0)(void);
 
-#define ROM_UI_REFRESH  ((rom_fn1)(0x02ff05f0 | 1))  /* service(code)        */
-#define ROM_LOADER_REFR ((rom_fn1)(0x02feabea | 1))  /* loader refresh(arg)  */
-#define ROM_GET_INPUT   ((rom_fn0)(0x02ff813a | 1))  /* rom_get_input_event()*/
+#define ROM_DISP_WAIT   ((rom_fn2)(0x02fef124 | 1))  /* wait/check(code,arg)*/
+#define ROM_DISP_LOCK   ((rom_fn1)(0x02fea848 | 1))  /* lock(1)             */
+#define ROM_DISP_COLOR  ((rom_fn1)(0x02feb0f6 | 1))  /* set color(code)     */
+#define ROM_DISP_RECT   ((rom_fn2)(0x02fea8f4 | 1))  /* fill rect(x+y<<16?) */
+#define ROM_DISP_REFRESH ((rom_fn1)(0x02feabea | 1))  /* refresh(1)          */
+#define ROM_DISP_UNLOCK ((rom_fn1)(0x02fea824 | 1))  /* unlock(2)           */
 
-#define FB       ((volatile uint16_t *)0x03024868)
-#define FB_WORDS (0xfb20 / 2)
-#define WIDTH    320
-#define HEIGHT   100
-
-static void draw_pattern(void)
+/* rect is (x, y, w, h): call as two packed args like the loader does */
+static void fill_rect(int x, int y, int w, int h)
 {
-    uint32_t i;
-    /* ReChord test pattern: top third red, middle green, bottom blue. */
-    for (i = 0; i < FB_WORDS; i++) {
-        FB[i] = (i < FB_WORDS / 3) ? 0xF800 :
-                (i < 2 * FB_WORDS / 3) ? 0x07E0 : 0x001F;
-    }
+    ROM_DISP_RECT((uint32_t)((y << 16) | (x & 0xFFFF)),
+                  (uint32_t)((h << 16) | (w & 0xFFFF)));
 }
 
 void rechord_app(void *boot_params)
 {
     (void)boot_params;
 
-    draw_pattern();
-    ROM_UI_REFRESH(0x172);       /* push pattern to the LCD (candidate A) */
-    ROM_LOADER_REFR(1);          /* loader-style refresh (candidate B)     */
+    /* --- replicate the loader's display sequence exactly --- */
+    ROM_DISP_WAIT(0x19b, 0xbd706008);
+    ROM_DISP_LOCK(1);
+    ROM_DISP_COLOR(0x94);          /* loader's top-bar color             */
+    fill_rect(0, 0, 320, 100);     /* fill the WHOLE screen              */
+    ROM_DISP_REFRESH(1);
+    ROM_DISP_UNLOCK(2);
 
     for (;;) {
-        int key = ROM_GET_INPUT();
-        (void)key;
-        /* blink the centre pixel as a liveness proof */
-        FB[WIDTH * (HEIGHT / 2) + WIDTH / 2] ^= 0xFFFF;
-        ROM_UI_REFRESH(0x172);
-        ROM_LOADER_REFR(1);
+        /* blink the top bar color code between two values (liveness) */
+        ROM_DISP_LOCK(1);
+        ROM_DISP_COLOR(0x94);
+        fill_rect(0, 0, 320, 50);
+        ROM_DISP_COLOR(0x95);
+        fill_rect(0, 50, 320, 50);
+        ROM_DISP_REFRESH(1);
+        ROM_DISP_UNLOCK(2);
         {
             volatile uint32_t d;
-            for (d = 0; d < 400000; d++)
+            for (d = 0; d < 2000000; d++)
                 ;
         }
     }
