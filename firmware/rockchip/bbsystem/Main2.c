@@ -578,7 +578,7 @@ void RegHifiFileServer()
 --------------------------------------------------------------------------------
   Function name :
   Author        : ZHengYongzhi
-  Description   : Ä£¿éÐÅÏ¢±í
+  Description   : Ä£ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½
 
   History:     <author>         <time>         <version>
              ZhengYongzhi     2008/07/21         Ver1.0
@@ -594,7 +594,7 @@ void ScatterLoader2(void)
     uint32 i, len;
     uint8  *pDest;
 
-    //Çå³ýBss¶Î
+    //ï¿½ï¿½ï¿½Bssï¿½ï¿½
     pDest = (uint8*)((uint32)(&Image$$BB_SYS_DATA$$ZI$$Base));
     len = (uint32)((uint32)(&Image$$BB_SYS_DATA$$ZI$$Length));
 
@@ -632,20 +632,37 @@ int Main2(void)
 
     while (1)
     {
-        /* ReChord debug: BB heartbeat - flip the whole framebuffer between
-         * red and black with a crude delay, so it is IMPOSSIBLE to miss.
-         * The old 20x20 square was invisible because Main2 entered
-         * __WFI2() (idle) right after drawing it once, and the AP side
-         * repainted over it. WFI is disabled here on purpose for debug.
-         * Remove once the mailbox handshake works. */
+        /* ReChord V0.17 heartbeat: flip the whole framebuffer 0x03024868
+         * red/black AND push it through the loader's own display API
+         * (fef124 wait -> fea848/fea824 save -> feb0f6 color -> fea8f4
+         * rect -> feabea refresh -> restore), slowly (~4 Hz) so it is
+         * visible. V0.1 (this SDK-kernel boot path) was the ONLY build
+         * that showed colors on screen; V0.8-V0.16 pure-C builds over the
+         * ROM never showed anything. Also write the BOOT_DONE marker so
+         * rechord_ui_event (application_start stub) can draw too. */
         {
             static uint32 hb = 0;
+            uint32_t col = (hb & 1) ? 0xF800u : 0x0000u;   /* red / black */
+            uint32_t i;
             volatile uint16_t *fb = (volatile uint16_t *)0x03024868u;
-            uint16_t col = (hb & 1) ? 0xF800u : 0x0000u;   /* red / black */
-            for (int k = 0; k < (320 * 170) / 2; k++)     /* whole fb */
-                fb[k] = col;
+            for (i = 0; i < (320 * 170) / 2; i++)          /* whole fb */
+                fb[i] = (uint16_t)col;
+            /* loader display API (known-good top-bar rect + adjacent
+             * palette codes 0x94/0x95 â€” the loader's status-bar colors) */
+            if (((uint32_t(*)(uint32_t))0x02fef124u)(0x19b) == 0) {
+                uint32_t c1 = ((uint32_t(*)(uint32_t))0x02fea848u)(1);
+                uint32_t c2 = ((uint32_t(*)(uint32_t))0x02fea824u)(2);
+                ((void(*)(uint32_t))0x02feb0f6u)((hb & 1) ? 0x95u : 0x94u);
+                ((void(*)(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t))0x02fea8f4u)
+                    (0, 3, 320, 16, 2, 0x58);
+                ((void(*)(uint32_t))0x02feabeau)(1);
+                ((void(*)(uint32_t))0x02fea848u)(c1);
+                ((void(*)(uint32_t))0x02fea824u)(c2);
+            }
+            /* BOOT_DONE marker (0xfeed0002) for rechord_ui_event */
+            ((volatile uint32_t *)0x03000118u)[2] = 0xfeed0002u;
             hb++;
-            { volatile uint32 d; for (d = 0; d < 400000; d++); }  /* ~delay */
+            for (i = 0; i < 4000000u; i++) ;              /* ~0.1-0.5s delay */
         }
 
         //system enter IDLE

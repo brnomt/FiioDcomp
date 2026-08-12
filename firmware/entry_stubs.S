@@ -41,15 +41,18 @@
 
     .equ ROM_HW_INIT2, 0x02feee7c    /* rom_hw_init2 (tail-call target) */
 
-    /* firmware_entry @ 0x03000010 — bootloader jumps here, r0 = boot params */
+    /* firmware_entry @ 0x03000010 — bootloader jumps here, r0 = boot params
+     * V0.17: back to the V0.1 boot path — branch to the SDK's Main2
+     * (BSP_Init2 real HW init). V0.1 was the ONLY build that showed colors
+     * (azure->green->red per user); V0.8-V0.16 (pure-C display tests over
+     * the ROM, no SDK kernel) never showed anything. The SDK kernel boot
+     * is the path that makes the display behave. */
     .global firmware_entry
     .thumb_func
 firmware_entry:
-    push {r4, lr}
+    push {r4}
     mov  r4, r0
-    bl   rechord_firmware_entry      /* C: stock init, returns 0x18f/0x191 */
-    pop  {r4, lr}                    /* restore caller's lr (the ROM) */
-    b.w  ROM_HW_INIT2                /* tail call — rom_hw_init2 returns to ROM */
+    b    Main2
 
     /* --- ROM/loader dispatch trampolines (bx lr = return) ---
      * NOTE: stub_03000162 stays a 2-byte `bx lr`: the bytes at 0x03000164+
