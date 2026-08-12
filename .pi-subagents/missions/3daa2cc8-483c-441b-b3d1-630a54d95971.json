@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "3daa2cc8-483c-441b-b3d1-630a54d95971",
+  "title": "Build a QEMU test harness that runs OUR REAL firmware logic in QEMU (mps2-an385), no device flash...",
+  "objective": "Build a QEMU test harness that runs OUR REAL firmware logic in QEMU (mps2-an385), no device flashing.\nProject root: C:/Users/brnomt/Desktop/ReChord (Windows, bash via git-bash). QEMU: '/c/Program Files/qemu/qemu-system-arm.exe'.\nWORKING REFERENCE (already proven): build/qemu_fault_probe.elf from firmware/qemu/qemu_fault_probe.c + firmware/qemu/qemu_echo_ld.ld runs in QEMU. mps2-an385 has RAM at 0x00000000 (4MB) + 0x20000000 (4MB). Monitor read pattern: (sleep 2; echo 'xp /8xw 0x20008000'; echo quit) | qemu-system-arm -machine mps2-an385 -kernel build/FILE.bin -nographic -monitor stdio\nGOAL: verify our real firmware's boot logic in QEMU: firmware_entry -> Main2 heartbeat loop writes the framebuffer (0x03024868 in the real code).\nKEY FILES:\n  - firmware/entry_stubs.S: firmware_entry @0x03000010 does 'b Main2' (V0.17).\n  - firmware/rockchip/bbsystem/Main2.c: int Main2(void). Its while(1) loop has a ReChord heartbeat: fills fb 0x03024868 red/black, calls ROM display fns via absolute fn pointers (0x02fef124 wait, 0x02fea848/0x02fea824 save, 0x02feb0f6 color, 0x02fea8f4 rect, 0x02feabea refresh), writes boot marker to ((volatile uint32_t*)0x03000118)[2], delay loop.\n  - firmware/rechord_app.c: rechord_firmware_entry() (V0.15 stock-mirror init: rom_alloc @0x02feeedc, rom_hw_init @0x02feeebe, rom_hw_init2 @0x02feee7c, rom_early_init @0x02fe860e; writes boot layout to 0x03000164; mode check returns 0x18f/0x191).\nPROBLEM: the real code uses absolute addresses (0x03000000 code, 0x02FE0000+ ROM, 0x400B0000 INTC, 0x03024868 fb) not mapped in QEMU.\nAPPROACH (pragmatic):\n  1. Add '#ifdef RECHORD_QEMU_TEST' stubs to the firmware sources OR make a QEMU test build: redirect ROM fns to local stubs (rom_alloc returns a RAM ptr, hw_init/early_init no-op), redirect fb/boot-log/crash-log addresses to QEMU RAM (0x20000000+), make Main2's BSP_Init2 hardware writes harmless (stub BSP_Init2 or the INTC writes).\n  2. Create a QEMU test main mimicking the bootloader: vector table (HardFault -> a fault handler like fault.c's), set VTOR, jump firmware_entry (or Main2 directly).\n  3. Link with a QEMU linker script (firmware/qemu/qemu_echo_ld.ld pattern), objcopy to .bin, run in QEMU, READ the framebuffer + logs via the monitor to verify: entry ran, Main2 reached its loop, fb was written (non-zero).\nMINIMUM DELIVERABLE: a runnable QEMU test proving firmware_entry+Main2 heartbeat executes and writes the fb (monitor-readable), with the exact build+run commands. Keep it simple. Create files under firmware/qemu/ and build/.\nDo NOT flash anything. Do NOT modify stock/ or the device. If running full Main2 is too hard (BSP_Init2 MMIO), valid fallback: prove rechord_firmware_entry (V0.15) runs and returns 0x191 with mode 0xb, PLUS a minimal test reproducing the heartbeat fb write. Report exactly what you verified.\nReport: files created, exact commands, monitor output proving each step.",
+  "status": "active",
+  "createdAt": "2026-08-12T02:45:56.142Z",
+  "updatedAt": "2026-08-12T03:03:29.287Z",
+  "runs": [],
+  "workflowChildren": [
+    {
+      "workflowRunId": "call_00_SMdapZPKHpn6HO92h1Uq9363",
+      "key": "qemu-harness",
+      "status": "running",
+      "startedAt": "2026-08-12T02:45:56.204Z",
+      "updatedAt": "2026-08-12T03:03:29.287Z",
+      "artifactPaths": [],
+      "agent": "worker",
+      "task": "Build a QEMU test harness that runs OUR REAL firmware logic in QEMU (mps2-an385), no device flashing.\nProject root: C:/Users/brnomt/Desktop/ReChord (Windows, bash via git-bash). QEMU: '/c/Program Files/qemu/qemu-system-arm.exe'.\nWORKING REFERENCE (already proven): build/qemu_fault_probe.elf from firmware/qemu/qemu_fault_probe.c + firmware/qemu/qemu_echo_ld.ld runs in QEMU. mps2-an385 has RAM at 0x00000000 (4MB) + 0x20000000 (4MB). Monitor read pattern: (sleep 2; echo 'xp /8xw 0x20008000'; echo quit) | qemu-system-arm -machine mps2-an385 -kernel build/FILE.bin -nographic -monitor stdio\nGOAL: verify our real firmware's boot logic in QEMU: firmware_entry -> Main2 heartbeat loop writes the framebuffer (0x03024868 in the real code).\nKEY FILES:\n  - firmware/entry_stubs.S: firmware_entry @0x03000010 does 'b Main2' (V0.17).\n  - firmware/rockchip/bbsystem/Main2.c: int Main2(void). Its while(1) loop has a ReChord heartbeat: fills fb 0x03024868 red/black, calls ROM display fns via absolute fn pointers (0x02fef124 wait, 0x02fea848/0x02fea824 save, 0x02feb0f6 color, 0x02fea8f4 rect, 0x02feabea refresh), writes boot marker to ((volatile uint32_t*)0x03000118)[2], delay loop.\n  - firmware/rechord_app.c: rechord_firmware_entry() (V0.15 stock-mirror init: rom_alloc @0x02feeedc, rom_hw_init @0x02feeebe, rom_hw_init2 @0x02feee7c, rom_early_init @0x02fe860e; writes boot layout to 0x03000164; mode check returns 0x18f/0x191).\nPROBLEM: the real code uses absolute addresses (0x03000000 code, 0x02FE0000+ ROM, 0x400B0000 INTC, 0x03024868 fb) not mapped in QEMU.\nAPPROACH (pragmatic):\n  1. Add '#ifdef RECHORD_QEMU_TEST' stubs to the firmware sources OR make a QEMU test build: redirect ROM fns to local stubs (rom_alloc returns a RAM ptr, hw_init/early_init no-op), redirect fb/boot-log/crash-log addresses to QEMU RAM (0x20000000+), make Main2's BSP_Init2 hardware writes harmless (stub BSP_Init2 or the INTC writes).\n  2. Create a QEMU test main mimicking the bootloader: vector table (HardFault -> a fault handler like fault.c's), set VTOR, jump firmware_entry (or Main2 directly).\n  3. Link with a QEMU linker script (firmware/qemu/qemu_echo_ld.ld pattern), objcopy to .bin, run in QEMU, READ the framebuffer + logs via the monitor to verify: entry ran, Main2 reached its loop, fb was written (non-zero).\nMINIMUM DELIVERABLE: a runnable QEMU test proving firmware_entry+Main2 heartbeat executes and writes the fb (monitor-readable), with the exact build+run commands. Keep it simple. Create files under firmware/qemu/ and build/.\nDo NOT flash anything. Do NOT modify stock/ or the device. If running full Main2 is too hard (BSP_Init2 MMIO), valid fallback: prove rechord_firmware_entry (V0.15) runs and returns 0x191 with mode 0xb, PLUS a minimal test reproducing the heartbeat fb write. Report exactly what you verified.\nReport: files created, exact commands, monitor output proving each step.",
+      "sessionPath": "C:\\Users\\brnomt\\.pi\\agent\\sessions\\--C--Users-brnomt-Desktop-ReChord--\\2026-08-12T02-45-56-269Z_019ff3dc-b7ad-75a7-85c0-1bd598669dce.jsonl",
+      "heartbeat": {
+        "updatedAt": "2026-08-12T03:03:29.287Z",
+        "status": "running"
+      }
+    },
+    {
+      "workflowRunId": "call_00_SMdapZPKHpn6HO92h1Uq9363",
+      "key": "dispatch-map",
+      "status": "completed",
+      "startedAt": "2026-08-12T02:45:56.345Z",
+      "updatedAt": "2026-08-12T02:48:01.842Z",
+      "artifactPaths": [
+        "C:\\Users\\brnomt\\.pi\\agent\\sessions\\--C--Users-brnomt-Desktop-ReChord--\\2026-08-12T02-45-56-380Z_019ff3dc-b81c-70f4-9b8a-8f35cd6b4478.jsonl"
+      ],
+      "runId": "27c9e702",
+      "agent": "worker",
+      "task": "Create a tool that builds DISPATCH-MAPPING test IMGs for the FiiO Echo Mini: take the STOCK IMG and patch section_3 code at specific RAM offsets to 'b .' (infinite loop, little-endian 0xE7FE = FE E7), to empirically map which menu feature calls which section_3 dispatch offset.\nProject root: C:/Users/brnomt/Desktop/ReChord. Stock IMG: stock/3.7.0/ECHO MINI V3.7.0/HIFIEC37.IMG. Section_3 starts at IMG offset 0x81A14; RAM 0x03000000 == IMG 0x81A14, so RAM offset X == IMG 0x81A14 + X.\nCONTEXT (already established on device): firmware_entry (RAM 0x03000010) is called for MEDIA operations (media library, music playback), NOT boot — patching it to 'b .' made media crash while menu/file browser/settings kept working.\nKNOWN DISPATCH OFFSETS (RAM): 0x03000010 (firmware_entry, known: media), 0x03000162 (stock = bx lr no-op, SKIP), 0x0300016c (WriteData_To_Flash), 0x0300024e (MscTestUnitReady), 0x03000296, 0x030004f4, 0x03000546, 0x03000a72, 0x03000a74, 0x03000aba (main2_entry USB MSC), 0x0300710a (application_start).\nBUILD tools/make_v019_dispatch_map.py: takes a list of RAM offsets, patches each to FE E7, verifies each location currently holds plausible Thumb code (not 0x00/0xFF), writes an IMG. Keeps everything else byte-identical to stock.\nBUILD these IMGs:\n  - build/ReChord_V0.19_map_USB.IMG: hang {0x0300016c, 0x0300024e, 0x03000aba}\n  - build/ReChord_V0.19_map_misc.IMG: hang {0x03000296, 0x030004f4, 0x03000546, 0x03000a72, 0x03000a74}\n  - build/ReChord_V0.19_map_appstart.IMG: hang {0x0300710a}\nVerify each output IMG differs from stock ONLY at the patched offsets (print the diff offsets). Do NOT flash anything. Report tool path, the 3 IMG paths, and per-IMG diff verification.",
+      "completedAt": "2026-08-12T02:48:01.842Z",
+      "sessionPath": "C:\\Users\\brnomt\\.pi\\agent\\sessions\\--C--Users-brnomt-Desktop-ReChord--\\2026-08-12T02-45-56-380Z_019ff3dc-b81c-70f4-9b8a-8f35cd6b4478.jsonl",
+      "heartbeat": {
+        "updatedAt": "2026-08-12T02:48:01.842Z",
+        "status": "completed"
+      }
+    }
+  ],
+  "decisions": [],
+  "artifacts": [],
+  "receipts": [],
+  "cwd": "C:\\Users\\brnomt\\Desktop\\ReChord",
+  "ownerSessionId": "C:\\Users\\brnomt\\.pi\\agent\\sessions\\--C--Users-brnomt-Desktop-ReChord--\\2026-08-12T01-44-09-559Z_019ff3a4-2856-7385-8fc3-87f90b691db6.jsonl"
+}

@@ -639,16 +639,49 @@ int Main2(void)
          * visible. V0.1 (this SDK-kernel boot path) was the ONLY build
          * that showed colors on screen; V0.8-V0.16 pure-C builds over the
          * ROM never showed anything. Also write the BOOT_DONE marker so
-         * rechord_ui_event (application_start stub) can draw too. */
+         * rechord_ui_event (application_start stub) can draw too.
+         * RECHORD_QEMU_TEST build: fb/boot-marker/ROM-display calls are
+         * redirected to QEMU RAM + stubs (qemu_echo_main.c); the delay is
+         * lengthened so the monitor can catch a red phase. */
+#ifdef RECHORD_QEMU_TEST
+        extern uint32_t rch_qemu_rom_wait(uint32_t);
+        extern uint32_t rch_qemu_rom_ctx(uint32_t);
+        extern void rch_qemu_rom_color(uint32_t);
+        extern void rch_qemu_rom_rect(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+        extern void rch_qemu_rom_refresh(uint32_t);
+        #define RCH_QEMU_FB      ((volatile uint16_t *)0x20010000u)
+        #define RCH_QEMU_BOOTLOG ((volatile uint32_t *)0x20008018u)
+        #define RCH_QEMU_WAIT    rch_qemu_rom_wait
+        #define RCH_QEMU_CTX     rch_qemu_rom_ctx
+        #define RCH_QEMU_COLOR   rch_qemu_rom_color
+        #define RCH_QEMU_RECT    rch_qemu_rom_rect
+        #define RCH_QEMU_REFR    rch_qemu_rom_refresh
+        #define RCH_QEMU_DELAY   60000000u
+#else
+        #define RCH_QEMU_FB      ((volatile uint16_t *)0x03024868u)
+        #define RCH_QEMU_BOOTLOG ((volatile uint32_t *)0x03000118u)
+        #define RCH_QEMU_DELAY   4000000u
+#endif
         {
             static uint32 hb = 0;
             uint32_t col = (hb & 1) ? 0xF800u : 0x0000u;   /* red / black */
             uint32_t i;
-            volatile uint16_t *fb = (volatile uint16_t *)0x03024868u;
+            volatile uint16_t *fb = RCH_QEMU_FB;
             for (i = 0; i < (320 * 170) / 2; i++)          /* whole fb */
                 fb[i] = (uint16_t)col;
             /* loader display API (known-good top-bar rect + adjacent
              * palette codes 0x94/0x95 — the loader's status-bar colors) */
+#ifdef RECHORD_QEMU_TEST
+            if (RCH_QEMU_WAIT(0x19b) == 0) {
+                uint32_t c1 = RCH_QEMU_CTX(1);
+                uint32_t c2 = RCH_QEMU_CTX(2);
+                RCH_QEMU_COLOR((hb & 1) ? 0x95u : 0x94u);
+                RCH_QEMU_RECT(0, 3, 320, 16, 2, 0x58);
+                RCH_QEMU_REFR(1);
+                RCH_QEMU_CTX(c1);
+                RCH_QEMU_CTX(c2);
+            }
+#else
             if (((uint32_t(*)(uint32_t))0x02fef124u)(0x19b) == 0) {
                 uint32_t c1 = ((uint32_t(*)(uint32_t))0x02fea848u)(1);
                 uint32_t c2 = ((uint32_t(*)(uint32_t))0x02fea824u)(2);
@@ -659,10 +692,11 @@ int Main2(void)
                 ((void(*)(uint32_t))0x02fea848u)(c1);
                 ((void(*)(uint32_t))0x02fea824u)(c2);
             }
+#endif
             /* BOOT_DONE marker (0xfeed0002) for rechord_ui_event */
-            ((volatile uint32_t *)0x03000118u)[2] = 0xfeed0002u;
+            RCH_QEMU_BOOTLOG[2] = 0xfeed0002u;
             hb++;
-            for (i = 0; i < 4000000u; i++) ;              /* ~0.1-0.5s delay */
+            for (i = 0; i < RCH_QEMU_DELAY; i++) ;
         }
 
         //system enter IDLE

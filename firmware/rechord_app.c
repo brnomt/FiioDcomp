@@ -33,6 +33,7 @@
 #include <stddef.h>
 
 /* ---- ROM display services (the loader's draw sequence) ---- */
+#ifndef RECHORD_QEMU_TEST
 typedef uint32_t (*rom_ready_fn)(uint32_t);
 typedef uint32_t (*rom_ctx_fn)(uint32_t);
 typedef void (*rom_color_fn)(uint32_t);
@@ -58,6 +59,33 @@ typedef void (*rom_refresh_fn)(uint32_t);
 #define CRASH_MAGIC 0x52454348u
 #define boot_log  ((volatile uint32_t *)0x03000118u)   /* boot markers */
 #define BOOT_DONE 0xfeed0002u
+#else  /* RECHORD_QEMU_TEST: redirect ROM calls + telemetry to QEMU RAM stubs
+       * (implemented in firmware/qemu/qemu_echo_main.c) */
+extern uint32_t rch_qemu_rom_wait(uint32_t);
+extern uint32_t rch_qemu_rom_ctx(uint32_t);
+extern void rch_qemu_rom_color(uint32_t);
+extern void rch_qemu_rom_rect(uint32_t, uint32_t, uint32_t, uint32_t,
+                              uint32_t, uint32_t);
+extern void rch_qemu_rom_refresh(uint32_t);
+extern void *rch_qemu_rom_alloc(uint32_t);
+extern void rch_qemu_rom_hw_init(uint32_t);
+extern void rch_qemu_rom_hw_init2(uint32_t);
+extern void rch_qemu_rom_early_init(void);
+#define ROM_DISP_WAIT   rch_qemu_rom_wait
+#define ROM_DISP_CTX_A  rch_qemu_rom_ctx
+#define ROM_DISP_CTX_B  rch_qemu_rom_ctx
+#define ROM_DISP_COLOR  rch_qemu_rom_color
+#define ROM_DISP_RECT   rch_qemu_rom_rect
+#define ROM_DISP_REFRESH rch_qemu_rom_refresh
+#define ROM_ALLOC       rch_qemu_rom_alloc
+#define ROM_HW_INIT     rch_qemu_rom_hw_init
+#define ROM_HW_INIT2    rch_qemu_rom_hw_init2
+#define ROM_EARLY_INIT  rch_qemu_rom_early_init
+#define crash_log ((volatile uint32_t *)0x20008000u)
+#define CRASH_MAGIC 0x52454348u
+#define boot_log  ((volatile uint32_t *)0x20008018u)
+#define BOOT_DONE 0xfeed0002u
+#endif
 
 /*
  * rechord_firmware_entry — C body of the stock firmware_entry mirror.
@@ -68,8 +96,13 @@ typedef void (*rom_refresh_fn)(uint32_t);
 uint32_t rechord_firmware_entry(void *param)
 {
     uint16_t *bp = (uint16_t *)param;
+#ifdef RECHORD_QEMU_TEST
+    volatile uint8_t  *lay = (volatile uint8_t *)0x20008080u;   /* boot layout */
+    volatile uint16_t *bmode = (volatile uint16_t *)0x20008084u;
+#else
     volatile uint8_t  *lay = (volatile uint8_t *)0x03000164u;  /* boot layout */
     volatile uint16_t *bmode = (volatile uint16_t *)0x03000168u;
+#endif
     uint16_t mode;
     uint32_t m, cols, pad;
     void *ctx;
@@ -115,6 +148,7 @@ uint32_t rechord_firmware_entry(void *param)
 
     boot_log[2] = BOOT_DONE;                /* boot init complete */
 
+#ifndef RECHORD_QEMU_TEST
     /* ---- V0.16 FAULT PROBE ----
      * Set VTOR to OUR 256-aligned vector table (0x03000200) so faults are
      * routed to our handler (fault.c), then execute a deliberate UDF. If
@@ -125,12 +159,15 @@ uint32_t rechord_firmware_entry(void *param)
      * ~23s poweroff). If the ROM NEVER calls firmware_entry, behavior is
      * identical to V0.15.
      * NOTE: without this, NO build ever showed the fault screen because
-     * nobody set VTOR — faults were going to the ROM's own table. */
+     * nobody set VTOR — faults were going to the ROM's own table.
+     * (Skipped in the RECHORD_QEMU_TEST build: verified separately by
+     * firmware/qemu/qemu_fault_probe.c.) */
     {
         extern uint32_t rechord_vectors[];
         *(volatile uint32_t *)0xE000ED08u = (uint32_t)rechord_vectors;  /* VTOR */
         __asm volatile("udf #0" ::: "memory");   /* deliberate UsageFault -> HardFault */
     }
+#endif
 
     /* mode check: return the code entry_stubs.S must tail-call */
     return (*bp != 0x0b) ? 0x18f : 0x191;
