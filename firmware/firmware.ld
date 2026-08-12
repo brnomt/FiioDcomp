@@ -38,11 +38,10 @@ SECTIONS
         KEEP(*(.fw_header))
     } > FW_CODE
 
-    /* ---- firmware_entry @ 0x03000010 (bootloader jumps here) ---- */
+    /* ---- firmware_entry + ROM-dispatch trampolines @ 0x03000010 ---- */
     .text 0x03000010 :
     {
-        KEEP(*(.text.firmware_entry))
-        KEEP(*(.text.firmware_entry_trampoline))
+        KEEP(*(.text.boot))
         *(.text*)
         *(.rodata*)
         *(.ARM.extab*)
