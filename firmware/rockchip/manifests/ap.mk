@@ -165,27 +165,34 @@ AP_SRCS := \
   firmware/rockchip/audio/SSRC/resample_interface.c \
   firmware/rockchip/audio/DSDIFF/pDSDIFF.c \
   firmware/rockchip/audio/DSF/pDSF.c \
-  firmware/rockchip/radio/FMControl/FmControl.c
+  firmware/rockchip/radio/FMControl/FmControl.c \
+  firmware/rockchip/usbcontrol/USBControl.c \
+  firmware/rockchip/image/ImageCommon/image_common.c \
+  firmware/rockchip/image/ImageCommon/image_file_access.c \
+  firmware/rockchip/image/ImageCommon/pImageCODECS.c \
+  firmware/rockchip/image/Imagecontrol/ImageControl.c \
+  firmware/rockchip/image/Thumbnail/Exif_Read.c \
+  firmware/rockchip/image/Thumbnail/Exif_Read_Main.c \
+  firmware/rockchip/image/Thumbnail/thumbnail_parse.c \
+  firmware/rockchip/image/Thumbnail/Thumbnail_Read_Main.c \
+  firmware/rockchip/image/Thumbnail/Thumbnail_Read_Task.c \
+  firmware/rockchip/image/Jpg/pJPG.c \
+  firmware/rockchip/image/Jpg/jpgdec_init.c \
+  firmware/rockchip/image/Jpg/jpgdec_parser.c \
+  firmware/rockchip/image/Bmp/pBMPDEC.c \
+  firmware/rockchip/bt/BlueToothA2dpSourceControl.c \
+  firmware/rockchip/bt/BlueToothSysParam.c \
+  firmware/rockchip/bt/lwbt/btHwControl.c \
+  firmware/rockchip/bt/lwbt/uartif_h5.c \
+  firmware/rockchip/bt/lwbt/chipset_rtk8761a/btRtk8761a_init_script.c \
+  firmware/rockchip/bt/lwbt/chipset_rtk8761a/btRtk8761aControl.c \
+  firmware/rockchip/bt/lwbt/a2dp_source/bt_ip_dt_source.c
 
 # Enabled Keil A_CORE sources not imported under firmware/rockchip.
 AP_MISSING_SRCS := \
   community/sdks/RKNanoD_MP3_V1.3_20161102/SDK_160_128/Scatter/ScatterLoader.c \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/BootLoader/Start.s \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/BootLoader/Cortex-m3.S \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/UsbControl/USBControl.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/ImageCommon/image_common.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/ImageCommon/image_file_access.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/ImageCommon/pImageCODECS.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/Imagecontrol/ImageControl.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/Thumbnail/Exif_Read.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/Thumbnail/Exif_Read_Main.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/Thumbnail/thumbnail_parse.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/Thumbnail/Thumbnail_Read_Main.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/Thumbnail/Thumbnail_Read_Task.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/Jpg/pJPG.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/Jpg/jpgdec_init.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/Jpg/jpgdec_parser.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/Bmp/pBMPDEC.c \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Video/VideoControl/VideoControl.c \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Video/VideoControl/VideoHoldonPlay.c \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Video/Avi/xvid_dec_main.c \
@@ -193,14 +200,7 @@ AP_MISSING_SRCS := \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Video/Avi/AviFile/AviFile.c \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Video/mp2/pMP2.c \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Video/mp2/pMp2Codec.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Video/mp2/Video_AudioControl.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/BlueTooth/BlueToothA2dpSourceControl.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/BlueTooth/BlueToothSysParam.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/BlueTooth/lwbt/btHwControl.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/BlueTooth/lwbt/uartif_h5.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/BlueTooth/lwbt/chipset_rtk8761a/btRtk8761a_init_script.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/BlueTooth/lwbt/chipset_rtk8761a/btRtk8761aControl.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/BlueTooth/lwbt/a2dp_source/bt_ip_dt_source.c
+  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Video/mp2/Video_AudioControl.c
 
 # Existing imported directories mapped from the Keil RkNano A_CORE include path.
 AP_INCLUDE_DIRS := \
@@ -293,7 +293,13 @@ AP_INCLUDE_DIRS := \
   firmware/rockchip/radio/FMControl \
   firmware/rockchip/image/ImageInclude \
   firmware/rockchip/image/Imagecontrol \
+  firmware/rockchip/image/ImageCommon \
+  firmware/rockchip/image/Thumbnail \
+  firmware/rockchip/image/Jpg \
+  firmware/rockchip/image/Bmp \
+  firmware/rockchip/bt \
   firmware/rockchip/bt/lwbt \
   firmware/rockchip/bt/lwbt/a2dp_source \
   firmware/rockchip/bt/lwbt/chipset_rtk8761a \
+  firmware/rockchip/usbcontrol \
   firmware/rockchip/include

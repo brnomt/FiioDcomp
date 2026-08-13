@@ -30,6 +30,41 @@
 #endif
 #define _USB_HOST_      1
 /* #define _VIDEO_         1   // not in Echo Mini */
+
+/* ---- Bluetooth chipset / board config (from SDK_160_128/SysConfig.h) — AP only ---- */
+#ifdef RECHORD_AP_BUILD
+#define BT_CHIP_CC2564              0
+#define BT_CHIP_CC2564B             1
+#define BT_CHIP_RTL8761             2
+#define BT_CHIP_CONFIG              BT_CHIP_RTL8761
+#define BT_UART_INTERFACE_H4        1
+#define BT_UART_INTERFACE_H5        2
+#define BT_UART_INTERFACE_CONFIG    BT_UART_INTERFACE_H5
+#define _AVRCP_                     1
+#define _SBC_ENCODE_                1
+#define BT_VCC_ON_GPIO_CH           GPIO_CH2
+#define BT_VCC_ON_GPIO_PIN          GPIOPortA_Pin2
+#define BT_POWER_GPIO_CH            GPIO_CH0
+#define BT_POWER_GPIO_PIN           GPIOPortB_Pin5
+#define BT_HOST_RX_CH               GPIO_CH2
+#define BT_HOST_RX_PIN              GPIOPortC_Pin1
+#define BT_HOST_TX_CH               GPIO_CH2
+#define BT_HOST_TX_PIN              GPIOPortC_Pin0
+#define BT_HOST_CTS_CH              GPIO_CH2
+#define BT_HOST_CTS_PIN             GPIOPortB_Pin7
+#define BT_HOST_RTS_CH              GPIO_CH2
+#define BT_HOST_RTS_PIN             GPIOPortB_Pin6
+#define BT_UART_CH                  UART_CH1_PA
+#define BT_UART_INT_ID              INT_ID_UART1
+#define BT_GPIO_INT_ID              INT_ID_GPIO0
+#define BT_HCI_SERVER_INT_ID        INT_ID_UART5
+#define BT_H5_TX_INT_ID             INT_ID_UART3
+
+/* Image decoder selection (Keil A_CORE project defines) */
+#define JPG_DEC_INCLUDE     1
+#define BMP_DEC_INCLUDE     1
+#define THUMB_DEC_INCLUDE   1
+#endif
 /* #define _EBOOK_         1   // not in Echo Mini */
 /* #define _CDROM_         1   // not in Echo Mini */
 
@@ -62,6 +97,9 @@
 #define LCD_PIXEL_1     1
 #define LCD_PIXEL_16    16
 #define LCD_PIXEL       LCD_PIXEL_16
+#define BUFFER_MAX_NUM      1
+#define FRAME_SUB_BUFFER_NUM    1
+#define LCD_HEIGHTA         LCD_HEIGHT
 
 /* ---- Backlight PWM (from SDK_160_128/SysConfig.h) ---- */
 #define BL_LEVEL_MAX                5
