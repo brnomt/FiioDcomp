@@ -91,9 +91,3 @@ extern uint8 ACodec_Get_Over_Current(void);
 ********************************************************************************
 */
 #endif
-
-/* ---- service globals (Service.c) ---- */
-extern void FMThread;
-extern void RecordThread;
-extern void LowPowerWin;
-extern uint32 gpRadioplayerRegKey;

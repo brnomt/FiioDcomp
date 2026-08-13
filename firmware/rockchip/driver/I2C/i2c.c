@@ -42,6 +42,9 @@ static void I2C_show_regs(eI2C_CHANNEL i2cPort)
 {
 }
 
+static int I2C_send_start_bit(eI2C_CHANNEL i2cPort);
+static int I2C_send_stop_bit(eI2C_CHANNEL i2cPort);
+
 void I2CStart(eI2C_CHANNEL i2cPort)
 {
     I2C_send_start_bit(i2cPort);

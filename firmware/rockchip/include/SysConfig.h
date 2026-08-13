@@ -46,6 +46,88 @@
 #define LCD_WIDTH       320
 #define LCD_HEIGHT      170
 #define LCD_BPP         16
+#define LCD_PIXEL_1     1
+#define LCD_PIXEL_16    16
+#define LCD_PIXEL       LCD_PIXEL_16
+
+/* ---- Backlight PWM (from SDK_160_128/SysConfig.h) ---- */
+#define BL_LEVEL_MAX                5
+#define BL_PWM_RATE_MIN             30
+#define BL_PWM_RATE_MAX             80
+#define BL_PWM_RATE_STEP            ((BL_PWM_RATE_MAX - BL_PWM_RATE_MIN) / (BL_LEVEL_MAX))
+
+/* ---- ADC key (AD-key) board config (from SDK_160_128/SysConfig.h) ---- */
+#define BATTERY_LEVEL               5
+#define BT_HCI_UART_ID              UART_CH1
+
+#define KEY_NUM_4                   4
+#define KEY_NUM_5                   5
+#define KEY_NUM_6                   6
+#define KEY_NUM_7                   7
+#define KEY_NUM_8                   8
+#define KEY_NUM                     KEY_NUM_7
+
+#define KEY_VAL_NONE                ((UINT32)0x0000)
+#define KEY_VAL_PLAY                ((UINT32)0x0001 << 0)
+#define KEY_VAL_MENU                ((UINT32)0x0001 << 1)
+#define KEY_VAL_FFD                 ((UINT32)0x0001 << 2)
+#define KEY_VAL_FFW                 ((UINT32)0x0001 << 3)
+#define KEY_VAL_UP                  ((UINT32)0x0001 << 4)
+#define KEY_VAL_DOWN                ((UINT32)0x0001 << 5)
+#define KEY_VAL_ESC                 ((UINT32)0x0001 << 6)
+#define KEY_VAL_UNHOLD              ((UINT32)0x0001 << 8)
+
+#define KEY_VAL_UPGRADE             KEY_VAL_MENU
+#define KEY_VAL_POWER               KEY_VAL_PLAY
+#define KEY_VAL_HOLD                (KEY_VAL_MENU | KEY_VAL_PLAY)
+#define KEY_VAL_VOL                 KEY_VAL_ESC
+
+#define KEY_VAL_MASK                ((UINT32)0x0fffffff)
+#define KEY_VAL_UNMASK              ((UINT32)0xf0000000)
+
+#define KEY_VAL_ADKEY2              KEY_VAL_MENU
+#define KEY_VAL_ADKEY3              KEY_VAL_UP
+#define KEY_VAL_ADKEY4              KEY_VAL_FFW
+#define KEY_VAL_ADKEY5              KEY_VAL_FFD
+#define KEY_VAL_ADKEY6              KEY_VAL_DOWN
+#define KEY_VAL_ADKEY7              KEY_VAL_ESC
+
+#define ADKEY2_MIN                  ((0   +   0) / 2)
+#define ADKEY2_MAX                  ((0   + 147) / 2)
+#define ADKEY3_MIN                  ((147 +   0) / 2)
+#define ADKEY3_MAX                  ((147 + 330) / 2)
+#define ADKEY4_MIN                  ((330 + 147) / 2)
+#define ADKEY4_MAX                  ((330 + 522) / 2)
+#define ADKEY5_MIN                  ((522 + 330) / 2)
+#define ADKEY5_MAX                  ((522 + 780) / 2)
+#define ADKEY6_MIN                  ((780 + 522) / 2)
+#define ADKEY6_MAX                  ((780 + 956) / 2)
+#define ADKEY7_MIN                  ((956 + 780) / 2)
+#define ADKEY7_MAX                  ((956 + 1024) / 2)
+
+/* ---- Language IDs (from SDK_160_128/SysConfig.h) ---- */
+#define LANGUAGE_CHINESE_S          0
+#define LANGUAGE_CHINESE_T          1
+#define LANGUAGE_ENGLISH            2
+#define LANGUAGE_KOREAN             3
+#define LANGUAGE_JAPANESE           4
+#define LANGUAGE_SPAISH             9
+#define LANGUAGE_FRENCH             5
+#define LANGUAGE_GERMAN             6
+#define LANGUAGE_ITALIAN            10
+#define LANGUAGE_PORTUGUESE         7
+#define LANGUAGE_RUSSIAN            8
+#define LANGUAGE_SWEDISH            11
+#define LANGUAGE_THAI               12
+#define LANGUAGE_POLAND             13
+#define LANGUAGE_DENISH             14
+#define LANGUAGE_DUTCH              15
+#define LANGUAGE_HELLENIC           16
+#define LANGUAGE_CZECHIC            17
+#define LANGUAGE_TURKIC             18
+#define LANGUAGE_RABBINIC           19
+#define LANGUAGE_ARABIC             20
+#define DEFAULT_LANGUE              LANGUAGE_CHINESE_S
 
 /* ---- Firmware identity (matches stock IMG strings) ---- */
 #define FIRMWARE_NAME   "ECHO MINI"
@@ -68,98 +150,17 @@
 #define CODEC_DSD_DEC   8
 #endif
 
-/* ---- UI module IDs (Task.c) ---- */
-#ifndef SYSCONFIG_MODULE_ID
-#define SYSCONFIG_MODULE_ID
-#define MODULE_ID_MAINMENU      0
-#define MODULE_ID_MUSIC         1
-#define MODULE_ID_BROWSER       2
-#define MODULE_ID_MEDIABRO      3
-#define MODULE_ID_MEDIALIBWIN   4
-#define MODULE_ID_MDB_WIN       5
-#define MODULE_ID_PICTURE       6
-#define MODULE_ID_VIDEO         7
-#define MODULE_ID_RECORDWIN     8
-#define MODULE_ID_RADIOWIN      9
-#define MODULE_ID_TEXTWIN       10
-#define MODULE_ID_SETMENU       11
-#define MODULE_ID_USB           12
-#define MODULE_ID_CHARGE_WIN    13
-#endif
-
-/* ---- System reserved-op types (SysReservedOperation.c) ---- */
-#ifndef SYSCONFIG_RESERVED
-#define SYSCONFIG_RESERVED
-#define IMAGE_ID_MAX    4
+/* ---- Storage media IDs (filesys / ui) ---- */
 #define FLASH0          0
 #define FLASH1          1
+#define CARD            1
 #define TOTAL_LANAUAGE_NUM  1
-#define MODULE_ID_FLASH_PROG  14
-
-typedef struct {
-    uint32 loadStartBase;
-    uint32 moduleId;
-    uint32 loadAddress;
-    uint32 moduleSize;
-    uint32 CodeLoadBase;
-    uint32 CodeImageBase;
-    uint32 CodeImageLength;
-    uint32 DataLoadBase;
-    uint32 DataImageBase;
-    uint32 DataImageLength;
-    uint32 BssImageBase;
-    uint32 BssImageLength;
-} CODE_INFO_T;
-
-typedef struct {
-    uint32 LoadStartBase;   /* SysReservedOperation.c */
-    struct {
-        uint32 ModuleNum;
-    } ModuleInfo;
-    uint32 firmwareFlag;
-    uint16 year, date;
-    uint16 masterVer, slaveVer, smallVer;
-    CODE_INFO_T Module[IMAGE_ID_MAX];
-} FIRMWARE_INFO_T;
-
-typedef struct {
-    uint32 dwTotalMem;
-    uint32 dwFreeMem;
-    uint8  sysLanguage;
-    uint8  gLanguage;
-    uint8  outputVolume;
-    uint8  Volume;
-    uint8  blMode;
-    uint8  BLMode;
-    uint8  bLevel;
-    uint8  BLevel;
-    uint8  blTime;
-    uint8  BLtime;
-    uint8  shutTime;
-    uint8  SettingPowerOffTime;
-    uint8  SDEnable;
-    uint8  FMEnable;
-    uint8  FMArea;
-    uint8  FMStereo;
-    uint8  FMScanSensitivity;
-    uint8  KeyNumIndex;
-    uint8  ImageIndex;
-    uint8  MusicEqSel;
-    uint8  MusicPlayOrder;
-    uint8  MusicRepMode;
-    uint8  PicAutoPlayTime;
-    uint8  TextAutoPlayTime;
-    uint8  eqEnable;
-    uint8  LanguagesEnableTbl[TOTAL_LANAUAGE_NUM];
-    uint8  BTDevName[16];
-} SYSTEM_DEFAULT_PARA_T;
-
-#define CARD   1   /* storage media: 0=flash, 1=card */
-
 
 extern uint32 SysDiskID;
 extern uint32 SysProgRawDiskCapacity;
-#endif
+
+/* The MODULE_ID enum, CODE_INFO_T / FIRMWARE_INFO_T / SYSTEM_DEFAULT_PARA_T,
+ * FM/LCD_DRIVER_*_T now come from the real SDK's ModuleInfoTab.h. */
 
 #define EVK_LANGUAGE_MAX_COUNT  1
 

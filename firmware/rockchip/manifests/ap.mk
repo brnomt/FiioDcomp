@@ -204,7 +204,6 @@ AP_MISSING_SRCS := \
 
 # Existing imported directories mapped from the Keil RkNano A_CORE include path.
 AP_INCLUDE_DIRS := \
-  firmware/rockchip/include \
   firmware/rockchip/system/os \
   firmware/rockchip/system/module_overlay \
   firmware/rockchip/system/sysservice \
@@ -290,4 +289,5 @@ AP_INCLUDE_DIRS := \
   firmware/rockchip/audio/sbc/sbc_encode \
   firmware/rockchip/audio/DSF \
   firmware/rockchip/audio/DSDIFF \
-  firmware/rockchip/driver/USB/host
+  firmware/rockchip/driver/USB/host \
+  firmware/rockchip/include

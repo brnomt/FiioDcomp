@@ -8,6 +8,9 @@
 #ifndef ARMCC_COMPAT_H
 #define ARMCC_COMPAT_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
 /* __packed — packed struct (GCC: __attribute__((packed))) */
 #ifndef __packed
 #define __packed __attribute__((packed))

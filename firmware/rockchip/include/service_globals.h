@@ -19,6 +19,7 @@ extern UINT32  AudioDecodeCnt;
 
 extern THREAD FMThread;
 extern THREAD RecordThread;
+extern THREAD BlueToothThread;
 extern WIN LowPowerWin;
 typedef struct {
     uint32 FmState;

@@ -76,7 +76,7 @@ link-firmware: link-bb
 
 # ---- toolchain and manifest validation -----------------------------------
 toolchain:
-	@$(CC) --version | head -1
+	@$(CC) -dumpversion
 	@echo "Toolchain OK."
 
 manifests:

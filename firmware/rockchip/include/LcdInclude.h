@@ -1,16 +1,7 @@
-/* LcdInclude.h — LCD driver includes (parallel 8080 interface).
- * Auto-created for SDK build (Aug 2026).
- */
+/* LcdInclude.h — the SDK's real LCD include header now ships with the imported
+ * display tree (display/LcdInclude.h). This shim forwards to it; the old
+ * hand-written approximation is gone because the real SDK wins. */
 #ifndef LCDINCLUDE_H
 #define LCDINCLUDE_H
-
-#include "typedef.h"
-
-#include "lcd.h"
-#include "LcdDriver.h"
-
-API void Lcd_Write(uint16 data);
-API void Lcd_Init(void);
-API void Lcd_SetWindow(uint16 x0,uint16 y0,uint16 x1,uint16 y1);
-
+#include "../display/LcdInclude.h"
 #endif /* LCDINCLUDE_H */

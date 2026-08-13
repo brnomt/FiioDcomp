@@ -11,6 +11,17 @@
 #ifndef DRIVERLIB_DEF_H
 #define DRIVERLIB_DEF_H
 
+#ifdef RECHORD_AP_BUILD
+/* AP (fw1/UI) build: the complete RKnanoD SDK driver tree is on the include
+ * path and its headers (driver/DriverInclude.h -> Hw_cru.h, cru.h, Hw_dma.h,
+ * gpio.h, Adc.h, grf.h, BBSystem.h, codec.h, rockcodec.h, Dma.h, ...) already
+ * define every SoC type and constant that the BB-only approximations below
+ * would otherwise re-define.  Use the SDK's own (empty) shim instead. */
+#include "../driver/driverlib_def.h"
+#else
+/* BB (section_3) build: the BB object graph does not compile the full driver
+ * tree, so it still needs these RKnanoC register/constant approximations. */
+
 #include <stdint.h>
 #include "typedef.h"
 #include "freq_enums.h"
@@ -295,8 +306,6 @@ typedef struct {
 #define NULL  ((void *)0)
 #endif
 
-#endif /* DRIVERLIB_DEF_H */
-
 /* ================= GRF (General Register File) ================= */
 #ifndef DRIVERLIB_GRF
 #define DRIVERLIB_GRF
@@ -483,7 +492,6 @@ extern uint32 RX_FIFO_ADDR;
 #define I2S_START_DMA_TX  1
 #define Codec_DACoutHP    0
 #define ACodec_I2S_DATA_WIDTH24  24
-#define MODULE_ID_AUDIO_INIT  16
 
 /* ---- audio clock / sample-rate constants (AudioControl.c) ---- */
 #ifndef DRIVERLIB_AUDIO_CLK
@@ -491,7 +499,6 @@ extern uint32 RX_FIFO_ADDR;
 #define Pll_Target_Freq_40960   40960000
 #define Pll_Target_Freq_56448   56448000
 #define Pll_Target_Freq_61440   61440000
-#define MODULE_ID_BT            17
 #define I2S_DATA_WIDTH24        24
 #define F_SOURCE_24000KHz       24000000
 #define FS_88200Hz              88200
@@ -524,6 +531,9 @@ extern uint32 RX_FIFO_ADDR;
 #define FADE_IN                   1
 extern uint32 BtWinStatus;
 extern uint32 BluetoothReConnectResult;
-extern void BlueToothThread;
 #endif
+
+#endif /* RECHORD_AP_BUILD */
+
+#endif /* DRIVERLIB_DEF_H */
 

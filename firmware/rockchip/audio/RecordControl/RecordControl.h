@@ -305,10 +305,6 @@ _ATTR_RECORD_CONTROL_DATA_ EXT THREAD RecordThread;
 #ifndef RECORD_FIIO_EXTRA
 #define RECORD_FIIO_EXTRA
 
-typedef enum { PCM_ENC_NONE = 0, PCM_ENC_WAV, PCM_ENC_PCM } tPCM_enc;
-
-typedef enum { DMA_CHN_A = 0, DMA_CHN_B, DMA_CHN_C, DMA_CHN_D } eDMA_CHN;
-
 #define RECORD_BEING          2
 #define RECORD_PAUSE          3
 #define RECORD_ERROR          4
@@ -326,17 +322,6 @@ typedef enum { DMA_CHN_A = 0, DMA_CHN_B, DMA_CHN_C, DMA_CHN_D } eDMA_CHN;
 #define Codec_Mic2Mono        2
 #define Codec_Line1ADC        3
 #define Codec_Line2ADC        4
-
-typedef struct _FILE_TREE_BASIC {
-    uint32  file_cnt;
-    uint32  dir_cnt;
-    uint32  dwBasicInfoID;
-    uint32  dwNodeFlag;
-    uint32  dwNextBrotherID;
-    uint32  dwExtendTreeID;
-    uint32  FstClus;
-    uint32  dwFileSize;
-} FILE_TREE_BASIC;
 
 #define SECTOR_BYTE_SIZE              512
 #define BYTE_NUM_SAVE_PER_FILE        32

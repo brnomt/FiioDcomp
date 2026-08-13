@@ -10,6 +10,7 @@
 
 #include "mailbox.h"
 #include "service_globals.h"
+#include "ModuleInfoTab.h"
 
 extern uint32 DataDiskID;
 
@@ -21,9 +22,6 @@ extern uint32 DataDiskID;
 #define DMA_CFGL_M2M_WORD 0x00000001
 #define DMA_CFGH_M2M_WORD 0x00000000
 #define DMA_FALSE 0
-#endif
-#ifndef MODULE_ID_WAV_DECODE_BIN
-#define MODULE_ID_WAV_DECODE_BIN 15
 #endif
 #ifndef MEDIA_ID3_SAVE_CHAR_NUM
 #define MEDIA_ID3_SAVE_CHAR_NUM 128
