@@ -1,9 +1,11 @@
 #ifndef _RKNANO_DISPLAY_STDINT_H_
 #define _RKNANO_DISPLAY_STDINT_H_
 
-/* ReChord: los typedefs int8_t/uint8_t/... los provee GCC <stdint.h>
-   (incluido por armcc_compat.h). Solo se definen los tipos propios. */
-#include <stdint.h>
+/* ReChord: this SDK header shadows the toolchain <stdint.h> because display/
+ * is on the include path. Use #include_next to pull in the real toolchain
+ * <stdint.h> (which provides int8_t/uint8_t/...), then add the SDK's own
+ * Ucs2 type and font table constants. */
+#include_next <stdint.h>
 
 typedef unsigned short Ucs2;
 

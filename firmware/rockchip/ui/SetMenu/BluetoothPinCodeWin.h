@@ -90,7 +90,7 @@ EXT void BTPinKeyCfmWinPaint(void);
 #ifdef _IN_BLUETOOTH_PIN_CODE_WIN_
 
 //for simple paried input pin code
-_ATTR_SYS_SET_BT_CODE_ WIN BTPinCodeWin =
+_ATTR_SYS_SET_BT_DATA_ WIN BTPinCodeWin =
 {
     NULL,
     NULL,
@@ -105,7 +105,7 @@ _ATTR_SYS_SET_BT_CODE_ WIN BTPinCodeWin =
 };
 
 //for simple paried confirm pin key
-_ATTR_SYS_SET_BT_CODE_ WIN BTPinKeyCfmWin =
+_ATTR_SYS_SET_BT_DATA_ WIN BTPinKeyCfmWin =
 {
     NULL,
     NULL,

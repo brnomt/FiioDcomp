@@ -24,6 +24,10 @@
 #define _RECORD_        1
 #define _PICTURE_       1
 #define _BLUETOOTH_     1
+#ifdef RECHORD_AP_BUILD
+#define _A2DP_SOUCRE_   1
+#define BT_SBC_PROCESS_INT_ID   INT_ID_UART2
+#endif
 #define _USB_HOST_      1
 /* #define _VIDEO_         1   // not in Echo Mini */
 /* #define _EBOOK_         1   // not in Echo Mini */
@@ -41,6 +45,15 @@
 #define SYS_DRAM_SIZE   0x04000000   /* 64 MB (8G variant uses same DRAM size) */
 #define SYS_SRAM_BASE   0x03000000
 #define SYS_SRAM_SIZE   0x00939000
+
+/* ---- Storage / device config (from SDK_160_128/SysConfig.h) — AP only ---- */
+#ifdef RECHORD_AP_BUILD
+#define FW_IN_DEV       3   /* firmware stored in: 1=nand 2=sipnor 3=emmc 4=sd */
+#define _EMMC_          1
+#define DEBUG_UART_PORT 0
+#define ENC_WAV_H_FS    FS_96KHz
+#define ENC_WAV_N_FS    FS_44100Hz
+#endif
 
 /* ---- Display ---- */
 #define LCD_WIDTH       320
@@ -156,7 +169,10 @@
 #define CARD            1
 #define TOTAL_LANAUAGE_NUM  1
 
+/* AP: SysDiskID is #define'd by MemDev.h (FW_IN_DEV); BB keeps the extern. */
+#ifndef RECHORD_AP_BUILD
 extern uint32 SysDiskID;
+#endif
 extern uint32 SysProgRawDiskCapacity;
 
 /* The MODULE_ID enum, CODE_INFO_T / FIRMWARE_INFO_T / SYSTEM_DEFAULT_PARA_T,

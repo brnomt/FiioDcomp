@@ -1,15 +1,7 @@
-/* lowpower.h — Low-power / sleep entry.
- * Auto-created for SDK build (Aug 2026);
- * signatures derived from firmware/rockchip usage.
- */
+/* lowpower.h — the SDK's real low-power header now ships with the imported UI
+ * tree (ui/dialog/LowPower.h, which declares LowPowerWin). This shim forwards to
+ * it; the old hand-written approximation is gone because the real SDK wins. */
 #ifndef LOWPOWER_H
 #define LOWPOWER_H
-
-#include "typedef.h"
-
-API void LowPower_Enter(void);
-API void LowPower_Exit(void);
-API void Sys_Sleep(void);
-API void Sys_Wakeup(void);
-
+#include "../ui/dialog/LowPower.h"
 #endif /* LOWPOWER_H */

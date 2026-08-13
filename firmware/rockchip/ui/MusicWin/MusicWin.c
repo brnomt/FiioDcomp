@@ -48,9 +48,7 @@ extern uint32 oldtick;
 extern uint32 audio_have_album_pic;
 extern uint32 audio_dec_album_done;
 
-#ifdef THUMB_DEC_INCLUDE
 _ATTR_MUSIC_BSS_  static bool IsCheckedAlbum;
-#endif
 
 /*
 --------------------------------------------------------------------------------

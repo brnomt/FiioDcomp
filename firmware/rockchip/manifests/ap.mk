@@ -164,7 +164,8 @@ AP_SRCS := \
   firmware/rockchip/audio/sbc/sbc_encode/sbc_enc_interface.c \
   firmware/rockchip/audio/SSRC/resample_interface.c \
   firmware/rockchip/audio/DSDIFF/pDSDIFF.c \
-  firmware/rockchip/audio/DSF/pDSF.c
+  firmware/rockchip/audio/DSF/pDSF.c \
+  firmware/rockchip/radio/FMControl/FmControl.c
 
 # Enabled Keil A_CORE sources not imported under firmware/rockchip.
 AP_MISSING_SRCS := \
@@ -172,7 +173,6 @@ AP_MISSING_SRCS := \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/BootLoader/Start.s \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/BootLoader/Cortex-m3.S \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/UsbControl/USBControl.c \
-  community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Radio/FMControl/FmControl.c \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/ImageCommon/image_common.c \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/ImageCommon/image_file_access.c \
   community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec/Image/ImageCommon/pImageCODECS.c \
@@ -290,4 +290,10 @@ AP_INCLUDE_DIRS := \
   firmware/rockchip/audio/DSF \
   firmware/rockchip/audio/DSDIFF \
   firmware/rockchip/driver/USB/host \
+  firmware/rockchip/radio/FMControl \
+  firmware/rockchip/image/ImageInclude \
+  firmware/rockchip/image/Imagecontrol \
+  firmware/rockchip/bt/lwbt \
+  firmware/rockchip/bt/lwbt/a2dp_source \
+  firmware/rockchip/bt/lwbt/chipset_rtk8761a \
   firmware/rockchip/include

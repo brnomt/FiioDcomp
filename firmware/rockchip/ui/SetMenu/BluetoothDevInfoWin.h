@@ -70,7 +70,7 @@ EXT void BTPariedDevInfoWinPaint(void);
 /******************************************************************************/
 #ifdef _IN_BLUETOOTH_DEV_INFO_WIN_
 //for local device info.
-_ATTR_SYS_SET_BT_CODE_ WIN BTLocalDevInfoWin =
+_ATTR_SYS_SET_BT_DATA_ WIN BTLocalDevInfoWin =
 {
     NULL,
     NULL,
@@ -85,7 +85,7 @@ _ATTR_SYS_SET_BT_CODE_ WIN BTLocalDevInfoWin =
 };
 
 //for remote paried device info
-_ATTR_SYS_SET_BT_CODE_ WIN BTPariedDevInfoWin =
+_ATTR_SYS_SET_BT_DATA_ WIN BTPariedDevInfoWin =
 {
     NULL,
     NULL,

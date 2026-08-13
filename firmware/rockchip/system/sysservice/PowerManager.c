@@ -43,7 +43,8 @@ _ATTR_DRIVER_BSS_   uint64          g_APPDisableList;
 _ATTR_DRIVER_DATA_  uint8           FreqDisableFlag = 0;
 _ATTR_DRIVER_DATA_  uint8           FreqDisableCnt = 0;
 
-_ATTR_DRIVER_CODE_
+
+
 FREQ_APP_TABLE g_CruAPPTabel[FREQ_APP_MAX] =
 {
     //          ID,      counter,       pll,  sys_hclk,  sys_stclk, sys_pclk,  cal_hclk,  cal_stclk
@@ -100,7 +101,8 @@ FREQ_APP_TABLE g_CruAPPTabel[FREQ_APP_MAX] =
                                 2009-3-24         Ver1.0
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 void FreqSetPrevProcess(void)
 {
     uint32 timeout;
@@ -151,7 +153,8 @@ void FreqSetPrevProcess(void)
                                 2009-3-24         Ver1.0
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 void FreqSetPostProcess(void)
 {
     if (BbSystemStartOK)
@@ -181,7 +184,8 @@ void FreqSetPostProcess(void)
   desc:         ARM, HCLK, PCLK's frequency should in valid range
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 void FREQSetARMFreq(FREQ_APP_TABLE *FreqTab, chip_freq_t *pChipFreq)
 {
     uint32 i,j,k;
@@ -480,7 +484,8 @@ void Freq_VopTiming_Update(uint32 Freq)
   desc:
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 int32 FREQSetCalCoreFreq(uint32 nMhz)
 {
 
@@ -500,7 +505,8 @@ int32 FREQSetCalCoreFreq(uint32 nMhz)
   desc:
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 int32 FREQSetFreq(uint64 appList)
 {
     uint32 i;
@@ -629,7 +635,8 @@ int32 FREQSetFreq(uint64 appList)
   desc:
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 int32 FREQStartAPP(eFREQ_APP appId)
 {
     if(g_APPList & ((uint64)0x01<< appId))//this application had enter.
@@ -658,7 +665,8 @@ int32 FREQStartAPP(eFREQ_APP appId)
   desc:
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 int32 FREQStopAPP(eFREQ_APP appId)
 {
     if(appId >= FREQ_APP_MAX)
@@ -692,7 +700,8 @@ int32 FREQStopAPP(eFREQ_APP appId)
   desc:         ORG
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 int32 FREQ_EnterModule(eFREQ_APP modulename)
 {
     if (FreqDisableFlag == 0)
@@ -722,7 +731,8 @@ int32 FREQ_EnterModule(eFREQ_APP modulename)
   desc:         ORG
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 int32 FREQ_ExitModule(eFREQ_APP modulename)
 {
     if (FreqDisableFlag == 0)
@@ -741,7 +751,8 @@ int32 FREQ_ExitModule(eFREQ_APP modulename)
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 int32 FREQ_Control_Init(void)
 {
     FreqDisableFlag = 0;
@@ -749,7 +760,8 @@ int32 FREQ_Control_Init(void)
 }
 
 
-_ATTR_DRIVER_CODE_
+
+
 int32 FREQ_Disable(void)
 {
     FreqDisableFlag = 1;
@@ -764,7 +776,8 @@ int32 FREQ_Disable(void)
   desc:         ORG
 --------------------------------------------------------------------------------
 */
-_ATTR_DRIVER_CODE_
+
+
 int32 FREQ_Enable(void)
 {
     uint32 i;

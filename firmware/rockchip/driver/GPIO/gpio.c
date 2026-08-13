@@ -671,7 +671,8 @@ void Gpio_EnableDebounce(eGPIO_CHANNEL gpioPort,eGPIOPinNum_t GPIOPinNum)
 
 /*
 */
-_ATTR_DRIVER_CODE_
+
+
 pFunc GPIOIsrCallBack[GPIO_CH_MAX][GPIOPortD_Pin4]=
 {
     /*channel 0*/
@@ -708,7 +709,8 @@ pFunc GPIOIsrCallBack[GPIO_CH_MAX][GPIOPortD_Pin4]=
 
 /*
 */
-_ATTR_DRIVER_CODE_
+
+
 int32 GpioIsrRegister(eGPIO_CHANNEL gpioChn,uint32 pin, pFunc CallBack)
 {
     if (pin >= GPIOPortD_Pin4)
@@ -724,7 +726,8 @@ int32 GpioIsrRegister(eGPIO_CHANNEL gpioChn,uint32 pin, pFunc CallBack)
 
 /*
 */
-_ATTR_DRIVER_CODE_
+
+
 int32 GPIOIsrUnRegister(eGPIO_CHANNEL gpioChn,uint32 pin)
 {
     if (pin >= GPIOPortD_Pin4)
@@ -740,7 +743,8 @@ int32 GPIOIsrUnRegister(eGPIO_CHANNEL gpioChn,uint32 pin)
 
 /*
 */
-_ATTR_DRIVER_CODE_
+
+
 void GpioInt(eGPIO_CHANNEL gpioPort)
 {
     int ch = 0;

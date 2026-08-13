@@ -1078,7 +1078,8 @@ void UserIsrRequest(void)
   desc:         ORG
 --------------------------------------------------------------------------------
 */
-_ATTR_SYS_INIT_CODE_
+
+
 uint32 IrqPriorityTab[NUM_INTERRUPTS] =
 {
     //  group        SubPriority                                 //Cortex M3 System Intterupt
@@ -1144,7 +1145,8 @@ uint32 IrqPriorityTab[NUM_INTERRUPTS] =
 
 };
 
-_ATTR_SYS_INIT_CODE_
+
+
 void IrqPriorityInit(void)              //中断优先级初始化, 在IntPriorityGroupingSet执行后调用
 {
     uint32 i;

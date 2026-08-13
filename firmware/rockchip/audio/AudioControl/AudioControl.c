@@ -109,9 +109,9 @@ extern uint8 BtWinStatus;
 #define AUDIO_RESAMPLE_BUF_LEN      (AUDIO_RESAMPLE_INPUT_PRE*6)
 _ATTR_AUDIO_BSS_ uint8 AudioUnssrcBuf[AUDIO_RESAMPLE_INPUT_PRE];
 _ATTR_AUDIO_BSS_  int AudioUnssrcCnt;
-_ATTR_AUDIO_DATA_ uint8  AudioSbcOutPut[SBC_ENCODE_BUF_LEN] = 0;
-_ATTR_AUDIO_DATA_ uint8  AudioUnencodeBuf[512] = 0;
-_ATTR_AUDIO_DATA_ uint8  AudioResampleOutBuf[AUDIO_RESAMPLE_BUF_LEN] = 0;
+_ATTR_AUDIO_DATA_ uint8  AudioSbcOutPut[SBC_ENCODE_BUF_LEN] = {0};
+_ATTR_AUDIO_DATA_ uint8  AudioUnencodeBuf[512] = {0};
+_ATTR_AUDIO_DATA_ uint8  AudioResampleOutBuf[AUDIO_RESAMPLE_BUF_LEN] = {0};
 _ATTR_AUDIO_DATA_ uint16 AudioEncodeCnt = 0;
 _ATTR_AUDIO_DATA_ uint16 AudioEncodeLeftCnt = 0;
 _ATTR_AUDIO_DATA_ uint16 AudioDecodeCount = 0;

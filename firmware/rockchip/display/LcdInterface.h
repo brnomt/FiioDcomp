@@ -24,7 +24,7 @@
 #define EXT extern
 #endif
 
-EXT _ATTR_SYS_CODE_   LCD_DRIVER_TABLE_T SystemLcdPara;
+EXT _ATTR_SYS_DATA_   LCD_DRIVER_TABLE_T SystemLcdPara;
 
 
 

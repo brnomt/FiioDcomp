@@ -67,7 +67,7 @@ EXT void BluetoothScanWinPaint(void);
 /*                                                                                                                                         */
 /******************************************************************************/
 #ifdef _IN_BLUETOOTH_SCAN_WIN_
-_ATTR_SYS_SET_BT_CODE_ WIN BlueToothScanWin =
+_ATTR_SYS_SET_BT_DATA_ WIN BlueToothScanWin =
 {
     NULL,
     NULL,

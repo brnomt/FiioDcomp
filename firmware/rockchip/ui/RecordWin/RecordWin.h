@@ -81,7 +81,7 @@
 #define     RECORD_PIC_BUF_SIZE               48*12*2 //the record digit size
 #define     RECORD_PIC_BUF_NUM                1
 
-_ATTR_RECORDWIN_CODE_ EXT UINT8                RecordDispPicBuf[RECORD_PIC_BUF_NUM][RECORD_PIC_BUF_SIZE];
+_ATTR_RECORDWIN_DATA_ EXT UINT8                RecordDispPicBuf[RECORD_PIC_BUF_NUM][RECORD_PIC_BUF_SIZE];
 _ATTR_RECORDWIN_BSS_ EXT PICTURE_INFO_STRUCT   RecCurTimePicInfo;
 #endif
 
@@ -91,7 +91,7 @@ _ATTR_RECORDWIN_BSS_ EXT PICTURE_INFO_STRUCT   RecCurTimePicInfo;
 #define     RECORD_CHAR_BUF_SIZE               64 //录音数字的大小
 #define     RECORD_CHAR_BUF_NUM                11
 
-_ATTR_RECORDWIN_CODE_ EXT UINT8                 RecordDispCharBuf[RECORD_CHAR_BUF_NUM][RECORD_CHAR_BUF_SIZE];
+_ATTR_RECORDWIN_DATA_ EXT UINT8                 RecordDispCharBuf[RECORD_CHAR_BUF_NUM][RECORD_CHAR_BUF_SIZE];
 #endif
 
 

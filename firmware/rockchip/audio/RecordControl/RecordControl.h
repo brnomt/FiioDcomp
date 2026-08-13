@@ -229,8 +229,8 @@ _ATTR_RECORD_CONTROL_BSS_       EXT  RECORD_SYS_FILE_INFO   RecordFileInfo;
 _ATTR_RECORD_CONTROL_BSS_       EXT  WAV_WRITE_BUFFER_STRUCT  __align(4) WriteBuffer;
 
 _ATTR_RECORD_CONTROL_BSS_       EXT UINT8*      WavEncodeHeadBuffer;
-_ATTR_RECORD_CONTROL_CODE_      EXT UINT32 __align(4) WavEncodeInputBuffer[WAV_AD_PIPO_BUFFER_SIZE];  //Buffer must align 4
-_ATTR_RECORD_CONTROL_CODE_      EXT UINT8  __align(4) gRecEncbuf[WAV_ENCODER_WRITE2FLASH_LENGTH * 16];
+_ATTR_RECORD_CONTROL_DATA_      EXT UINT32 __align(4) WavEncodeInputBuffer[WAV_AD_PIPO_BUFFER_SIZE];  //Buffer must align 4
+_ATTR_RECORD_CONTROL_DATA_      EXT UINT8  __align(4) gRecEncbuf[WAV_ENCODER_WRITE2FLASH_LENGTH * 16];
 #define RECORD_DMACHANNEL_IIS    (DMA_CHN_MAX - 1)
 
 /******************************************************************************/
@@ -332,5 +332,4 @@ _ATTR_RECORD_CONTROL_DATA_ EXT THREAD RecordThread;
 #define RECORD_TREE_SORT_INFO_SECTOR_START 0x300
 
 extern uint32 sysFreeMemeryFlash0;
-extern uint32 REC_Flag;
 #endif

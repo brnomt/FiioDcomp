@@ -72,7 +72,8 @@ _ATTR_SYS_BSS_  uint16  LoaderVer;
 _ATTR_SYS_BSS_  uint8   NandIOMuxRef;         //Nand”ÎLCD IO «–ªªº∆ ˝
 _ATTR_SYS_BSS_  uint8   ValidSysDisk;
 
-_ATTR_SYS_CODE_
+
+
 static MEM_DEVICE const gMemDevTab[] =
 {
     #if defined(SPIFLASH_DRIVER)
@@ -204,7 +205,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDDeInitAll(void)
 {
     uint32 ret = OK;
@@ -233,7 +235,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 pMEM_DEVICE MDGetDev(MEMDEV_ID DevID)
 {
     uint32 i;
@@ -301,7 +304,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDRead(MEMDEV_ID DevID, uint32 SecAdrr, uint32 nSec, void* pBuf)
 {
     pMEM_DEVICE pDev;
@@ -353,7 +357,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDWrite(MEMDEV_ID DevID, uint32 SecAdrr, uint32 nSec, void* pBuf)
 {
     pMEM_DEVICE pDev;
@@ -399,7 +404,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDGetInfo(MEMDEV_ID DevID, pMEMDEV_INFO pDevInfo)
 {
     pMEM_DEVICE pDev;
@@ -422,7 +428,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDGetCapacity(MEMDEV_ID DevID)
 {
     MEMDEV_INFO DevInfo;
@@ -445,7 +452,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 bool MDChkValid(MEMDEV_ID DevID)
 {
     pMEM_DEVICE pDev;
@@ -474,7 +482,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 bool MDChkPresent(MEMDEV_ID DevID)
 {
     pMEM_DEVICE pDev;
@@ -501,7 +510,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDProbe(MEMDEV_ID DevID)
 {
     pMEM_DEVICE pDev;
@@ -528,7 +538,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDScanDev(uint8 AutoInit)
 {
     uint32 i, ret;
@@ -570,7 +581,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDGetUDiskTab(MEMDEV_ID *pUDiskID, uint32 mask)
 {
     uint32 i, num=0;
@@ -603,7 +615,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDSyncIO(void)
 {
     return OK;
@@ -620,7 +633,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDSysWPSet(MEMDEV_ID DevID, uint32 magic)
 {
     #ifdef SYS_PROTECT
@@ -639,7 +653,8 @@ uint32 MDSysWPSet(MEMDEV_ID DevID, uint32 magic)
     return OK;
 }
 
-_ATTR_SYS_CODE_
+
+
 int32 MDGetProductSn(MEMDEV_ID DevID, void *pSn)
 {
     pMEM_DEVICE pDev;
@@ -667,7 +682,8 @@ Note:
 Author:
 Log:
 */i
-_ATTR_SYS_CODE_
+
+
 uint32 MDRegDiskID(uint32 DiskID)
 {
     uint32 i;
@@ -695,7 +711,8 @@ Note:
 Author:
 Log:
 */i
-_ATTR_SYS_CODE_
+
+
 uint32 MDUnRegDiskID(uint32 DiskID)
 {
     uint32 i;
@@ -723,7 +740,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDRegNotify(MEN_NOTIFIER notify)
 {
     uint32 i;
@@ -750,7 +768,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 uint32 MDUnRegNotify(MEN_NOTIFIER notify)
 {
     uint32 i;
@@ -778,7 +797,8 @@ Note:
 Author:
 Log:
 */
-_ATTR_SYS_CODE_
+
+
 static uint32 MDNotifyClient(uint16 major, uint32 event, uint32 param)
 {
     uint32 i;
