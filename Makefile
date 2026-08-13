@@ -184,6 +184,16 @@ pack-img:
 pack-bb-img: $(BB_BIN)
 	$(PYTHON) tools/pack_img.py --pack $(BB_BIN) -o $(BUILD_DIR)/ReChord_BB.IMG
 
+# Emit the fw1 (AP) RKnanoFW scatter image from the AP ELF.
+FW1_IMG := $(AP_BUILD_DIR)/fw1_custom.img
+pack-fw1: $(AP_ELF)
+	$(PYTHON) tools/pack_fw1.py $(AP_ELF) -o $(FW1_IMG)
+
+# Pack BOTH halves (fw1 + section_3) into one IMG. Fails until the flat AP
+# build fits the 356 KB fw1 region (see docs/fw1-packing.md).
+pack-full: $(BB_BIN)
+	$(PYTHON) tools/pack_img.py --pack-full --fw1 $(FW1_IMG) --bb $(BB_BIN) -o $(BUILD_DIR)/ReChord_APBB.IMG
+
 extract-section3:
 	$(PYTHON) tools/pack_img.py --extract -o $(BUILD_DIR)/section3_stock.bin
 

@@ -33,7 +33,7 @@ SECTIONS
         _data_end = .;
     } > FW_RAM
 
-    .bss ALIGN(4) :
+    .bss ALIGN(4) (NOLOAD) :
     {
         _bss_start = .;
         *(.bss*)

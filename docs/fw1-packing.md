@@ -98,3 +98,31 @@ above the XIP image.
    authoritative check, since the ROM loader format is not fully documented.
 
 See also docs/dispatch-map.md, docs/bootloader-analysis.md, docs/HARDWARE.md.
+
+## 6. Size analysis (flat AP build, after .bss NOLOAD fix)
+
+`firmware_ap.ld` now marks `.bss (NOLOAD)`; the ARMCC `zero_init` attribute is
+ignored by GCC, so every `_ATTR_*_BSS_` section (e.g. `RecordControlBss`,
+271 KB) lands in the output `.bss` (NOBITS) and is correctly zero-fill — this
+cut the scatter payload from 1.30 MB to **694 KB**.
+
+Remaining payload = RW FileSiz 0x3BA00 (244 KB `.data`+stack) + RX FileSiz
+0x6DEE3 (450 KB `.text`+`.rodata`+ARM unwind tables). The fw1 region is
+0x57068 (356 KB), so the flat build is still ~338 KB over.
+
+Largest object contributors (`arm-none-eabi-size`, text+data+bss):
+
+| group | total | note |
+|---|---:|---|
+| audio/RecordControl | 335 KB | 271 KB BSS (now zero-fill) + 57 KB data |
+| audio/ID3 | 167 KB | ID3/Unicode tables — all code+rodata |
+| audio/AudioControl | 127 KB | mostly `.data` |
+| display/LcdInterface | 111 KB | LCD framebuffer/config `.data` |
+| filesys/nFAT | 67 KB | FAT structures |
+| bt/lwbt + radio/FMControl | 60 KB | BT + FM |
+
+To fit 356 KB the AP must be split into the resident A_CORE (kernel +
+drivers + filesystem + LCD) and on-demand overlay modules (ID3, RecordControl,
+BT, FM, image codecs, UI windows) — the exact structure the Keil A_CORE +
+per-codec targets already model. A flat GCC build of all 187 sources cannot
+share their data the way the overlay scatter does.
