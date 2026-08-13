@@ -92,8 +92,11 @@ def build_scatter_table(elf: Elf32):
             payload += elf.data[seg["offset"]:seg["offset"] + filesz]
             entries.append((vaddr, src, filesz, vaddr + filesz))
         if memsz > filesz:
+            # Type A (zero-fill): {ram_start, size, ram_end, total_size}
+            #   — matches the stock table shape {start, span, end, extra=0}.
             zstart = vaddr + filesz
-            entries.append((zstart, 0, zstart, memsz - filesz))
+            zero_len = memsz - filesz
+            entries.append((zstart, zero_len, zstart + zero_len, 0))
     return entries, bytes(payload)
 
 

@@ -12,8 +12,12 @@ ENTRY(Main)
 
 MEMORY
 {
-    FW_CODE (rx) : ORIGIN = 0x03200000, LENGTH = 0x00200000
-    FW_RAM  (rwx): ORIGIN = 0x03000000, LENGTH = 0x00200000
+    /* Stock A_CORE layout (Scatter/BuildAll.sct): SYS_CODE @ 0x03060000,
+       SYS_DATA @ 0x03000000 (384 KB). The flat build previously overflowed
+       SYS_DATA, forcing code to 0x03200000; after slimming the AP to the
+       resident A_CORE the stock layout fits again. */
+    FW_CODE (rx) : ORIGIN = 0x03060000, LENGTH = 0x00040000
+    FW_RAM  (rwx): ORIGIN = 0x03000000, LENGTH = 0x00060000
 }
 
 __stack_top = 0x03050000;   /* header #1 SP (bootloader-analysis) */
