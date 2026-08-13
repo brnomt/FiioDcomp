@@ -135,6 +135,10 @@ $(AP_BUILD_DIR)/fault.o: firmware/fault.c
 	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
 	$(CC) $(AP_CFLAGS) -c $< -o $@
 
+$(AP_BUILD_DIR)/ap_startup.o: firmware/startup/ap_startup.c
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
+	$(CC) $(AP_CFLAGS) -c $< -o $@
+
 $(BB_BUILD_DIR)/rechord_win.o: firmware/rechord_win.c
 	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
 	$(CC) $(BB_CFLAGS) -c $< -o $@
@@ -157,9 +161,11 @@ link-bb: $(BB_RECHORD_OBJS) $(BB_OBJS)
 # The AP (fw1) is the resident A_CORE: UI + drivers + filesystem. The codec
 # .lib (AP_CODEC_LIBS) and audio/image/BT/FM sources live in the BB/overlays,
 # so they are NOT linked here; their entry points are weak stubs in stubs.c.
-link-ap: $(AP_OBJS) $(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o
+# ap_startup.o is linked FIRST so its .vectors table lands at SYS_CODE
+# (0x03060000) — the reset vector [1] points at Main.
+link-ap: $(AP_OBJS) $(AP_BUILD_DIR)/ap_startup.o $(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o
 	$(CC) $(ARCH_FLAGS) -T firmware/firmware_ap.ld -nostartfiles -ffreestanding \
-		$(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o $(AP_OBJS) -lm -o $(AP_ELF)
+		$(AP_BUILD_DIR)/ap_startup.o $(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o $(AP_OBJS) -lm -o $(AP_ELF)
 	$(OBJCOPY) -O binary -j .text -j .data $(AP_ELF) $(AP_BIN)
 	@echo "AP linked: $(AP_ELF) -> $(AP_BIN)"
 
