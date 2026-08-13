@@ -8,7 +8,7 @@
  * Data is emitted before code so the location counter only moves forward.
  */
 
-ENTRY(Main)
+ENTRY(PowerOn_Reset)
 
 MEMORY
 {
