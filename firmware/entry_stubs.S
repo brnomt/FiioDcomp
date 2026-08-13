@@ -52,7 +52,10 @@
 firmware_entry:
     push {r4}
     mov  r4, r0
-    b    Main2
+    b    rechord_main              /* our app main (never returns) */
+    /* NOTE: NO rom_hw_init here — V0.1/V0.17 proved the display works
+     * WITHOUT the stock HW-init (which re-configures the LCD). HW init is
+     * deferred to the audio milestone (M2), where it is actually needed. */
 
     /* --- ROM/loader dispatch trampolines (bx lr = return) ---
      * NOTE: stub_03000162 stays a 2-byte `bx lr`: the bytes at 0x03000164+
@@ -127,5 +130,12 @@ stub_0300710a:
     bl   rechord_ui_event          /* draw test via the loader display API */
     pop  {pc}
 
-    .org 0x7104                   /* pad to 0x03007114 */
+    .org 0x101fc                   /* -> 0x0301020c  MainUI_KeyHandler */
+    .thumb_func
+stub_0301020c:
+    push {lr}
+    bl   rechord_key_handler       /* our key handler (navigates the menu) */
+    pop  {pc}
+
+    .org 0x10210                   /* pad past the key handler stub */
     .section .text, "ax"          /* continue normal code layout after */

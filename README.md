@@ -1,69 +1,62 @@
 # ReChord
 
-> **Re-Chord** — re-harmonize the FiiO Echo Mini. A free, compile-from-source
-> firmware for the Echo Mini digital audio player (Rockchip RKnanoC, ARM
-> Cortex-M3), built to be modified — starting with the DSP / EQ.
+> **Re-Chord** — re-harmonize the FiiO Echo Mini. A **free, from-source custom
+> firmware (CWF)** for the Echo Mini — a **"Rockbox for the FiiO"**.
 
-## What is ReChord?
+## Objective (the whole point)
 
-ReChord is a **custom firmware project** for the FiiO Echo Mini. It builds a
-free, modifiable firmware from source, so you can add DSP effects (bass
-boost, reverb, custom EQ), change the UI, and flash it to your device.
+ReChord is a **complete custom firmware, written from source** — not a patch,
+not a byte-mod of the stock binary. The goal is to have **all the firmware
+source code available and modifiable**, covering **both** halves of the device:
 
-The firmware is ~90% **Rockchip RKnanoD SDK** (the chip vendor's own code,
-legitimately available) + ~10% FiiO-specific app layer (UI, menus, services).
-ReChord compiles the SDK from source and rebuilds the FiiO layer as clean,
-modifiable C — a "Rockbox for the Echo Mini".
+- **UI** — custom menus, screens, navigation, theme (what you see).
+- **DSP / audio** — custom effects, EQ, codecs, playback (what you hear).
 
-> **This is NOT a decompilation project anymore.** The decompilation phase
-> (2026) produced the knowledge and SDK integration that power ReChord. See
-> `docs/RE-HISTORY.md` for the reverse-engineering notes that remain useful.
+Everything compiles from source and is flashed as a normal firmware update.
+No binary patching of the stock firmware. No stock app layer left over.
 
-## Project history
+## Architecture (the key insight)
 
-ReChord started as a **reverse-engineering project**: decompiling the stock
-FiiO Echo Mini firmware (all 23 versions, v1.2.5 → v3.8.0) with Ghidra,
-correlating each version's changes with its official changelog, and naming
-852 functions (30.7%) to understand how the device works.
+The Echo Mini runs **two firmwares side by side**, communicating over a
+hardware mailbox (`MailBox A2B/B2A`):
 
-That phase revealed the key insight that **changed the project's identity**:
-the Echo Mini firmware is ~90% Rockchip RKnanoD SDK — the chip vendor's own
-source code — plus a thin ~10% FiiO app layer (UI, menus, services).
-Reconstructing the firmware from Ghidra's decompiled output would have been
-impractical (unreadable `param_1`/`undefined4` C). Instead, ReChord:
+| Firmware | IMG offset | Role | SDK source |
+|----------|-----------|------|-------------|
+| **fw1 (AP)** | `0x0007B8 – 0x057820` | **UI** — menus, navigation, fonts, I2C, file browser | **RKnanoD SDK** — App/UI build (`main.c` + `SDK_160_128/UI/` 45 `.c`) |
+| **section_3 (BB)** | `0x081A14 – 0x9BAA0E` | **Audio** — codecs, DSP/EQ, playback engine | **RKnanoD SDK** — BB build (`Main2.c` + codecs) |
 
-1. **Compiles the real Rockchip SDK from source** (53 files: kernel, audio,
-   codecs) — the foundation.
-2. **Rebuilds the FiiO app layer** as clean, modifiable C, using the
-   decompilation as the specification.
-3. **Focuses on DSP**: the goal is to add custom effects (bass boost,
-   reverb, EQ presets) to `Effect.c` and flash a modified firmware.
+- **Both firmwares are two builds of the same Rockchip RKnanoD SDK**
+  (confirmed by string match: fw1 = 223 RKnanoD_MP3 strings vs only 32
+  rk3399-table). The AP is the `main.c` + `UI/` build; the BB is the
+  `Main2.c` + codecs build.
+- We compile both SDK builds from source and write **our own app layer** on
+  top (our UI for the AP, our DSP/effects for the BB).
+- The **mask ROM** (`0x00000000–0x02FFFFFF`) is the fixed hardware HAL
+  (LCD, I2S, DAC, USB, keys) — it is *not* firmware we replace; it is the
+  "BIOS" our code calls.
 
-The reverse-engineering work is archived in `docs/RE-HISTORY.md` and
-`docs/re/` — it remains the reference for the hardware map and the FiiO
-layer.
+> **This is NOT a decompilation project, and NOT a patch project.** The
+> reverse-engineering phase (2026) produced the knowledge (addresses, SDK
+> integration, hardware map) that makes the from-source build possible. See
+> `docs/RE-HISTORY.md`.
 
 ## Status (Aug 2026)
 
-**ALL 53 Rockchip SDK source files compile** with `arm-none-eabi-gcc`:
+| Layer | Status |
+|-------|--------|
+| **Rockchip SDK (BB: kernel + audio + codecs)** | ✅ compiles (53 `.c`) |
+| **BB custom boot** (`firmware_entry` → `rechord_main` on the SDK) | ✅ builds, links, QEMU-verified |
+| **BB display** (our menu → LCD) | 🟡 in progress (framebuffer → LCD DMA is the open problem) |
+| **AP / UI from scratch** (menus, navigation, fonts) | ⬜ next — needs fw1 mapped |
+| **DSP effects** (`Effect.c` / `EffectProcess`) | ⬜ hook ready, effects to write |
+| **Flash** (pack IMG → copy + reboot) | ✅ pipeline verified (byte-exact header/resources) |
 
-| Layer | Files | Status |
-|-------|------:|--------|
-| Kernel (OS, drivers, power) | 29 | ✅ compiles |
-| Audio (incl. DSP `Effect.c`) | 8 | ✅ compiles |
-| Codec wrappers (AAC, FLAC, MP3, OGG, DSD...) | 16 | ✅ compiles |
-| Codec `.lib` binaries | 22 | 📦 ready to link |
+- Ghidra project: `FIIO-3.7.0-Decomp`, language **`ARM:LE:32:v8-m`** (both
+  fw1/AP and section_3/BB imported; section_3 loads at `0x03000000`).
+- `tools/pack_img.py` replaces section_3 (BB) and preserves bootloader +
+  resources. Replacing **fw1 (AP)** is the missing piece for the UI.
 
-**The DSP-effects mod target is ready:** `Effect.c`'s `EffectProcess()` is
-the per-frame audio hook. Modify it → recompile → flash.
-
-**Remaining to a flashable custom firmware:**
-1. Linker script (place codecs + kernel at segment addresses)
-2. Link → flat binary
-3. FiiO app/UI layer (from RE knowledge)
-4. Flash via `tools/pack_img.py`
-
-Full details: [`docs/STATUS.md`](docs/STATUS.md)
+Full details: [`docs/STATUS.md`](docs/STATUS.md) · [`docs/dispatch-map.md`](docs/dispatch-map.md) · [`docs/community.md`](docs/community.md)
 
 ## Quick build check
 
@@ -90,29 +83,31 @@ firmware/rockchip/          # Rockchip RKnanoD SDK (source + codec .lib)
   ├── system/               # OS, fileseek, module_overlay, sysservice
   ├── audio/                # AudioControl, Effect (EQ/DSP), codecs
   └── include/              # ReChord integration headers (armcc compat, etc.)
-firmware/                   # (SDK + FiiO layer + decompiled reference)
+firmware/                   # our from-source layer (rechord_app, UI, stubs)
 tools/                      # build, analyze, pack scripts
-docs/                       # STATUS, RE-HISTORY, memory map, flashing
+docs/                       # STATUS, dispatch-map, community, hardware, flashing
 stock/                      # official firmware backups (not distributed)
 ```
 
 ## Roadmap
 
-- [x] SDK kernel compiles (29 files)
-- [x] SDK audio compiles (8 files, incl. DSP Effect.c)
-- [x] SDK codecs compile (16 wrappers + 22 .lib ready)
-- [ ] Linker script + link → section_3 binary
-- [ ] QEMU smoke test (Cortex-M3)
-- [ ] FiiO app/UI layer (from RE knowledge)
-- [ ] First custom DSP effect
-- [ ] Flash + verify on hardware
+- [x] Rockchip SDK compiles (kernel + audio + codecs) — the BB base
+- [x] BB custom boot (`firmware_entry` → our own `rechord_main`)
+- [x] QEMU smoke test (boot + framebuffer menu + text rendering)
+- [x] **AP identified**: fw1 = RKnanoC SDK (`rk3399-table-RKNanoC`, 103 `.c`)
+- [ ] **BB display**: get our framebuffer to the LCD (find the ROM DMA/transfer)
+- [ ] **AP (fw1) UI**: compile the RKnanoC SDK (drivers + FileSys + NANO_OS) + our menus
+- [ ] **DSP effects**: custom EQ / bass / reverb in `EffectProcess`
+- [ ] **Flash the full CWF** (AP + BB) and verify on hardware
 
 ## Safety / flashing
 
-- Flashing uses the **official upgrade method** (copy IMG + reboot) — the
-  stock firmware is always restorable by copying it back.
-- `tools/pack_img.py` preserves the bootloader and resources; only
-  section_3 (code) is replaced.
+- Flashing uses the **official upgrade method** (copy IMG + reboot) — stock is
+  always restorable by copying the original back.
+- No signature verification in hardware (confirmed by the community —
+  `docs/community.md`).
+- `tools/pack_img.py` preserves bootloader + resources; it replaces the code
+  section(s) cleanly.
 - See [`docs/FLASHING.md`](docs/FLASHING.md) for the safe procedure.
 
 ## Disclaimer

@@ -1,0 +1,7 @@
+SetMenu.c和SetMenu.h为设置菜单全局控制及接口函数；
+SetMenuConfig.h为设置菜单配置接口，要求可配置为弹出式设置菜单和非弹出式设置菜单
+SystemSet.c和SystemSet.h为系统全局设置菜单的函数及接口
+MusicSet.c和MusicSet.h为音乐播放模块设置菜单的函数及接口
+RadioSet.c和RadioSet.h为收音机模块设置菜单的函数及接口
+RecordSet.c和RecordSet.h为录音模块设置菜单的函数及接口
+TextSet.c和TextSet.h为录音模块设置菜单的函数及接口

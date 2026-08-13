@@ -176,3 +176,8 @@
 #endif
 
 #endif /* ARMCC_COMPAT_H */
+
+/* ---- ReChord: defaults de config del SDK (definidos en codec.h/SysConfig) ---- */
+#ifndef MAX_VOLUME
+#define MAX_VOLUME 32
+#endif

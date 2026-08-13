@@ -477,29 +477,6 @@ extern uint32 RX_FIFO_ADDR;
 #define FILE_NOT_EXIST  0xFFFFFFFF
 #define ATTR_LFN_ENTRY  0x0F
 
-/* ---- more record/FAT/I2S constants ---- */
-#ifndef DRIVERLIB_REC_EXTRA
-#define DRIVERLIB_REC_EXTRA
-#define ATTR_DIRECTORY    0x10
-#define DMA_CTLL_M2M_WORD 0x00000010
-#define DMA_CFGL_M2M_WORD 0x00000001
-#define DMA_CFGH_M2M_WORD 0x00000000
-#define DMA_FALSE         0
-#define MODULE_ID_WAV_DECODE_BIN  15
-#define MEDIA_ID3_SAVE_CHAR_NUM   128
-#define MEDIA_FILE_TYPE_DELETED   0xE5
-#define MEDIA_FILE_TYPE_FILE      0
-#define RECORD_NULL       0
-#define I2S_NORMAL_MODE   0
-#define I2S_MODE          0
-#define I2S_FORMAT        0
-#define LogSecPerClus     0
-#define FILE_NAME_SAVE_ADDR_OFFSET  0
-#define DIR_CLUS_SAVE_ADDR_OFFSET   1
-#define DIR_INDEX_SAVE_ADDR_OFFSET  2
-#define ATTR_SAVE_ADDR_OFFSET       3
-#endif
-
 #ifndef _ATTR_FAT_FIND_CODE_
 #define _ATTR_FAT_FIND_CODE_
 #endif

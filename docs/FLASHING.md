@@ -14,6 +14,14 @@ No PC flashing tool is required. The player reads the IMG from internal flash an
 
 > **Warning:** Some major upgrades (e.g. v2.4.0) **format internal storage**. Back up music and data before flashing anything custom.
 
+> **Verificación de firma (confirmado por la comunidad):** el IMG **NO tiene
+> verificación de firma en el hardware**. Hay un CRC de 8 bits (Rockchip
+> **RKCRC**) y un bloque tipo hash al final, pero **ningún código lo
+> verifica** en el dispositivo (la verificación, si existe, estaría en la
+> herramienta de flasheo oficial, que el Echo Mini no usa). La comunidad
+> (blog RSE de Takobin) flasheó firmwares modificados sin ninguna
+> interceptación. Ver `docs/community.md`.
+
 ---
 
 ## Build pipeline (current status)

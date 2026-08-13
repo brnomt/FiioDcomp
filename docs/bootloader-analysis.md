@@ -2,6 +2,13 @@
 
 **Date:** (stub-fix turn, after V0.6 failed identically to V0.1-V0.5)
 
+> **Update (comunidad, 2026-08-12):** la comunidad (`docs/community.md`) confirmó
+> que **no hay verificación de firma en el hardware** — el RKCRC de 8 bits
+> existe pero ningún código lo lee/compara en el dispositivo, y flashearon
+> firmwares modificados sin interceptación. Así que el `fw2 compare error!`
+> NO es un bloqueo de firma; la pregunta abierta §1 queda resuelta a favor de
+> "el bootloader acepta section_3 modificado".
+
 **Why this doc exists:** V0.1-V0.6 (all our section_3 replacements) behave
 IDENTICALLY on device: cassette UI + navigation works, no ReChord strings,
 menu press → freeze + watchdog. That is consistent with EITHER (a) our BB

@@ -148,29 +148,182 @@ uint32_t rechord_firmware_entry(void *param)
 
     boot_log[2] = BOOT_DONE;                /* boot init complete */
 
-#ifndef RECHORD_QEMU_TEST
-    /* ---- V0.16 FAULT PROBE ----
-     * Set VTOR to OUR 256-aligned vector table (0x03000200) so faults are
-     * routed to our handler (fault.c), then execute a deliberate UDF. If
-     * the ROM calls our firmware_entry, the CPU hard-faults HERE and our
-     * handler loops forever: the device hangs immediately at boot (static
-     * cassette, no input, crash_log written @0x03000100) — a clearly
-     * different behavior from V0.15 (menu works briefly, freeze on press,
-     * ~23s poweroff). If the ROM NEVER calls firmware_entry, behavior is
-     * identical to V0.15.
-     * NOTE: without this, NO build ever showed the fault screen because
-     * nobody set VTOR — faults were going to the ROM's own table.
-     * (Skipped in the RECHORD_QEMU_TEST build: verified separately by
-     * firmware/qemu/qemu_fault_probe.c.) */
-    {
-        extern uint32_t rechord_vectors[];
-        *(volatile uint32_t *)0xE000ED08u = (uint32_t)rechord_vectors;  /* VTOR */
-        __asm volatile("udf #0" ::: "memory");   /* deliberate UsageFault -> HardFault */
-    }
-#endif
-
     /* mode check: return the code entry_stubs.S must tail-call */
     return (*bp != 0x0b) ? 0x18f : 0x191;
+}
+
+/*
+ * rechord_main — our app main (camino B, from-source).
+ *
+ * Called from firmware_entry AFTER the full stock HW init. Zeroes BSS
+ * (ScatterLoader2), inits the board (BSP_Init2), then runs our own UI
+ * loop — no return to the ROM, no full NANO_OS yet (that is M1b).
+ */
+extern void ScatterLoader2(void);
+extern void BSP_Init2(void);
+
+static volatile uint32_t g_redraw = 0;
+static volatile uint32_t g_menu_sel = 0;
+
+/* ROM input-event API (the key handler reads the current key/event) */
+#define ROM_GET_INPUT_EVENT ((uint32_t (*)(void))(0x02ff813a | 1))
+
+/* ---- UI framebuffer (the buffer the LCD hardware scans) ---- */
+#ifdef RECHORD_QEMU_TEST
+#define UI_FB   ((volatile uint16_t *)0x20010000u)
+#else
+#define UI_FB   ((volatile uint16_t *)0x03024868u)   /* 320x100 RGB565 */
+#endif
+#define LCD_W   320
+#define LCD_H   100
+
+static void fb_fill_rect(int x0, int y0, int x1, int y1, uint16_t c)
+{
+    for (int y = y0; y < y1; y++)
+        for (int x = x0; x < x1; x++)
+            UI_FB[y * LCD_W + x] = c;
+}
+
+/* ---- 5x7 bitmap font (5 columnas, bit0 = fila superior) ---- */
+static const uint8_t font5x7[][5] = {
+    {0x7E,0x11,0x11,0x11,0x7E}, /* A */
+    {0x7F,0x49,0x49,0x49,0x36}, /* B */
+    {0x3E,0x41,0x41,0x41,0x22}, /* C */
+    {0x7F,0x41,0x41,0x22,0x1C}, /* D */
+    {0x7F,0x49,0x49,0x49,0x41}, /* E */
+    {0x7F,0x09,0x09,0x09,0x01}, /* F */
+    {0x3E,0x41,0x49,0x49,0x7A}, /* G */
+    {0x7F,0x08,0x08,0x08,0x7F}, /* H */
+    {0x00,0x41,0x7F,0x41,0x00}, /* I */
+    {0x20,0x40,0x41,0x3F,0x01}, /* J */
+    {0x7F,0x08,0x14,0x22,0x41}, /* K */
+    {0x7F,0x40,0x40,0x40,0x40}, /* L */
+    {0x7F,0x02,0x0C,0x02,0x7F}, /* M */
+    {0x7F,0x04,0x08,0x10,0x7F}, /* N */
+    {0x3E,0x41,0x41,0x41,0x3E}, /* O */
+    {0x7F,0x09,0x09,0x09,0x06}, /* P */
+    {0x3E,0x41,0x51,0x21,0x5E}, /* Q */
+    {0x7F,0x09,0x19,0x29,0x46}, /* R */
+    {0x46,0x49,0x49,0x49,0x31}, /* S */
+    {0x01,0x01,0x7F,0x01,0x01}, /* T */
+    {0x3F,0x40,0x40,0x40,0x3F}, /* U */
+    {0x1F,0x20,0x40,0x20,0x1F}, /* V */
+    {0x3F,0x40,0x38,0x40,0x3F}, /* W */
+    {0x63,0x14,0x08,0x14,0x63}, /* X */
+    {0x07,0x08,0x70,0x08,0x07}, /* Y */
+    {0x61,0x51,0x49,0x45,0x43}, /* Z */
+    {0x3E,0x51,0x49,0x45,0x3E}, /* 0 */
+    {0x00,0x42,0x7F,0x40,0x00}, /* 1 */
+    {0x42,0x61,0x51,0x49,0x46}, /* 2 */
+    {0x21,0x41,0x45,0x4B,0x31}, /* 3 */
+    {0x18,0x14,0x12,0x7F,0x10}, /* 4 */
+    {0x27,0x45,0x45,0x45,0x39}, /* 5 */
+    {0x3C,0x4A,0x49,0x49,0x30}, /* 6 */
+    {0x01,0x71,0x09,0x05,0x03}, /* 7 */
+    {0x36,0x49,0x49,0x49,0x36}, /* 8 */
+    {0x06,0x49,0x49,0x29,0x1E}, /* 9 */
+    {0x00,0x00,0x00,0x00,0x00}, /* ' ' (36) */
+    {0x00,0x00,0x60,0x60,0x00}, /* '.' (37) */
+    {0x00,0x36,0x36,0x00,0x00}, /* ':' (38) */
+    {0x20,0x10,0x08,0x04,0x02}, /* '/' (39) */
+    {0x08,0x08,0x08,0x08,0x08}, /* '-' (40) */
+};
+
+static const uint8_t *fb_glyph(char c)
+{
+    if (c >= 'A' && c <= 'Z') return font5x7[c - 'A'];
+    if (c >= '0' && c <= '9') return font5x7[26 + (c - '0')];
+    if (c == ' ')  return font5x7[36];
+    if (c == '.')  return font5x7[37];
+    if (c == ':')  return font5x7[38];
+    if (c == '/')  return font5x7[39];
+    if (c == '-')  return font5x7[40];
+    return font5x7[36];   /* desconocido -> espacio */
+}
+
+static void fb_char(int x, int y, char c, uint16_t color)
+{
+    const uint8_t *g = fb_glyph(c);
+    for (int col = 0; col < 5; col++)
+        for (int row = 0; row < 7; row++)
+            if (g[col] & (1 << row)) {
+                int px = x + col, py = y + row;
+                if (px >= 0 && px < LCD_W && py >= 0 && py < LCD_H)
+                    UI_FB[py * LCD_W + px] = color;
+            }
+}
+
+static void fb_text(int x, int y, const char *s, uint16_t color)
+{
+    while (*s) {
+        fb_char(x, y, *s, color);
+        x += 6;
+        s++;
+    }
+}
+
+/* draw our menu (text labels + selection) straight into the LCD framebuffer */
+static void rechord_draw_menu(void)
+{
+    static const char *items[4] = {"MUSIC", "EQ", "SETTINGS", "ABOUT"};
+    uint32_t ctx_a, ctx_b;
+
+    fb_fill_rect(0, 0, LCD_W, LCD_H, 0x0000);       /* black background */
+    fb_fill_rect(0, 0, LCD_W, 20, 0x001F);          /* blue title bar  */
+    fb_text(4, 4, "RECHORD", 0xFFFF);               /* title           */
+
+    for (uint32_t i = 0; i < 4; i++) {
+        int y = 26 + i * 16;
+        uint16_t col = (i == g_menu_sel) ? 0x07E0u /* green sel */
+                                         : 0x8410u /* gray */;
+        fb_fill_rect(4, y, LCD_W - 4, y + 14, col);
+        fb_text(8, y + 3, items[i], (i == g_menu_sel) ? 0x0000u : 0xFFFFu);
+    }
+
+    /* ---- V0.17 known-good display refresh ----
+     * The LCD reads the framebuffer only after the ROM's refresh is
+     * triggered (fef124 wait -> fea848/fea824 ctx -> feabea refresh ->
+     * restore). V0.1/V0.17 did exactly this and showed colors; M1 dropped
+     * it and the loader cassette stayed on screen. */
+    if (ROM_DISP_WAIT(0x19b) == 0) {
+        ctx_a = ROM_DISP_CTX_A(1);
+        ctx_b = ROM_DISP_CTX_B(2);
+        ROM_DISP_REFRESH(1);
+        ROM_DISP_CTX_A(ctx_a);
+        ROM_DISP_CTX_B(ctx_b);
+    }
+
+    boot_log[3] = g_menu_sel;                        /* telemetry: selection */
+}
+
+/*
+ * rechord_key_handler — called by the ROM on key events (fixed offset
+ * 0x0301020c). Runs in interrupt context: only update state + set the
+ * redraw flag; the main loop does the actual drawing.
+ */
+void rechord_key_handler(void)
+{
+    uint32_t ev = ROM_GET_INPUT_EVENT();
+    if (ev != 0) {
+        g_menu_sel = (g_menu_sel + 1) & 3;           /* cycle selection */
+        g_redraw = 1;
+    }
+}
+
+void rechord_main(void)
+{
+    ScatterLoader2();    /* zero the SDK BSS region */
+    BSP_Init2();         /* board init (interrupts, systick, mailbox) */
+
+    boot_log[2] = BOOT_DONE;
+
+    g_redraw = 1;        /* draw the initial menu */
+    for (;;) {
+        if (g_redraw) {
+            g_redraw = 0;
+            rechord_draw_menu();
+        }
+    }
 }
 
 /*

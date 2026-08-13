@@ -1,6 +1,10 @@
 # ReChord — Echo Mini Hardware Map
 
-## SoC: Rockchip RKnanoC (from datasheet)
+## SoC: Rockchip RKnanoC (chip) / RKnanoD (familia SDK)
+> La comunidad (blog RSE, `docs/community.md`) lo llama "RKnanoD" porque
+> el **SDK** es la familia RKnanoD; el **chip específico** del Echo Mini es
+> el **RKnanoC** (Cortex-M3). El TRM del RKnanoD fue localizado y archiveado
+> por la comunidad (Internet Archive).
 - **Package:** LQFP64 (likely — matches Echo Mini form factor)
 - **CPU:** ARM Cortex-M3 (from Ghidra's `ARM:LE:32:v8-m` language detection)
 - **Clock:** 24 MHz crystal + internal PLL
@@ -24,6 +28,18 @@
 | UART | PB5/TXD + PB6/RXD | debug_printf output |
 | Bluetooth | SDMMC or UART interface | BT Music string |
 | Line-in | PMU_INL / PMU_INR | recording service |
+
+## Fonts (pixel fonts) — de la comunidad (FlameOcean / RSE)
+
+Las fuentes del UI son **mapas de bits 1 bit/píxel** (0=espacio, 1=píxel):
+- **Stride por glifo:** `SMALL = 32`, `LARGE = 33` columnas.
+- El stride **33** viene de una optimización del compilador: `×33` →
+  `(x << 5) + x` (shift+suma, no multiplicación).
+- **Firmas de footer de glifo** (byte al final de cada glifo):
+  `0x90, 0x8f, 0x89, 0x8b, 0x8d, 0x8e, 0x8c`.
+- En Ghidra: `Font12_CompiType @ 03010f98` (render de la fuente).
+
+Útil para renderizar texto en nuestra UI from-source (M1b+).
 
 ## Address Space
 

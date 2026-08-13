@@ -113,16 +113,12 @@ def main():
         check("ROM init trace = exact stock sequence (alloc,0x1dc,0x16f,0x16f,0x171,0x170,early)",
               init_tr[:7] == [0x100001DC, 0x200001DC, 0x2000016F, 0x2000016F,
                               0x30000171, 0x20000170, 0x40000000])
-        check("Main2 heartbeat reached its loop: ROM display calls fired (wait/ctx/color/rect/refresh)",
-              len(disp_tr) >= 8 and disp_tr[0] == 0x1000019B and
-              disp_tr[3] in (0x30000094, 0x30000095) and
-              (disp_tr[4] & 0xFF000000) == 0x40000000 and
-              (disp_tr[5] & 0xFF000000) == 0x50000000)
-        # the fb alternates red/black with a long delay; all-black is a valid
-        # heartbeat phase, so only fail if the display trace also never fired
-        check("framebuffer written by the heartbeat (red or black phase)",
-              any(w != 0 for w in fb[:8]) or
-              (len(disp_tr) >= 1 and disp_tr[0] == 0x1000019B))
+        check("no crash (rechord_main ran clean)", mem[0] != 0x52454348)
+        # rechord_main now draws our menu straight into the framebuffer
+        # (blue title bar at row 0 = 0x001F per pixel); the fb was cleared
+        # before Main2/rechord_main, so any non-zero = our menu drawn.
+        check("rechord_main UI loop: framebuffer menu drawn",
+              any(w != 0 for w in fb[:8]))
 
         print("ALL PASS" if ok else "SOME CHECKS FAILED")
         sys.exit(0 if ok else 1)

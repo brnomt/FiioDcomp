@@ -1,23 +1,42 @@
 # ReChord — Build Status (Aug 2026)
 
-> **Goal:** a free, compile-from-source firmware for the FiiO Echo Mini (RKnanoC),
-> so DSP effects / features can be modified in C and flashed via pack_img.py.
+> **Goal:** a **complete custom firmware written from source** for the FiiO
+> Echo Mini (RKnanoC) — a **"Rockbox for the FiiO"**. Not a patch, not a
+> byte-mod: **all the firmware source available and modifiable**, covering
+> **both** halves of the device.
 >
-> **ReChord** = re-harmonize: rebuild the Echo Mini firmware from the Rockchip
-> SDK source + our own app layer, starting with DSP effects.
+> **ReChord** = re-harmonize: compile the Rockchip SDK from source (the audio
+> side) + write our **own UI layer** from scratch (the front end).
 >
-> **Current:** **SDK compiles, links, and BOOTS on hardware** (flashed V0.1 + V0.2).
-> The device shows the FiiO cassette UI and navigation works, but every menu
-> item press freezes then powers off. The likely cause is a **mailbox deadlock**
-> between the stock UI (AP side) and our audio service (BB side) — see
-> [HANDOVER.md](HANDOVER.md) §7 for the debug plan.
+> **Architecture (key):** the device runs **two firmwares** over a mailbox,
+> **both with SDK source available**:
+> - **fw1 (AP) @ IMG `0x7B8–0x57820`** → **UI** — built on the **RKnanoC SDK**
+>   (`rk3399-table-RKNanoC`: UI MainMenu/MusicWin, drivers I2C/AD_KEY/DAC,
+>   FileSys FAT, NANO_OS — 103 `.c`). We rebuild our own UI on top.
+> - **section_3 (BB) @ IMG `0x81A14–0x9BAA0E`** → **audio/DSP** — the
+>   **RKnanoD SDK** covers this (already integrated).
 >
-> **⚠️ AI agents: read `docs/HANDOVER.md` first** — it contains the architecture
-> findings, header format, stubs traps, and the current mystery to solve.
+> **Current:** SDK (BB) compiles and our own BB code boots in QEMU. The open
+> problems are: (1) **BB display** — get our framebuffer to the LCD (the DMA
+> transfer `Lcd_BuferTranfer` lives in the ROM/FiiO layer, not the SDK), and
+> (2) **AP/UI** — map fw1 and rebuild the menus/navigation from scratch.
+> See `docs/dispatch-map.md` (M0) and `docs/community.md` (community findings).
 
 ---
 
-## What compiles today (53/53 SDK .c files)
+## What compiles today
+
+### fw1 (AP/UI) = build App/UI del SDK RKnanoD — identificado 2026-08-12
+> **Corrección tras el match de strings**: fw1 (AP) **NO** es el SDK
+> `rk3399-table-RKNanoC` (solo 32 strings). Es el **SDK RKnanoD** (el mismo
+> que el BB): 223 strings de RKnanoD_MP3_V1.3, 205 de RKnanoD_Wireless_V1.5.
+> La UI del AP está en `RKnanoD_MP3_V1.3/SDK_160_128/UI/` (45 `.c`: MainMenu,
+> MusicWin, SetMenu, Browser…) + `main.c`. El BB es `Main2.c` + codecs.
+> → **Ambos firmwares son dos builds del mismo SDK RKnanoD.**
+
+### RKnanoD SDK (BB/audio) — integrado (ver abajo)
+
+## What compiles today (RKnanoD = BB)
 
 | Layer | Files | Status |
 |-------|------:|--------|
@@ -122,7 +141,8 @@ bass boost, add delay taps for reverb) and rebuild.
 
 ## Related docs
 
-- `docs/MULTI-VERSION-PLAN.md` — RE progress, changelog-anchored naming
-- `docs/memory-map.md` — SoC addresses, segment table
-- `docs/flashing-guide.md` — safe flashing + recovery
+- `docs/dispatch-map.md` — **M0: mapa de despacho del ROM** (entry points fijos + ROM API)
+- `docs/community.md` — **hallazgos de la comunidad** (RSE blog, FlameOcean, SDKs leakeados)
+- `docs/HARDWARE.md` — SoC addresses, segment table, ROM API, fuentes
+- `docs/FLASHING.md` — safe flashing + recovery
 - `docs/c-cleanup-status.md` — decompiled .c tree cleanup (327/394 compile)

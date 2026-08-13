@@ -49,3 +49,12 @@ firmware, not a clone.
 - **pack_img.py** — verified safe flashing (resource mods tested on device).
 - **The FiiO app layer knowledge** — named functions in `docs/symbol-index.md`
   are the spec for rebuilding the UI/menus.
+
+## External corroboration (2026-08-12)
+
+La comunidad (blog RSE de Takobin, herramienta **FlameOcean**, y SDKs
+leakeados de Rockchip) corroboró y amplió nuestros hallazgos — chip
+RKnanoD/C, **sin verificación de firma** en el HW, formato de fuentes
+(stride 32/33), recursos BMP RGB565, y el mapa de memoria del SDK
+(`SYS_DATA 0x03000000`). Ver **`docs/community.md`** para el detalle
+completo y `community/` para el material crudo descargado.

@@ -48,6 +48,7 @@
 /* ---------------- real firmware entry points ----------------------------- */
 extern uint32_t rechord_firmware_entry(void *param);
 extern int Main2(void);
+extern void rechord_main(void);
 
 /* ---------------- vector table + fault handler --------------------------- */
 void fault_c(uint32_t sp, uint32_t pc)   /* non-static: naked asm branches to it */
@@ -183,14 +184,15 @@ void _start(void)
     res[6] = ROM_INIT_TR[0];           /* first ROM call = alloc(0x1dc) */
     res[7] = ROM_INIT_TR[6];           /* last ROM call of test1 = early_init */
 
-    /* ---- Test 3: Main2 heartbeat ---- */
+    /* ---- Test 3: rechord_main (M1 app main: ScatterLoader2 + BSP_Init2
+     *              + UI draw loop via the ROM display API) ---- */
     {
         uint32_t i;
         for (i = 0; i < (320 * 170) / 2; i++)
             QEMU_FB[i] = 0x0000u;      /* clear fb so a later non-zero = ours */
     }
-    res[8] = 0x33330000u;              /* about to call Main2 */
-    Main2();                           /* never returns */
+    res[8] = 0x33330000u;              /* about to call rechord_main */
+    rechord_main();                    /* never returns */
 
     res[9] = 0xDEADBEEFu;              /* unreachable */
     for (;;) ;
