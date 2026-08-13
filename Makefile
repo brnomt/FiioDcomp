@@ -55,6 +55,7 @@ BB_RECHORD_OBJS := \
 BB_ELF := $(BB_BUILD_DIR)/rechord_bb.elf
 BB_BIN := $(BB_BUILD_DIR)/section3_custom.bin
 AP_ELF := $(AP_BUILD_DIR)/rechord_ap.elf
+AP_BIN := $(AP_BUILD_DIR)/fw1_custom.bin
 
 # Prebuilt codec .lib binaries the Keil RkNano project links (ARM AR archives).
 SDK_LIB := community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec
@@ -156,7 +157,8 @@ link-bb: $(BB_RECHORD_OBJS) $(BB_OBJS)
 link-ap: $(AP_OBJS) $(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o
 	$(CC) $(ARCH_FLAGS) -T firmware/firmware_ap.ld -nostartfiles -ffreestanding \
 		$(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o $(AP_OBJS) $(AP_CODEC_LIBS) -lm -o $(AP_ELF)
-	@echo "AP link attempted: $(AP_ELF)"
+	$(OBJCOPY) -O binary -j .text -j .data $(AP_ELF) $(AP_BIN)
+	@echo "AP linked: $(AP_ELF) -> $(AP_BIN)"
 
 # ---- AP / fw1 ------------------------------------------------------------
 # This target compiles the 165 AP sources currently present in the repository.
