@@ -80,6 +80,7 @@ uint32_t SetMenuLanguageInfo __attribute__((used));
 uint32_t SetPowerOffFlag __attribute__((used));
 uint32_t SysDiskID __attribute__((used));
 uint32_t SysProgRawDiskCapacity __attribute__((used));
+uint32_t ValidSysDisk __attribute__((used));
 uint32_t SysTickCounter __attribute__((used));
 uint32_t gBattery __attribute__((used));
 uint32_t gLangSel __attribute__((used));

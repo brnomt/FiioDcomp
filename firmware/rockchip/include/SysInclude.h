@@ -30,6 +30,10 @@
 #include "global.h"
 #include "debug.h"
 
+#ifdef RECHORD_BB_BUILD
+#include "bb_compat.h"
+#endif
+
 #include "backlight.h"
 #include "LcdInclude.h"
 #include "DriverInclude.h"

@@ -27,7 +27,6 @@ extern RADIO_REG_KEY *gpRadioplayerRegKey;
 
 
 extern uint32 FM_State_StepStation;
-#endif
 
 typedef struct {
     uint32 FirstDataSector;
@@ -46,3 +45,5 @@ extern void AudioDmaIsrHandler(void);
 
 
 extern void AudioDecoding(void);
+
+#endif /* SERVICE_GLOBALS_H */

@@ -1,137 +1,148 @@
 # ReChord — Echo Mini custom firmware build system
 #
 # Target: ARM Cortex-M3 (Thumb-2), Rockchip RKnanoC
-# Toolchain: arm-none-eabi-gcc (GNU Arm Embedded)
+# SDK: Rockchip RKnanoD MP3 v1.3
 #
-# Goal: compile the Rockchip RKnanoD SDK + ReChord layer from source,
-# produce a flashable section_3 via tools/pack_img.py.
-# Windows: use mingw32-make (e.g. C:\winlibs\mingw64\bin\mingw32-make.exe)
+# The device contains two independently built firmware images:
+#   AP (fw1)       — application, UI, filesystem, and hardware drivers
+#   BB (section_3) — audio services, codecs, and DSP
 #
-# Usage:
-#   make toolchain     — verify arm-none-eabi-gcc
-#   make build-sdk     — compile all SDK .c files to build/objs/*.o
-#   make link-firmware — link objects into build/rechord_full.elf + section3_custom.bin
-#   make all           — build-sdk + link-firmware
-#   make pack-img      — splice section_3 into HIFIEC37.IMG (identity test)
-#   make clean
+# Never build the entire SDK as one target. The source manifests below are
+# derived from the original Keil project and keep the AP and BB object graphs
+# isolated.
 
 ifeq ($(OS),Windows_NT)
-    MKDIR = if not exist $(subst /,\,$(1)) mkdir $(subst /,\,$(1))
-    RM_RF = if exist $(subst /,\,$(1)) rmdir /s /q $(subst /,\,$(1))
-    FIXPATH = $(subst /,\,$1)
     PYTHON ?= py -3
 else
-    MKDIR = mkdir -p $(1)
-    RM_RF = rm -rf $(1)
-    FIXPATH = $1
     PYTHON ?= python3
 endif
 
-CROSS_COMPILE = arm-none-eabi-
-CC      = $(CROSS_COMPILE)gcc
-LD      = $(CROSS_COMPILE)ld
-OBJCOPY = $(CROSS_COMPILE)objcopy
-SIZE    = $(CROSS_COMPILE)size
+CROSS_COMPILE ?= arm-none-eabi-
+CC      := $(CROSS_COMPILE)gcc
+OBJCOPY := $(CROSS_COMPILE)objcopy
+SIZE    := $(CROSS_COMPILE)size
 
-STOCK_DIR   = stock/3.7.0/ECHO MINI V3.7.0
-IMG_FILE    = $(STOCK_DIR)/HIFIEC37.IMG
-BUILD_DIR   = build
-OBJ_DIR     = $(BUILD_DIR)/objs
-LINKER      = firmware/firmware.ld
+BUILD_DIR    := build
+BB_BUILD_DIR := $(BUILD_DIR)/bb
+AP_BUILD_DIR := $(BUILD_DIR)/ap
+BB_OBJ_DIR   := $(BB_BUILD_DIR)/objs
+AP_OBJ_DIR   := $(AP_BUILD_DIR)/objs
+BB_LINKER    := firmware/firmware.ld
 
-ARCH_FLAGS  = -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
-SDK_INCLUDES = -include firmware/rockchip/include/armcc_compat.h \
-               -Ifirmware/rockchip/include \
-               -Ifirmware/rockchip \
-               -Ifirmware/rockchip/audio/Include \
-               -Ifirmware/rockchip/audio/AudioControl \
-               -Ifirmware/rockchip/audio/Common \
-               -Ifirmware/rockchip/audio/RkEQ/Effect \
-               -Ifirmware/rockchip/audio/RecordControl \
-               -Ifirmware/rockchip/audio/ID3 \
-               -Ifirmware/rockchip/audio/Wav/WAV_LIB \
-               -Ifirmware/rockchip/audio/SSRC/resampler \
-               -Ifirmware/rockchip/system/os \
-               -Ifirmware/rockchip/system/fileseek \
-               -Ifirmware/rockchip/system/module_overlay \
-               -Ifirmware/rockchip/system/sysservice \
-               -Ifirmware/rockchip/bbsystem
-SDK_CFLAGS = $(ARCH_FLAGS) -Os -Wall -Wno-unused-parameter -Wno-unused-variable \
-             -ffunction-sections -fdata-sections $(SDK_INCLUDES)
+include firmware/rockchip/manifests/bb.mk
+include firmware/rockchip/manifests/ap.mk
 
-# SDK sources (all .c under firmware/rockchip)
-SDK_SRCS := $(shell find firmware/rockchip -name '*.c' 2>/dev/null)
+ARCH_FLAGS   := -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
+COMMON_FLAGS := $(ARCH_FLAGS) -Os -Wall -Wno-unused-parameter \
+                -Wno-unused-variable -ffunction-sections -fdata-sections \
+                -include firmware/rockchip/include/armcc_compat.h
+BB_CFLAGS    := $(COMMON_FLAGS) -DRECHORD_BB_BUILD $(addprefix -I,$(BB_INCLUDE_DIRS))
+AP_CFLAGS    := $(COMMON_FLAGS) -DRECHORD_AP_BUILD $(addprefix -I,$(AP_INCLUDE_DIRS))
 
-# Exclude duplicate non-*2 variants — the SDK ships both audio_file_access.c
-# and audio_file_access2.c etc.; only the *2 (RKnano 2) versions link.
-NON2_EXCLUDE = Delay.c SysTickHandler.c audio_file_access.c pAAC.c pDSDIFF.c \
-               pDSF.c pMP3.c pOGG.c p_hifi_Ape.c p_hifi_alac.c p_hifi_flac.c \
-               interrupt.c
+BB_OBJS := $(foreach src,$(BB_SRCS),\
+             $(BB_OBJ_DIR)/$(patsubst firmware/rockchip/%,%,$(src)).o)
+AP_OBJS := $(foreach src,$(AP_SRCS),\
+             $(AP_OBJ_DIR)/$(patsubst firmware/rockchip/%,%,$(src)).o)
 
-# Files that need special compile recipes (section conflicts / asm dupes) —
-# see docs/STATUS.md. They are linked from the prebuilt .o set.
-SPECIAL_EXCLUDE = systick2.c pCODECS2.c RecordControl.c PowerManager.c \
-                 AsicToUnicode.c cue.c ID3.c AsicToUnicodeTable.c
+BB_RECHORD_OBJS := \
+    $(BB_BUILD_DIR)/startup.o \
+    $(BB_BUILD_DIR)/stubs.o \
+    $(BB_BUILD_DIR)/fault.o \
+    $(BB_BUILD_DIR)/rechord_win.o \
+    $(BB_BUILD_DIR)/rechord_app.o \
+    $(BB_BUILD_DIR)/entry_stubs.o
 
-SDK_SRCS := $(filter-out $(addprefix %/,$(NON2_EXCLUDE) $(SPECIAL_EXCLUDE)),$(SDK_SRCS))
+BB_ELF := $(BB_BUILD_DIR)/rechord_bb.elf
+BB_BIN := $(BB_BUILD_DIR)/section3_custom.bin
 
-# objects mirror source subdirs so the pattern rule matches
-SDK_OBJS = $(patsubst firmware/rockchip/%.c,$(OBJ_DIR)/%.o,$(SDK_SRCS))
+.PHONY: all bb ap build-bb build-ap link-bb build-sdk link-firmware \
+        toolchain manifests compile-check pack-img pack-bb-img \
+        extract-section3 clean
 
-.PHONY: all clean toolchain build-sdk link-firmware compile-check pack-img extract-section3
+# The default remains the currently linkable BB firmware. AP is intentionally
+# opt-in until its missing source modules and linker layout are restored.
+all: bb
 
-all: build-sdk link-firmware
+bb: build-bb link-bb
 	@echo ""
-	@echo "ReChord firmware built:"
-	@$(SIZE) $(BUILD_DIR)/rechord_full.elf
+	@echo "ReChord BB firmware built:"
+	@$(SIZE) $(BB_ELF)
 
+ap: build-ap
+
+# Backward-compatible aliases used by existing documentation and scripts.
+build-sdk: build-bb
+link-firmware: link-bb
+
+# ---- toolchain and manifest validation -----------------------------------
 toolchain:
 	@$(CC) --version | head -1
 	@echo "Toolchain OK."
 
-$(OBJ_DIR):
-	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path 'build/objs' | Out-Null"
+manifests:
+	$(PYTHON) tools/check_sdk_manifests.py
 
-# ---- compile SDK ----
-build-sdk: toolchain $(OBJ_DIR) $(SDK_OBJS)
-	@echo "SDK compiled: $(words $(SDK_OBJS)) objects"
+# ---- BB / section_3 ------------------------------------------------------
+build-bb: toolchain manifests $(BB_OBJS)
+	@echo "BB SDK compiled: $(words $(BB_OBJS)) objects"
 
-$(OBJ_DIR)/%.o: firmware/rockchip/%.c | $(OBJ_DIR)
+$(BB_OBJ_DIR)/%.o: firmware/rockchip/%
 	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
-	$(CC) $(SDK_CFLAGS) -c $< -o $@
+	$(CC) $(BB_CFLAGS) -c $< -o $@
 
-# ---- link firmware ----
-link-firmware: $(OBJ_DIR) $(BUILD_DIR)/startup.o $(BUILD_DIR)/stubs.o $(BUILD_DIR)/fault.o $(BUILD_DIR)/rechord_win.o $(BUILD_DIR)/rechord_app.o $(BUILD_DIR)/entry_stubs.o
-	$(CC) $(ARCH_FLAGS) -T $(LINKER) -nostartfiles -ffreestanding \
-		$(BUILD_DIR)/startup.o $(BUILD_DIR)/stubs.o $(BUILD_DIR)/fault.o $(BUILD_DIR)/rechord_win.o $(BUILD_DIR)/rechord_app.o $(BUILD_DIR)/entry_stubs.o $(SDK_OBJS) \
-		-o $(BUILD_DIR)/rechord_full.elf
-	$(OBJCOPY) -O binary -j .fw_header -j .text $(BUILD_DIR)/rechord_full.elf $(BUILD_DIR)/section3_custom.bin
-	@echo "Built: $(BUILD_DIR)/section3_custom.bin (splice with pack-img)"
+$(BB_BUILD_DIR)/startup.o: firmware/startup/startup.c
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
+	$(CC) $(BB_CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/startup.o: firmware/startup/startup.c | $(OBJ_DIR)
-	$(CC) $(SDK_CFLAGS) -c $< -o $@
+$(BB_BUILD_DIR)/stubs.o: firmware/stubs.c
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
+	$(CC) $(BB_CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/stubs.o: firmware/stubs.c | $(OBJ_DIR)
-	$(CC) $(SDK_CFLAGS) -c $< -o $@
+$(BB_BUILD_DIR)/fault.o: firmware/fault.c
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
+	$(CC) $(BB_CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/fault.o: firmware/fault.c | $(OBJ_DIR)
-	$(CC) $(SDK_CFLAGS) -c $< -o $@
+$(BB_BUILD_DIR)/rechord_win.o: firmware/rechord_win.c
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
+	$(CC) $(BB_CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/rechord_win.o: firmware/rechord_win.c | $(OBJ_DIR)
-	$(CC) $(SDK_CFLAGS) -c $< -o $@
+$(BB_BUILD_DIR)/rechord_app.o: firmware/rechord_app.c
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
+	$(CC) $(BB_CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/rechord_app.o: firmware/rechord_app.c | $(OBJ_DIR)
-	$(CC) $(SDK_CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/entry_stubs.o: firmware/entry_stubs.S | $(OBJ_DIR)
+$(BB_BUILD_DIR)/entry_stubs.o: firmware/entry_stubs.S
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
 	$(CC) $(ARCH_FLAGS) -c $< -o $@
 
-# ---- checks / packaging ----
+link-bb: $(BB_RECHORD_OBJS) $(BB_OBJS)
+	$(CC) $(ARCH_FLAGS) -T $(BB_LINKER) -nostartfiles -ffreestanding \
+		$(BB_RECHORD_OBJS) $(BB_OBJS) -o $(BB_ELF)
+	$(OBJCOPY) -O binary -j .fw_header -j .text $(BB_ELF) $(BB_BIN)
+	@echo "Built: $(BB_BIN)"
+
+# ---- AP / fw1 ------------------------------------------------------------
+# This target compiles the 165 AP sources currently present in the repository.
+# It does not link yet: AP_MISSING_SRCS documents 33 effective Keil inputs that
+# must be imported or replaced first, and fw1 still needs its own linker script.
+build-ap: toolchain manifests $(AP_OBJS)
+	@echo "AP SDK compile check passed: $(words $(AP_OBJS)) imported objects"
+	@echo "AP link remains blocked by $(words $(AP_MISSING_SRCS)) missing sources"
+
+$(AP_OBJ_DIR)/%.o: firmware/rockchip/%
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
+	$(CC) $(AP_CFLAGS) -c $< -o $@
+
+# ---- checks and packaging ------------------------------------------------
 compile-check: toolchain
 	$(PYTHON) tools/compile_check.py
 
+# Identity-test the stock section_3 splice operation.
 pack-img:
 	$(PYTHON) tools/pack_img.py --identity-test
+
+# Produce a test IMG containing the custom BB while preserving the stock AP.
+pack-bb-img: $(BB_BIN)
+	$(PYTHON) tools/pack_img.py --pack $(BB_BIN) -o $(BUILD_DIR)/ReChord_BB.IMG
 
 extract-section3:
 	$(PYTHON) tools/pack_img.py --extract -o $(BUILD_DIR)/section3_stock.bin

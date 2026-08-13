@@ -4,7 +4,11 @@
 #ifndef DRIVERINCLUDE_H
 #define DRIVERINCLUDE_H
 
+#ifdef RECHORD_AP_BUILD
+#include "../driver/DriverInclude.h"
+#else
 #include "typedef.h"
 #include "driverlib_def.h"
+#endif
 
 #endif /* DRIVERINCLUDE_H */
