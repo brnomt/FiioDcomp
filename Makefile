@@ -56,6 +56,29 @@ BB_ELF := $(BB_BUILD_DIR)/rechord_bb.elf
 BB_BIN := $(BB_BUILD_DIR)/section3_custom.bin
 AP_ELF := $(AP_BUILD_DIR)/rechord_ap.elf
 
+# Prebuilt codec .lib binaries the Keil RkNano project links (ARM AR archives).
+SDK_LIB := community/sdks/RKNanoD_MP3_V1.3_20161102/Common/Codec
+AP_CODEC_LIBS := \
+  $(SDK_LIB)/Image/Jpg/RkNanoD_JPG_DEC_V150906.lib \
+  $(SDK_LIB)/Image/Bmp/RkNano_BMP_DEC_V20150511.lib \
+  $(SDK_LIB)/BlueTooth/RKNanoD_LwBT_20161014.lib \
+  $(SDK_LIB)/Audio/AAC/RkNanoD_BAAC_20151223.lib \
+  $(SDK_LIB)/Audio/DSDIFF/RkNanoD_BDSDIFF_20160929.lib \
+  $(SDK_LIB)/Audio/DSF/RkNanoD_BDSF_20160929.lib \
+  $(SDK_LIB)/Audio/HIFI/alac/RkNanoD_BHALAC_20160926.lib \
+  $(SDK_LIB)/Audio/HIFI/ape/RkNanoD_BHAPE_20160806.lib \
+  $(SDK_LIB)/Audio/HIFI/flac/RkNanoD_BHFLAC_20160807.lib \
+  $(SDK_LIB)/Audio/Library/RkNano_EQ_24BIT_20150630.lib \
+  $(SDK_LIB)/Audio/Library/RkNano_FADE_24BIT_20150611.lib \
+  $(SDK_LIB)/Audio/Library/RkNano_Spectrum_V09_0420.lib \
+  $(SDK_LIB)/Audio/Mp3/RkNanoD_BMP3_20161031.lib \
+  $(SDK_LIB)/Audio/Ogg/RkNanoD_BOGG_20160901.lib \
+  $(SDK_LIB)/Audio/RecordControl/NS/RkNanoD_BNS_20151223.lib \
+  $(SDK_LIB)/Audio/sbc/RKNanoD_SBCEnc_20160718.lib \
+  $(SDK_LIB)/Audio/ShuffleAll/RKNANO_MyRandom_20150927.lib \
+  $(SDK_LIB)/Audio/SSRC/RKNanoD_SSRC_20160718.lib \
+  $(SDK_LIB)/Audio/Wav/RkNanoD_BWAV_20151223.lib
+
 .PHONY: all bb ap build-bb build-ap link-bb link-ap build-sdk link-firmware \
         toolchain manifests compile-check pack-img pack-bb-img \
         extract-section3 clean
@@ -103,6 +126,14 @@ $(BB_BUILD_DIR)/fault.o: firmware/fault.c
 	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
 	$(CC) $(BB_CFLAGS) -c $< -o $@
 
+$(AP_BUILD_DIR)/stubs.o: firmware/stubs.c
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
+	$(CC) $(AP_CFLAGS) -c $< -o $@
+
+$(AP_BUILD_DIR)/fault.o: firmware/fault.c
+	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
+	$(CC) $(AP_CFLAGS) -c $< -o $@
+
 $(BB_BUILD_DIR)/rechord_win.o: firmware/rechord_win.c
 	@powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '$(dir $@)' | Out-Null"
 	$(CC) $(BB_CFLAGS) -c $< -o $@
@@ -122,9 +153,9 @@ link-bb: $(BB_RECHORD_OBJS) $(BB_OBJS)
 	@echo "Built: $(BB_BIN)"
 
 # Attempt the AP (fw1) link to enumerate remaining undefined symbols.
-link-ap: $(AP_OBJS)
+link-ap: $(AP_OBJS) $(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o
 	$(CC) $(ARCH_FLAGS) -T firmware/firmware_ap.ld -nostartfiles -ffreestanding \
-		$(AP_OBJS) -o $(AP_ELF)
+		$(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o $(AP_OBJS) $(AP_CODEC_LIBS) -lm -o $(AP_ELF)
 	@echo "AP link attempted: $(AP_ELF)"
 
 # ---- AP / fw1 ------------------------------------------------------------

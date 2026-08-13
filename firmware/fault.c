@@ -249,3 +249,12 @@ __attribute__((naked)) void __CPU_IntDefaultHandler2(void)
         "ldr r1, [r0, #24]\n"
         "b FaultHandlerC\n");
 }
+
+/* Non-"2" variant — the A_CORE (AP) interrupt.c branches here. */
+__attribute__((naked)) void __CPU_IntDefaultHandler(void)
+{
+    __asm__ volatile(
+        "mov r0, sp\n"
+        "ldr r1, [r0, #24]\n"
+        "b FaultHandlerC\n");
+}

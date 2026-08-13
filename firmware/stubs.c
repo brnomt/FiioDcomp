@@ -27,7 +27,10 @@ typedef unsigned int   uint32;
 typedef unsigned long  ulong;
 typedef unsigned short uint16;
 
-/* ---- globals (zero-init) — DATA ONLY, never called with () ---- */
+/* ---- globals (zero-init) — DATA ONLY, never called with () ----
+ * BB-only: the real SDK (compiled by the AP build) defines these globals,
+ * so they must not be redefined for RECHORD_AP_BUILD. ---- */
+#ifndef RECHORD_AP_BUILD
 uint32_t AdcSamplingCh __attribute__((used));
 uint32_t AudioCodecOpenErr __attribute__((used));
 uint32_t AudioDecodeCnt __attribute__((used));
@@ -85,6 +88,50 @@ uint32_t gLangSel __attribute__((used));
 uint32_t gSysConfig __attribute__((used));
 uint32_t gpRadioplayerRegKey __attribute__((used));
 uint32_t chip_freq __attribute__((used));
+#endif /* !RECHORD_AP_BUILD */
+
+/* ---- AP-only FiiO-layer globals/functions (weak; the FiiO app layer is the
+ *      ~10% we replace, so these hold the link together until then). ---- */
+#ifdef RECHORD_AP_BUILD
+uint32_t BTControlSubWin __attribute__((weak));
+uint32_t BTStationTreeInf __attribute__((weak));
+uint32_t BtScanWinOpened __attribute__((weak));
+uint32_t BtStationItem __attribute__((weak));
+uint32_t BtStationScrollInit __attribute__((weak));
+uint32_t BtWinBtA2dpDisconnectRetry __attribute__((weak));
+uint32_t BtWinBtA2dpDisconnectTick __attribute__((weak));
+uint32_t BtWinBtA2dpDisconnectTickEnable __attribute__((weak));
+uint32_t BtWinBtConncetTick __attribute__((weak));
+uint32_t BtWinBtScanConnctMac __attribute__((weak));
+uint32_t BtWinStatus __attribute__((weak));
+uint32_t BtWinSubStatus __attribute__((weak));
+uint32_t ChargeFullFlag __attribute__((weak));
+uint32_t Batt_Level __attribute__((weak));
+uint32_t BatteryCounter __attribute__((weak));
+uint32_t BatteryCounter1 __attribute__((weak));
+uint32_t BatterySystickCounterBack __attribute__((weak));
+uint32_t gBattery __attribute__((weak));
+uint32_t PCM_s __attribute__((weak));
+
+__attribute__((weak)) int BT_DEBUG(void) { return 0; }
+__attribute__((weak)) int BluetoothConnectResult(int r) { (void)r; return 0; }
+__attribute__((weak)) int BluetoothMsgInit(void) { return 0; }
+__attribute__((weak)) int BluetoothThreadDelete(void) { return 0; }
+__attribute__((weak)) int FwUpdate(void) { return 0; }
+__attribute__((weak)) int FwUpgradeRecovery(void) { return 0; }
+__attribute__((weak)) int GetAudioId3Info(void) { return 0; }
+__attribute__((weak)) int GetPictureInfoForBuffer(void) { return 0; }
+__attribute__((weak)) int GetPictureResourceToBuffer(void) { return 0; }
+__attribute__((weak)) int ID3GetFileType(void) { return 0; }
+__attribute__((weak)) int PmuPdLogicPowerDown(void) { return 0; }
+__attribute__((weak)) int PowerOn_Reset(void) { return 0; }
+__attribute__((weak)) int USBHost_Reinit(void) { return 0; }
+__attribute__((weak)) int USBResetPhy(void) { return 0; }
+__attribute__((weak)) int UsbAdpterProbeStop(void) { return 0; }
+__attribute__((weak)) int WavEncodeHeaderInit(void) { return 0; }
+__attribute__((weak)) double __ARM_scalbn(double x, int n) { (void)n; return x; }
+__attribute__((weak)) float __ARM_scalbnf(float x, int n) { (void)n; return x; }
+#endif /* RECHORD_AP_BUILD */
 
 /* ---- function stubs (return 0 / no-op) — these were mistakenly
  *      defined as VARIABLES before; every SDK call to them hard-faulted.
@@ -248,12 +295,13 @@ void _exit(int status) { (void)status; for (;;); }
 void _sbrk(void) { }  /* heap grows via _sbrk_r wrapper; no-op for now */
 void *__dso_handle;
 
-/* ---- ARM interrupt-master control (real impl — PRIMASK) ---- */
-void IntMasterDisable(void)
+/* ---- ARM interrupt-master control (weak; the AP interrupt.c defines
+ *      the real ones — the non-"2" names) ---- */
+__attribute__((weak)) void IntMasterDisable(void)
 {
     __asm volatile("cpsid i" ::: "memory");
 }
-void IntMasterEnable(void)
+__attribute__((weak)) void IntMasterEnable(void)
 {
     __asm volatile("cpsie i" ::: "memory");
 }
@@ -264,3 +312,9 @@ __attribute__((naked)) void __RESETPRIMASK2(void)   { __asm__ volatile("cpsie i;
 __attribute__((naked)) void __SETFAULTMASK2(void)   { __asm__ volatile("cpsid f; bx lr"); }
 __attribute__((naked)) void __RESETFAULTMASK2(void) { __asm__ volatile("cpsie f; bx lr"); }
 __attribute__((naked)) void __WFI2(void)            { __asm__ volatile("wfi; bx lr"); }
+
+/* Non-"2" variants — the A_CORE (AP) build calls these names. */
+__attribute__((naked)) void __SETPRIMASK(void)     { __asm__ volatile("cpsid i; bx lr"); }
+__attribute__((naked)) void __RESETPRIMASK(void)   { __asm__ volatile("cpsie i; bx lr"); }
+__attribute__((naked)) void __SETFAULTMASK(void)   { __asm__ volatile("cpsid f; bx lr"); }
+__attribute__((naked)) void __RESETFAULTMASK(void) { __asm__ volatile("cpsie f; bx lr"); }

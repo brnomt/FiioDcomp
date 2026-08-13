@@ -26,6 +26,8 @@
 #define _BLUETOOTH_     1
 #ifdef RECHORD_AP_BUILD
 #define _A2DP_SOUCRE_   1
+#define SSRC            1
+#define _FRAME_BUFFER_  1
 #define BT_SBC_PROCESS_INT_ID   INT_ID_UART2
 #endif
 #define _USB_HOST_      1
