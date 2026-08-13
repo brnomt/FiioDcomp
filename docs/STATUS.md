@@ -116,12 +116,18 @@ Excluded from the manifests (need project-layer defines): `systick2.c`,
 `pCODECS2.c`, `RecordControl.c`, `PowerManager.c`, `AsicToUnicode.c`,
 `cue.c`, `ID3.c`, `AsicToUnicodeTable.c`. Linked via prebuilt .o or stubs.
 
-## Packing / flashable-IMG status (updated this round)
+## Packing / flashable-IMG status
 
 | Half | Container | Status |
 |---|---|---|
-| **BB (section_3)** | flat 16-byte RKnanoFW header + code @ 0x81A14 | ✅ packs; `build/ReChord_BB.IMG` |
-| **AP (fw1)** | RKnanoFW header + 91-entry scatter table @ 0x1F8 + payload @ 0x7B8 | ⚠️ tool written (`tools/pack_fw1.py` + `pack_img.py --pack-full`), but flat AP payload (1.30 MB) exceeds the 356 KB fw1 region — stock fw1 is a **module-overlay** build (resident SYS_CODE 0x03060000 + SYS_DATA 0x03000000). |
+| **BB (section_3)** | flat 16-byte RKnanoFW header + code @ 0x81A14 | ✅ packs → `build/ReChord_BB.IMG` |
+| **AP (fw1)** | RKnanoFW header + scatter table @ 0x1F8 + payload @ 0x7B8 | ✅ slims to **273 KB** (fits the 356 KB region) → `build/ap/fw1_custom.img` |
+| **AP+BB combined** | both halves spliced into stock IMG | ✅ `build/ReChord_APBB.IMG` (33,554,436 bytes, headers/trailer verified) |
+
+To make fw1 fit, the codec `.lib` (AP_CODEC_LIBS) and 40 overlay sources
+(audio codec wrappers, ID3, RecordControl, image, BT, FM, usbcontrol) were
+removed from `ap.mk`; their entry points are 72 weak stubs in `firmware/stubs.c`
+(these belong in the BB / overlay modules, not the resident UI).
 
 `pack_img.py --pack-full` splicing is byte-exact (re-packing stock fw1 +
 section_3 reproduces the stock IMG). Full detail: `docs/fw1-packing.md`.

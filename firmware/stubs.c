@@ -131,6 +131,81 @@ __attribute__((weak)) int UsbAdpterProbeStop(void) { return 0; }
 __attribute__((weak)) int WavEncodeHeaderInit(void) { return 0; }
 __attribute__((weak)) double __ARM_scalbn(double x, int n) { (void)n; return x; }
 __attribute__((weak)) float __ARM_scalbnf(float x, int n) { (void)n; return x; }
+/* ---- AP overlay-module entry stubs (audio/BT/FM/image/record removed from
+ *      the resident A_CORE; these hold the link until those modules are
+ *      rebuilt as overlays / the BB answers over the mailbox). ---- */
+__attribute__((weak)) int AudioGetPicInfo(void) { return 0; }
+__attribute__((weak)) int BtWaitConnectRes(void) { return 0; }
+__attribute__((weak)) int FM_Process(void) { return 0; }
+__attribute__((weak)) int FM_Start(void) { return 0; }
+__attribute__((weak)) int FM_Stop(void) { return 0; }
+__attribute__((weak)) int FmFunctionSeleBack(void) { return 0; }
+__attribute__((weak)) int FmPowerOnInit(void) { return 0; }
+__attribute__((weak)) int Gbk2Unicode(void) { return 0; }
+__attribute__((weak)) int ImageDecodeProc(void) { return 0; }
+__attribute__((weak)) int RadioQuickSeekStation(void) { return 0; }
+__attribute__((weak)) int RadioSetStepFreq(void) { return 0; }
+__attribute__((weak)) int RadioSetStepStation(void) { return 0; }
+__attribute__((weak)) int RadioStartSeekByHand(void) { return 0; }
+__attribute__((weak)) int RadioStopSeeking(void) { return 0; }
+__attribute__((weak)) int RecordEncodeProc(void) { return 0; }
+__attribute__((weak)) int SetPicFileType(void) { return 0; }
+__attribute__((weak)) int ThumbDecode(void) { return 0; }
+__attribute__((weak)) int ThumbInit(void) { return 0; }
+__attribute__((weak)) int ThumbJpgDecSub(void) { return 0; }
+__attribute__((weak)) int a2dp_get_profile_versions(void) { return 0; }
+__attribute__((weak)) int avdtp_send_media(void) { return 0; }
+__attribute__((weak)) int avdtp_start(void) { return 0; }
+__attribute__((weak)) int avdtp_suspend(void) { return 0; }
+__attribute__((weak)) int avrcp_get_profile_versions(void) { return 0; }
+__attribute__((weak)) int bt_a2dp_disconnect(void) { return 0; }
+__attribute__((weak)) int bt_clean_scan_result(void) { return 0; }
+__attribute__((weak)) int bt_disconnect(void) { return 0; }
+__attribute__((weak)) int bt_scan(void) { return 0; }
+__attribute__((weak)) int bt_scan_cancel(void) { return 0; }
+__attribute__((weak)) int fm_is_stop(void) { return 0; }
+__attribute__((weak)) int hci_create_connection_cancel_command(void) { return 0; }
+__attribute__((weak)) int hci_is_link(void) { return 0; }
+__attribute__((weak)) int resample_init(void) { return 0; }
+__attribute__((weak)) int resampler_process(void) { return 0; }
+__attribute__((weak)) int sbc_enc(void) { return 0; }
+__attribute__((weak)) int sbc_enc_init(void) { return 0; }
+__attribute__((weak)) void BlueToothThread(void) { }
+__attribute__((weak)) void FMThread(void) { }
+__attribute__((weak)) void PictureThread(void) { }
+__attribute__((weak)) void RecordThread(void) { }
+uint32_t FmDriverTable __attribute__((weak));
+uint32_t FmFreqMaxVal __attribute__((weak));
+uint32_t FmFreqMinVal __attribute__((weak));
+uint32_t FmFreqNum __attribute__((weak));
+uint32_t ImageErrorNum __attribute__((weak));
+uint32_t ImageIsStop __attribute__((weak));
+uint32_t ImageLeft __attribute__((weak));
+uint32_t ImageMaxHeight __attribute__((weak));
+uint32_t ImageMaxWidth __attribute__((weak));
+uint32_t ImageTop __attribute__((weak));
+uint32_t IsDisplayBackground __attribute__((weak));
+uint32_t Jpg_gImageXSize __attribute__((weak));
+uint32_t Jpg_gImageYSize __attribute__((weak));
+uint32_t PicDirection __attribute__((weak));
+uint32_t RadioPlayerSeekingState __attribute__((weak));
+uint32_t RecordBitrate __attribute__((weak));
+uint32_t RecordChannel __attribute__((weak));
+uint32_t RecordCurrTime __attribute__((weak));
+uint32_t RecordDataWidth __attribute__((weak));
+uint32_t RecordEncodeType __attribute__((weak));
+uint32_t RecordExitTaskID __attribute__((weak));
+uint32_t RecordFileOffset __attribute__((weak));
+uint32_t RecordLongFileName __attribute__((weak));
+uint32_t RecordRemainTime __attribute__((weak));
+uint32_t RecordSampleRate __attribute__((weak));
+uint32_t RecordTotalTime __attribute__((weak));
+uint32_t RecordType __attribute__((weak));
+uint32_t g_remote_a2dp_version __attribute__((weak));
+uint32_t g_remote_avrcp_version __attribute__((weak));
+uint32_t g_remote_numeric_value __attribute__((weak));
+uint32_t gbFreqBack __attribute__((weak));
+uint32_t gpRadioplayerRegKey __attribute__((weak));
 #endif /* RECHORD_AP_BUILD */
 
 /* ---- function stubs (return 0 / no-op) — these were mistakenly

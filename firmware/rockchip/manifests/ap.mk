@@ -138,20 +138,6 @@ AP_SRCS := \
   firmware/rockchip/audio/Common/audio_file_access.c \
   firmware/rockchip/audio/Common/audio_track_control.c \
   firmware/rockchip/audio/Common/pCODECS.c \
-  firmware/rockchip/audio/RecordControl/RecordControl.c \
-  firmware/rockchip/audio/Mp3/pMP3.c \
-  firmware/rockchip/audio/Wav/pWAVEnc.c \
-  firmware/rockchip/audio/Wav/pWAV.c \
-  firmware/rockchip/audio/Ogg/pOGG.c \
-  firmware/rockchip/audio/AAC/pAAC.c \
-  firmware/rockchip/audio/HIFI/alac/p_hifi_alac.c \
-  firmware/rockchip/audio/HIFI/ape/p_hifi_Ape.c \
-  firmware/rockchip/audio/HIFI/flac/p_hifi_flac.c \
-  firmware/rockchip/audio/RkEQ/Effect/Effect.c \
-  firmware/rockchip/audio/ID3/ID3.c \
-  firmware/rockchip/audio/ID3/AsicToUnicode.c \
-  firmware/rockchip/audio/ID3/AsicToUnicodeTable.c \
-  firmware/rockchip/audio/ID3/cue.c \
   firmware/rockchip/ui/medialib/MediaBroWin.c \
   firmware/rockchip/ui/medialib/medialibwin.c \
   firmware/rockchip/sortfileinfo/FavoOperate.c \
@@ -160,33 +146,7 @@ AP_SRCS := \
   firmware/rockchip/sortfileinfo/SortInfoGet.c \
   firmware/rockchip/sortfileinfo/FileInfoSort.c \
   firmware/rockchip/ui/medialib/MDBBuildWin.c \
-  firmware/rockchip/system/sysservice/bb_core.c \
-  firmware/rockchip/audio/sbc/sbc_encode/sbc_enc_interface.c \
-  firmware/rockchip/audio/SSRC/resample_interface.c \
-  firmware/rockchip/audio/DSDIFF/pDSDIFF.c \
-  firmware/rockchip/audio/DSF/pDSF.c \
-  firmware/rockchip/radio/FMControl/FmControl.c \
-  firmware/rockchip/usbcontrol/USBControl.c \
-  firmware/rockchip/image/ImageCommon/image_common.c \
-  firmware/rockchip/image/ImageCommon/image_file_access.c \
-  firmware/rockchip/image/ImageCommon/pImageCODECS.c \
-  firmware/rockchip/image/Imagecontrol/ImageControl.c \
-  firmware/rockchip/image/Thumbnail/Exif_Read.c \
-  firmware/rockchip/image/Thumbnail/Exif_Read_Main.c \
-  firmware/rockchip/image/Thumbnail/thumbnail_parse.c \
-  firmware/rockchip/image/Thumbnail/Thumbnail_Read_Main.c \
-  firmware/rockchip/image/Thumbnail/Thumbnail_Read_Task.c \
-  firmware/rockchip/image/Jpg/pJPG.c \
-  firmware/rockchip/image/Jpg/jpgdec_init.c \
-  firmware/rockchip/image/Jpg/jpgdec_parser.c \
-  firmware/rockchip/image/Bmp/pBMPDEC.c \
-  firmware/rockchip/bt/BlueToothA2dpSourceControl.c \
-  firmware/rockchip/bt/BlueToothSysParam.c \
-  firmware/rockchip/bt/lwbt/btHwControl.c \
-  firmware/rockchip/bt/lwbt/uartif_h5.c \
-  firmware/rockchip/bt/lwbt/chipset_rtk8761a/btRtk8761a_init_script.c \
-  firmware/rockchip/bt/lwbt/chipset_rtk8761a/btRtk8761aControl.c \
-  firmware/rockchip/bt/lwbt/a2dp_source/bt_ip_dt_source.c
+  firmware/rockchip/system/sysservice/bb_core.c
 
 # Enabled Keil A_CORE sources not imported under firmware/rockchip.
 AP_MISSING_SRCS := \

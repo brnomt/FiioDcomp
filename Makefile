@@ -154,9 +154,12 @@ link-bb: $(BB_RECHORD_OBJS) $(BB_OBJS)
 	@echo "Built: $(BB_BIN)"
 
 # Attempt the AP (fw1) link to enumerate remaining undefined symbols.
+# The AP (fw1) is the resident A_CORE: UI + drivers + filesystem. The codec
+# .lib (AP_CODEC_LIBS) and audio/image/BT/FM sources live in the BB/overlays,
+# so they are NOT linked here; their entry points are weak stubs in stubs.c.
 link-ap: $(AP_OBJS) $(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o
 	$(CC) $(ARCH_FLAGS) -T firmware/firmware_ap.ld -nostartfiles -ffreestanding \
-		$(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o $(AP_OBJS) $(AP_CODEC_LIBS) -lm -o $(AP_ELF)
+		$(AP_BUILD_DIR)/stubs.o $(AP_BUILD_DIR)/fault.o $(AP_OBJS) -lm -o $(AP_ELF)
 	$(OBJCOPY) -O binary -j .text -j .data $(AP_ELF) $(AP_BIN)
 	@echo "AP linked: $(AP_ELF) -> $(AP_BIN)"
 
@@ -189,9 +192,8 @@ FW1_IMG := $(AP_BUILD_DIR)/fw1_custom.img
 pack-fw1: $(AP_ELF)
 	$(PYTHON) tools/pack_fw1.py $(AP_ELF) -o $(FW1_IMG)
 
-# Pack BOTH halves (fw1 + section_3) into one IMG. Fails until the flat AP
-# build fits the 356 KB fw1 region (see docs/fw1-packing.md).
-pack-full: $(BB_BIN)
+# Pack BOTH halves (fw1 + section_3) into one flashable IMG.
+pack-full: $(FW1_IMG) $(BB_BIN)
 	$(PYTHON) tools/pack_img.py --pack-full --fw1 $(FW1_IMG) --bb $(BB_BIN) -o $(BUILD_DIR)/ReChord_APBB.IMG
 
 extract-section3:

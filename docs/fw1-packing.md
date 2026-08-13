@@ -126,3 +126,21 @@ drivers + filesystem + LCD) and on-demand overlay modules (ID3, RecordControl,
 BT, FM, image codecs, UI windows) — the exact structure the Keil A_CORE +
 per-codec targets already model. A flat GCC build of all 187 sources cannot
 share their data the way the overlay scatter does.
+
+## 7. Result — AP slims to 273 KB and packs (DONE)
+
+The codec `.lib` (AP_CODEC_LIBS) and 40 overlay sources (audio codec
+wrappers, ID3/AsicToUnicode, RecordControl, image, BT, FM, usbcontrol) were
+removed from `ap.mk`; 72 weak stubs were added to `firmware/stubs.c` for their
+entry points (they belong in the BB / overlay modules, not the resident UI).
+The AP now links with 0 undefined symbols and its scatter payload is
+**273,084 bytes** (< 356 KB), producing `build/ap/fw1_custom.img`.
+
+`pack_img.py --pack-full` then emits `build/ReChord_APBB.IMG`: fw1 header
+(SP 0x03050000, 3 entries) + payload @ 0x7B8, sec2 preserved, section_3
+(SP 0x0301E794, count 82) @ 0x81A14, trailer 0x1EA1C309 — 33,554,436 bytes.
+
+Remaining before claiming a *verified* boot: the AP UI now has stubbed
+audio/BT/FM/image/record — it is the resident A_CORE, not the full player.
+Hardware-UART validation (`fw1valid = %d fw2valid = %d`) is the authoritative
+check that the scatter table + payload are accepted by the Mask ROM.
