@@ -54,8 +54,9 @@ BB_RECHORD_OBJS := \
 
 BB_ELF := $(BB_BUILD_DIR)/rechord_bb.elf
 BB_BIN := $(BB_BUILD_DIR)/section3_custom.bin
+AP_ELF := $(AP_BUILD_DIR)/rechord_ap.elf
 
-.PHONY: all bb ap build-bb build-ap link-bb build-sdk link-firmware \
+.PHONY: all bb ap build-bb build-ap link-bb link-ap build-sdk link-firmware \
         toolchain manifests compile-check pack-img pack-bb-img \
         extract-section3 clean
 
@@ -119,6 +120,12 @@ link-bb: $(BB_RECHORD_OBJS) $(BB_OBJS)
 		$(BB_RECHORD_OBJS) $(BB_OBJS) -o $(BB_ELF)
 	$(OBJCOPY) -O binary -j .fw_header -j .text $(BB_ELF) $(BB_BIN)
 	@echo "Built: $(BB_BIN)"
+
+# Attempt the AP (fw1) link to enumerate remaining undefined symbols.
+link-ap: $(AP_OBJS)
+	$(CC) $(ARCH_FLAGS) -T firmware/firmware_ap.ld -nostartfiles -ffreestanding \
+		$(AP_OBJS) -o $(AP_ELF)
+	@echo "AP link attempted: $(AP_ELF)"
 
 # ---- AP / fw1 ------------------------------------------------------------
 # This target compiles the 165 AP sources currently present in the repository.
