@@ -101,15 +101,30 @@ navigation → then real drivers + DSP.
 ### Makefile targets
 
 ```
-make build-sdk      # compile firmware/rockchip/**/*.c -> build/objs/
-make link-firmware  # link -> build/rechord_full.elf + section3_custom.bin
-make all            # both
-make pack-img       # splice section_3 into HIFIEC37.IMG (identity test)
+make build-ap      # compile AP (fw1) 187 objects -> build/ap/objs/
+make link-ap       # link AP -> build/ap/rechord_ap.elf + fw1_custom.bin
+make build-bb      # compile BB (section_3) 44 objects -> build/bb/objs/
+make link-bb       # link BB -> build/bb/section3_custom.bin
+make all           # both halves
+make pack-img      # splice section_3 into HIFIEC37.IMG (identity test)
+python tools/pack_fw1.py build/ap/rechord_ap.elf -o build/ap/fw1_custom.img
+python tools/pack_img.py --pack-full --fw1 build/ap/fw1_custom.img \
+                        --bb build/bb/section3_custom.bin -o build/ReChord_APBB.IMG
 ```
 
-Excluded from `build-sdk` (need project-layer defines): `systick2.c`,
+Excluded from the manifests (need project-layer defines): `systick2.c`,
 `pCODECS2.c`, `RecordControl.c`, `PowerManager.c`, `AsicToUnicode.c`,
 `cue.c`, `ID3.c`, `AsicToUnicodeTable.c`. Linked via prebuilt .o or stubs.
+
+## Packing / flashable-IMG status (updated this round)
+
+| Half | Container | Status |
+|---|---|---|
+| **BB (section_3)** | flat 16-byte RKnanoFW header + code @ 0x81A14 | ✅ packs; `build/ReChord_BB.IMG` |
+| **AP (fw1)** | RKnanoFW header + 91-entry scatter table @ 0x1F8 + payload @ 0x7B8 | ⚠️ tool written (`tools/pack_fw1.py` + `pack_img.py --pack-full`), but flat AP payload (1.30 MB) exceeds the 356 KB fw1 region — stock fw1 is a **module-overlay** build (resident SYS_CODE 0x03060000 + SYS_DATA 0x03000000). |
+
+`pack_img.py --pack-full` splicing is byte-exact (re-packing stock fw1 +
+section_3 reproduces the stock IMG). Full detail: `docs/fw1-packing.md`.
 
 ## The DSP-effects mod target (your goal)
 

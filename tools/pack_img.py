@@ -99,10 +99,79 @@ def pack_section3(stock_img: bytes, custom_section3: bytes, out_path: Path) -> P
           f"({100 * len(custom_section3) / SECTION3_SIZE:.1f}%)")
     print(f"  trailer preserved: 0x{trailer:08X}")
     print(f"  output size: {len(out):,} bytes")
+
+
+# --- fw1 (AP) scatter-load region ---
+FW1_HEADER_OFF = 0x000001F8   # RKnanoFW header #1
+FW1_TABLE_OFF  = 0x00000208   # memory-map table (entries x 16 B)
+FW1_CODE_OFF   = 0x000007B8   # fw1 payload (scatter-load source)
+FW1_CODE_END   = 0x00057820   # sec2 header #2
+FW1_TABLE_MAX  = (FW1_CODE_OFF - FW1_TABLE_OFF) // 16  # 91 entries
+
+
+def parse_fw1(fw1: bytes):
+    """Split a pack_fw1.py image into (load_base, count, table, payload)."""
+    if fw1[:8] != b"RKnanoFW":
+        raise ValueError("fw1 image missing RKnanoFW magic")
+    load_base, count = struct.unpack_from("<II", fw1, 8)
+    table_len = count * 16
+    table = fw1[16:16 + table_len]
+    payload = fw1[16 + table_len:]
+    return load_base, count, table, payload
+
+
+def pack_full(stock_img: bytes, fw1: bytes, custom_section3: bytes, out_path: Path) -> Path:
+    """Splice BOTH a custom fw1 (AP) scatter image and a section_3 (BB) into stock."""
+    if len(stock_img) != IMG_SIZE:
+        raise ValueError(f"stock IMG size {len(stock_img)} != expected {IMG_SIZE}")
+    if len(custom_section3) > SECTION3_SIZE:
+        raise ValueError(
+            f"custom section_3 too large: {len(custom_section3):,} > {SECTION3_SIZE:,}")
+
+    load_base, count, table, payload = parse_fw1(fw1)
+    if count > FW1_TABLE_MAX:
+        raise ValueError(f"fw1 has {count} entries; max {FW1_TABLE_MAX} before payload")
+    if len(payload) > (FW1_CODE_END - FW1_CODE_OFF):
+        raise ValueError(
+            f"fw1 payload {len(payload):,} bytes exceeds region "
+            f"{FW1_CODE_END - FW1_CODE_OFF:,} (flat AP build is oversized — see docs/fw1-packing.md)")
+
+    out = bytearray(stock_img)
+
+    # fw1 header + memory-map table (zero-pad the table to the payload offset)
+    struct.pack_into("<8sII", out, FW1_HEADER_OFF, b"RKnanoFW", load_base, count)
+    out[FW1_TABLE_OFF:FW1_CODE_OFF] = b"\x00" * (FW1_CODE_OFF - FW1_TABLE_OFF)
+    out[FW1_TABLE_OFF:FW1_TABLE_OFF + len(table)] = table
+
+    # fw1 payload (scatter-load source), zero-pad the remainder
+    out[FW1_CODE_OFF:FW1_CODE_OFF + len(payload)] = payload
+    if len(payload) < (FW1_CODE_END - FW1_CODE_OFF):
+        out[FW1_CODE_OFF + len(payload):FW1_CODE_END] = b"\x00" * (
+            FW1_CODE_END - FW1_CODE_OFF - len(payload))
+
+    # section_3 (BB) — same logic as pack_section3
+    out[SECTION3_OFFSET:SECTION3_OFFSET + len(custom_section3)] = custom_section3
+    if len(custom_section3) < SECTION3_SIZE:
+        pad = SECTION3_OFFSET + len(custom_section3)
+        out[pad:SECTION3_END] = b"\x00" * (SECTION3_SIZE - len(custom_section3))
+
+    trailer = read_trailer(stock_img)
+    struct.pack_into("<I", out, TRAILER_OFFSET, trailer)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_bytes(out)
+
+    print(f"packed full AP+BB IMG -> {out_path}")
+    print(f"  fw1: SP 0x{load_base:08X}, {count} entries, {len(payload):,} bytes payload")
+    print(f"  section_3: {len(custom_section3):,} bytes")
+    print(f"  trailer preserved: 0x{trailer:08X}")
     return out_path
 
 
+
 def identity_test(stock_path: Path) -> bool:
+    """Extract section_3, repack unchanged, verify byte-identical output."""
+    print(f"=== Identity Test (M2 milestone) ===")
     """Extract section_3, repack unchanged, verify byte-identical output."""
     print(f"=== Identity Test (M2 milestone) ===")
     print(f"stock: {stock_path}")
@@ -177,11 +246,28 @@ def main() -> int:
         action="store_true",
         help="extract + repack unchanged + verify byte-identical (M2 milestone)",
     )
+    mode.add_argument(
+        "--pack-full",
+        action="store_true",
+        help="pack BOTH fw1 (--fw1) and section_3 (--bb) into stock IMG",
+    )
+    ap.add_argument(
+        "--fw1",
+        type=Path,
+        metavar="IMG",
+        help="fw1 (AP) RKnanoFW image from tools/pack_fw1.py (required for --pack-full)",
+    )
+    ap.add_argument(
+        "--bb",
+        type=Path,
+        metavar="BIN",
+        help="section_3 (BB) bin (required for --pack-full)",
+    )
     ap.add_argument(
         "-o", "--output",
         type=Path,
         default=Path("build/section3_stock.bin"),
-        help="output path for --extract or --pack",
+        help="output path for --extract, --pack, or --pack-full",
     )
     args = ap.parse_args()
 
@@ -207,6 +293,18 @@ def main() -> int:
             return 1
         custom = args.pack.read_bytes()
         pack_section3(stock_img, custom, args.output)
+        return 0
+
+    if args.pack_full:
+        if not (args.fw1 and args.fw1.is_file()):
+            print(f"ERROR: --pack-full needs --fw1 <image> (from tools/pack_fw1.py)", file=sys.stderr)
+            return 1
+        if not (args.bb and args.bb.is_file()):
+            print(f"ERROR: --pack-full needs --bb <section_3.bin>", file=sys.stderr)
+            return 1
+        fw1 = args.fw1.read_bytes()
+        custom = args.bb.read_bytes()
+        pack_full(stock_img, fw1, custom, args.output)
         return 0
 
     return 0
